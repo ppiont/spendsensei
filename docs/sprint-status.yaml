@@ -44,38 +44,38 @@ development_status:
   epic-1-retrospective: optional
 
   epic-2: backlog
-  2-1-subscription-detection: backlog
-  2-2-savings-analysis: backlog
-  2-3-credit-utilization-analysis: backlog
-  2-4-income-stability-analysis: backlog
-  2-5-signal-computation-service: backlog
+  2-1-subscription-detection: in-progress
+  2-2-savings-analysis: in-progress
+  2-3-credit-utilization-analysis: review
+  2-4-income-stability-analysis: in-progress
+  2-5-signal-computation-service: drafted
   epic-2-retrospective: optional
 
   epic-3: backlog
-  3-1-persona-assignment-logic: backlog
-  3-2-content-catalog-creation: backlog
-  3-3-template-based-content-generator: backlog
-  3-4-llm-generator-interface: backlog
-  3-5-recommendation-engine: backlog
+  3-1-persona-assignment-logic: drafted
+  3-2-content-catalog-creation: drafted
+  3-3-template-based-content-generator: drafted
+  3-4-llm-generator-interface: drafted
+  3-5-recommendation-engine: drafted
   epic-3-retrospective: optional
 
   epic-4: backlog
-  4-1-api-schemas-configuration: backlog
-  4-2-user-consent-endpoints: backlog
-  4-3-account-transaction-endpoints: backlog
-  4-4-insights-endpoint: backlog
+  4-1-api-schemas-configuration: drafted
+  4-2-user-consent-endpoints: drafted
+  4-3-account-transaction-endpoints: drafted
+  4-4-insights-endpoint: drafted
   epic-4-retrospective: optional
 
   epic-5: backlog
-  5-1-api-client-type-definitions: backlog
-  5-2-dashboard-page: backlog
-  5-3-transactions-page: backlog
-  5-4-insights-page: backlog
-  5-5-operator-view: backlog
+  5-1-api-client-type-definitions: drafted
+  5-2-dashboard-page: drafted
+  5-3-transactions-page: drafted
+  5-4-insights-page: drafted
+  5-5-operator-view: drafted
   epic-5-retrospective: optional
 
   epic-6: backlog
-  6-1-guardrails-implementation: backlog
-  6-2-evaluation-harness: backlog
-  6-3-documentation-polish: backlog
+  6-1-guardrails-implementation: drafted
+  6-2-evaluation-harness: drafted
+  6-3-documentation-polish: drafted
   epic-6-retrospective: optional
