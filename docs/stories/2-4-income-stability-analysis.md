@@ -1,6 +1,6 @@
 # Story 2.4: Income Stability Analysis
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -34,42 +34,42 @@ So that I can identify users with irregular income patterns.
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1: Filter and extract income transactions** (AC: #1, #2, #3)
-  - [ ] Add `analyze_income(transactions: list, window_days: int) -> dict` to features.py
-  - [ ] Filter transactions where category == "INCOME"
-  - [ ] Sort by date ascending
-  - [ ] Calculate gaps: [date[i+1] - date[i] in days for each consecutive pair]
-  - [ ] Calculate median gap using statistics.median()
+- [x] **Task 1: Filter and extract income transactions** (AC: #1, #2, #3)
+  - [x] Add `analyze_income(transactions: list, window_days: int) -> dict` to features.py
+  - [x] Filter transactions where category == "INCOME"
+  - [x] Sort by date ascending
+  - [x] Calculate gaps: [date[i+1] - date[i] in days for each consecutive pair]
+  - [x] Calculate median gap using statistics.median()
 
-- [ ] **Task 2: Classify income frequency** (AC: #4)
-  - [ ] Check median gap against thresholds:
+- [x] **Task 2: Classify income frequency** (AC: #4)
+  - [x] Check median gap against thresholds:
     ```python
     if 13 <= median_gap <= 16: "biweekly"
     elif 28 <= median_gap <= 32: "monthly"
     elif 6 <= median_gap <= 8: "weekly"
     else: "variable"
     ```
-  - [ ] Return "unknown" if <2 income transactions
+  - [x] Return "unknown" if <2 income transactions
 
-- [ ] **Task 3: Calculate income statistics** (AC: #5, #6, #7, #8)
-  - [ ] Extract income amounts (take absolute value since INCOME is negative)
-  - [ ] Calculate average: statistics.mean(amounts)
-  - [ ] Calculate standard deviation: statistics.stdev(amounts)
-  - [ ] Calculate coefficient of variation: stdev / mean
-  - [ ] Classify stability:
+- [x] **Task 3: Calculate income statistics** (AC: #5, #6, #7, #8)
+  - [x] Extract income amounts (take absolute value since INCOME is negative)
+  - [x] Calculate average: statistics.mean(amounts)
+  - [x] Calculate standard deviation: statistics.stdev(amounts)
+  - [x] Calculate coefficient of variation: stdev / mean
+  - [x] Classify stability:
     - "stable" if CV < 0.15
     - "variable" if CV >= 0.15
 
-- [ ] **Task 4: Calculate cash flow buffer** (AC: #9)
-  - [ ] Sum total income (absolute value of INCOME transactions)
-  - [ ] Sum total expenses (all positive transaction amounts, exclude INCOME)
-  - [ ] Calculate net cash flow: income - expenses
-  - [ ] Calculate monthly expenses: expenses / (window_days / 30)
-  - [ ] Buffer in months: net_cash_flow / monthly_expenses
-  - [ ] Handle negative buffer (spending exceeds income)
+- [x] **Task 4: Calculate cash flow buffer** (AC: #9)
+  - [x] Sum total income (absolute value of INCOME transactions)
+  - [x] Sum total expenses (all positive transaction amounts, exclude INCOME)
+  - [x] Calculate net cash flow: income - expenses
+  - [x] Calculate monthly expenses: expenses / (window_days / 30)
+  - [x] Buffer in months: net_cash_flow / monthly_expenses
+  - [x] Handle negative buffer (spending exceeds income)
 
-- [ ] **Task 5: Build income data structure** (AC: #10)
-  - [ ] Create return dictionary:
+- [x] **Task 5: Build income data structure** (AC: #10)
+  - [x] Create return dictionary:
     ```python
     {
       "frequency": str,              # "biweekly", "monthly", "weekly", "variable", "unknown"
@@ -81,17 +81,17 @@ So that I can identify users with irregular income patterns.
     }
     ```
 
-- [ ] **Task 6: Handle edge cases** (AC: #11)
-  - [ ] <2 income transactions: return "unknown" for frequency/stability
-  - [ ] Zero income: return zeros and "unknown"
-  - [ ] Insufficient data for stdev: return "unknown" stability
-  - [ ] Test with users having irregular income
+- [x] **Task 6: Handle edge cases** (AC: #11)
+  - [x] <2 income transactions: return "unknown" for frequency/stability
+  - [x] Zero income: return zeros and "unknown"
+  - [x] Insufficient data for stdev: return "unknown" stability
+  - [x] Test with users having irregular income
 
-- [ ] **Task 7: Update BehaviorSignals and test**
-  - [ ] Add income field to BehaviorSignals dataclass
-  - [ ] Test with synthetic data
-  - [ ] Verify frequency classification works
-  - [ ] Validate CV and stability classification
+- [x] **Task 7: Update BehaviorSignals and test**
+  - [x] Add income field to BehaviorSignals dataclass
+  - [x] Test with synthetic data
+  - [x] Verify frequency classification works
+  - [x] Validate CV and stability classification
 
 ## Dev Notes
 
@@ -150,20 +150,47 @@ stability = "stable" if cv < 0.15 else "variable"
 
 ### Context Reference
 
-<!-- Path(s) to story context XML will be added here by context workflow -->
+No context file available - proceeded with story file only.
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 
 ### Debug Log References
 
+**Implementation Plan:**
+1. Created features.py with BehaviorSignals dataclass (foundation for all behavioral signals)
+2. Implemented analyze_income() function with comprehensive income analysis logic
+3. Added all required fields to BehaviorSignals (subscriptions, savings, credit, income)
+4. Handled edge cases: insufficient data, zero income, division by zero
+5. Created comprehensive test suite to verify all acceptance criteria
+
+**Technical Decisions:**
+- Used statistics module for median, mean, and stdev calculations
+- Implemented CV-based stability classification (threshold: 0.15)
+- Cash flow buffer can be negative (deficit scenario)
+- Rounded CV to 4 decimals, buffer to 2 decimals for precision
+- Used __post_init__ for BehaviorSignals to initialize empty dicts
+
 ### Completion Notes List
 
+- Successfully implemented analyze_income() function with all 11 acceptance criteria
+- BehaviorSignals dataclass created with all 4 signal fields (subscriptions, savings, credit, income)
+- All edge cases handled correctly: <2 income transactions, zero income, insufficient stdev data
+- Frequency classification working for biweekly (13-16 days), monthly (28-32 days), weekly (6-8 days), and variable
+- Stability classification based on coefficient of variation (CV < 0.15 = stable)
+- Cash flow buffer calculation handles both surplus and deficit scenarios
+- Comprehensive test suite created and all tests passing
+- Tested with synthetic data from Story 1.4
+
 ### File List
+
+- src/spendsense/services/features.py (created)
+- scripts/test_income_analysis.py (created)
 
 ## Change Log
 
 | Date | Author | Change |
 |------|--------|--------|
 | 2025-11-03 | Peter (SM) | Initial story creation from epics and architecture |
+| 2025-11-03 | Claude (DEV) | Implemented income stability analysis with all acceptance criteria |

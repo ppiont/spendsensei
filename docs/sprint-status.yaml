@@ -47,7 +47,7 @@ development_status:
   2-1-subscription-detection: review
   2-2-savings-analysis: review
   2-3-credit-utilization-analysis: review
-  2-4-income-stability-analysis: in-progress
+  2-4-income-stability-analysis: review
   2-5-signal-computation-service: drafted
   epic-2-retrospective: optional
 
