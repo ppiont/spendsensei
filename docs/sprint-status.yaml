@@ -45,7 +45,7 @@ development_status:
 
   epic-2: backlog
   2-1-subscription-detection: in-progress
-  2-2-savings-analysis: in-progress
+  2-2-savings-analysis: review
   2-3-credit-utilization-analysis: review
   2-4-income-stability-analysis: in-progress
   2-5-signal-computation-service: drafted

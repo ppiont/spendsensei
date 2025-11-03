@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(awk:*)",
+      "SlashCommand(/bmad:bmm:workflows:create-story)",
+      "SlashCommand(/bmad:bmm:workflows:dev-story)",
+      "Bash(timeout 10 uv run:*)",
+      "Bash(cat:*)",
+      "Bash(uv pip install:*)",
+      "Bash(uv run python:*)",
+      "Read(//private/tmp/**)",
+      "Bash(pkill:*)",
+      "Bash(uv add:*)",
+      "Bash(sqlite3:*)",
+      "Bash(curl:*)",
+      "Bash(python3:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(test:*)",
+      "SlashCommand(/bmad:bmm:workflows:story-ready)",
+      "Bash(python scripts/test_savings_analysis.py:*)",
+      "Bash(python scripts/test_income_analysis.py:*)",
+      "Bash(git log:*)",
+      "Bash(python:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
