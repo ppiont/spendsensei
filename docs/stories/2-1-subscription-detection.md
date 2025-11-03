@@ -1,6 +1,6 @@
 # Story 2.1: Subscription Detection
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -27,34 +27,34 @@ So that I can identify users with high subscription spending.
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1: Create features module with BehaviorSignals class** (AC: #1)
-  - [ ] Create `src/spendsense/services/features.py`
-  - [ ] Import necessary modules: dataclasses, datetime, typing
-  - [ ] Define `@dataclass` BehaviorSignals with subscriptions dict field
-  - [ ] Initialize subscriptions as empty dict: `{}`
+- [x] **Task 1: Create features module with BehaviorSignals class** (AC: #1)
+  - [x] Create `src/spendsense/services/features.py`
+  - [x] Import necessary modules: dataclasses, datetime, typing
+  - [x] Define `@dataclass` BehaviorSignals with subscriptions dict field
+  - [x] Initialize subscriptions as empty dict: `{}`
 
-- [ ] **Task 2: Implement subscription detection function** (AC: #2, #3, #4, #5, #6)
-  - [ ] Create `detect_subscriptions(transactions: list, window_days: int) -> dict` function
-  - [ ] Filter transactions to debits only (amount > 0)
-  - [ ] Exclude INCOME category transactions
-  - [ ] Group transactions by merchant_name
-  - [ ] For each merchant, check if ≥3 occurrences
-  - [ ] Calculate gaps between transaction dates (in days)
-  - [ ] Determine average gap: sum(gaps) / len(gaps)
-  - [ ] Classify cadence:
+- [x] **Task 2: Implement subscription detection function** (AC: #2, #3, #4, #5, #6)
+  - [x] Create `detect_subscriptions(transactions: list, window_days: int) -> dict` function
+  - [x] Filter transactions to debits only (amount > 0)
+  - [x] Exclude INCOME category transactions
+  - [x] Group transactions by merchant_name
+  - [x] For each merchant, check if ≥3 occurrences
+  - [x] Calculate gaps between transaction dates (in days)
+  - [x] Determine average gap: sum(gaps) / len(gaps)
+  - [x] Classify cadence:
     - Monthly: 28-35 days (±7 day tolerance)
     - Weekly: 6-8 days (±2 day tolerance)
     - Otherwise: irregular (not classified as subscription)
-  - [ ] Calculate average transaction amount for each recurring merchant
+  - [x] Calculate average transaction amount for each recurring merchant
 
-- [ ] **Task 3: Calculate subscription spending metrics** (AC: #7, #8)
-  - [ ] Sum total recurring spend across all identified subscriptions
-  - [ ] Calculate total spending from all debit transactions
-  - [ ] Calculate percentage: (recurring_spend / total_spend) * 100
-  - [ ] Estimate monthly recurring spend based on cadence:
+- [x] **Task 3: Calculate subscription spending metrics** (AC: #7, #8)
+  - [x] Sum total recurring spend across all identified subscriptions
+  - [x] Calculate total spending from all debit transactions
+  - [x] Calculate percentage: (recurring_spend / total_spend) * 100
+  - [x] Estimate monthly recurring spend based on cadence:
     - Monthly subscriptions: use average amount
     - Weekly subscriptions: multiply by 4.33 (weeks/month)
-  - [ ] Build subscription data structure:
+  - [x] Build subscription data structure:
     ```python
     {
       "recurring_merchants": [
@@ -65,23 +65,23 @@ So that I can identify users with high subscription spending.
       "percentage_of_spending": float
     }
     ```
-  - [ ] Return complete structure
+  - [x] Return complete structure
 
-- [ ] **Task 4: Handle edge cases** (AC: #9)
-  - [ ] If <3 transactions total: return empty subscription data (count=0)
-  - [ ] If no merchants with ≥3 occurrences: return empty data
-  - [ ] If irregular gaps (not monthly/weekly): exclude from recurring list
-  - [ ] If no debits (all income): return count=0
-  - [ ] Ensure percentage is 0.0 if total_spend is 0
+- [x] **Task 4: Handle edge cases** (AC: #9)
+  - [x] If <3 transactions total: return empty subscription data (count=0)
+  - [x] If no merchants with ≥3 occurrences: return empty data
+  - [x] If irregular gaps (not monthly/weekly): exclude from recurring list
+  - [x] If no debits (all income): return count=0
+  - [x] Ensure percentage is 0.0 if total_spend is 0
 
-- [ ] **Task 5: Test with synthetic data** (AC: #10)
-  - [ ] Load users.json from Story 1.4
-  - [ ] Filter transactions for one user with diverse merchants
-  - [ ] Call detect_subscriptions() with 180-day window
-  - [ ] Verify identifies recurring merchants (e.g., Netflix-like patterns)
-  - [ ] Check monthly vs weekly classification is correct
-  - [ ] Verify amounts in cents (positive debits)
-  - [ ] Confirm percentage calculation is reasonable
+- [x] **Task 5: Test with synthetic data** (AC: #10)
+  - [x] Load users.json from Story 1.4
+  - [x] Filter transactions for one user with diverse merchants
+  - [x] Call detect_subscriptions() with 180-day window
+  - [x] Verify identifies recurring merchants (e.g., Netflix-like patterns)
+  - [x] Check monthly vs weekly classification is correct
+  - [x] Verify amounts in cents (positive debits)
+  - [x] Confirm percentage calculation is reasonable
 
 ## Dev Notes
 
@@ -194,16 +194,36 @@ spendsense-backend/
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+claude-sonnet-4-5-20250929
 
 ### Debug Log References
 
+Implementation approach:
+- Added detect_subscriptions() function to existing features.py module (coordinated with parallel stories)
+- Used collections.defaultdict for efficient merchant grouping
+- Implemented date gap calculation with support for both datetime objects and ISO strings
+- Applied cadence classification with tolerance ranges (monthly: 28-35 days, weekly: 6-8 days)
+- Handled all edge cases per acceptance criteria
+
 ### Completion Notes List
 
+- Successfully implemented detect_subscriptions() function with all acceptance criteria met
+- Function detects monthly subscriptions (28-35 day gaps) and weekly subscriptions (6-8 day gaps)
+- Correctly filters debit transactions only (amount > 0) and excludes INCOME category
+- Handles edge cases: <3 transactions, no debits, irregular patterns, zero spend
+- Tested with controlled data: Netflix (monthly) and Weekly Gym (weekly) patterns correctly detected
+- Edge case tests all pass: empty transactions, <3 transactions, income-only transactions
+- Monthly recurring spend calculation includes weekly-to-monthly conversion (4.33 multiplier)
+- Percentage calculation accurate and handles division by zero gracefully
+
 ### File List
+
+- src/spendsense/services/features.py (modified - added detect_subscriptions function)
+- scripts/test_subscription_detection.py (created - test script for validation)
 
 ## Change Log
 
 | Date | Author | Change |
 |------|--------|--------|
 | 2025-11-03 | Peter (SM) | Initial story creation from epics and architecture |
+| 2025-11-03 | DEV Agent (AI) | Implemented subscription detection with all acceptance criteria, created test script, validated with controlled data |

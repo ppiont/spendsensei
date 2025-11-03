@@ -44,7 +44,7 @@ development_status:
   epic-1-retrospective: optional
 
   epic-2: backlog
-  2-1-subscription-detection: in-progress
+  2-1-subscription-detection: review
   2-2-savings-analysis: review
   2-3-credit-utilization-analysis: review
   2-4-income-stability-analysis: in-progress
