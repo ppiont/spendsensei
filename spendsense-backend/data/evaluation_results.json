@@ -1,0 +1,495 @@
+{
+  "timestamp": "2025-11-04T14:46:41.614405",
+  "total_users": 50,
+  "total_recommendations": 150,
+  "metrics": {
+    "coverage": {
+      "value": 100.0,
+      "target": 100.0,
+      "pass": true,
+      "users_with_persona": 50,
+      "users_with_min_signals": 50
+    },
+    "explainability": {
+      "value": 100.0,
+      "target": 100.0,
+      "pass": true,
+      "recs_with_explanation": 150,
+      "recs_with_signals": 150
+    },
+    "latency_avg": {
+      "value": 0.002426309585571289,
+      "target": 5.0,
+      "pass": true
+    },
+    "auditability": {
+      "value": 100.0,
+      "target": 100.0,
+      "pass": true,
+      "recs_with_complete_trace": 150
+    }
+  },
+  "latency_percentiles": {
+    "p50": 0.0020514726638793945,
+    "p95": 0.0030002474784851076,
+    "p99": 0.01995706558227539
+  },
+  "persona_distribution": {
+    "high_utilization": 25,
+    "savings_builder": 12,
+    "balanced": 13
+  },
+  "all_metrics_pass": true,
+  "user_results": [
+    {
+      "user_id": "0091d90c-5184-4bab-aa29-1ea2e680159b",
+      "success": true,
+      "error": null,
+      "latency": 0.01995706558227539,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "072c3651-5608-4dd8-87bf-1bb884933b3d",
+      "success": true,
+      "error": null,
+      "latency": 0.0022690296173095703,
+      "persona": "savings_builder",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "0e63813e-d22e-4226-9fb8-944dde0018aa",
+      "success": true,
+      "error": null,
+      "latency": 0.0016298294067382812,
+      "persona": "balanced",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "134e2bd9-dd1a-4072-965e-ffd1c7647651",
+      "success": true,
+      "error": null,
+      "latency": 0.0018830299377441406,
+      "persona": "balanced",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "1a82833c-20dd-40ff-90b3-d752bb01b2a5",
+      "success": true,
+      "error": null,
+      "latency": 0.0015552043914794922,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "1c4dacfd-00b3-4bda-af26-bd7c7634fa48",
+      "success": true,
+      "error": null,
+      "latency": 0.0019600391387939453,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "1eb2c170-31e2-4719-b203-4fe7d8c024a9",
+      "success": true,
+      "error": null,
+      "latency": 0.0019190311431884766,
+      "persona": "balanced",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "2a2fbccd-7ed3-4462-84d6-1ba3766274f1",
+      "success": true,
+      "error": null,
+      "latency": 0.0017900466918945312,
+      "persona": "balanced",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "2abc64d6-b21e-410b-acac-375679b25e7e",
+      "success": true,
+      "error": null,
+      "latency": 0.0022330284118652344,
+      "persona": "savings_builder",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "2b2bf58c-6da5-4dad-b56a-abc050fb35b0",
+      "success": true,
+      "error": null,
+      "latency": 0.0017139911651611328,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "2e2f2252-1bd8-401d-ae66-f964662e9227",
+      "success": true,
+      "error": null,
+      "latency": 0.0022268295288085938,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "33daefc1-0d47-426d-9ef7-a52ee645bb00",
+      "success": true,
+      "error": null,
+      "latency": 0.002362966537475586,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "3b8abb2d-8b2e-44a7-8205-dfebbd38d1a2",
+      "success": true,
+      "error": null,
+      "latency": 0.0023899078369140625,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "4b8fb475-e2eb-42d2-b848-52b657f498e0",
+      "success": true,
+      "error": null,
+      "latency": 0.0030908584594726562,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "4ba8221c-d765-4bd2-bb13-64e708d2cdca",
+      "success": true,
+      "error": null,
+      "latency": 0.0022830963134765625,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "4bfecfa6-0037-4b0c-b7e9-df35ba3ed4f4",
+      "success": true,
+      "error": null,
+      "latency": 0.0029261112213134766,
+      "persona": "balanced",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "53cc6b95-c689-4836-8f73-ab1c860c7b68",
+      "success": true,
+      "error": null,
+      "latency": 0.002173900604248047,
+      "persona": "savings_builder",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "6575e8af-6e48-482c-84f7-38848c789ee1",
+      "success": true,
+      "error": null,
+      "latency": 0.0019419193267822266,
+      "persona": "balanced",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "6b13ad0a-5673-48bc-95cf-185a4667b057",
+      "success": true,
+      "error": null,
+      "latency": 0.0020470619201660156,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "7362f9b7-4795-4d1d-a68d-3c8bdab51d55",
+      "success": true,
+      "error": null,
+      "latency": 0.002298116683959961,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "740735e4-8dac-4784-a355-4c2bcfe3d3a8",
+      "success": true,
+      "error": null,
+      "latency": 0.002084016799926758,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "79eb1797-4fb9-4f37-802f-4aeea308f1ea",
+      "success": true,
+      "error": null,
+      "latency": 0.0020177364349365234,
+      "persona": "balanced",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "7c616af7-19ac-452d-827b-7491cde081fa",
+      "success": true,
+      "error": null,
+      "latency": 0.0022430419921875,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "7f85c4e7-1177-4f21-948f-5ba30d87bc72",
+      "success": true,
+      "error": null,
+      "latency": 0.0020890235900878906,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "7fb325a4-c063-460c-8b47-624aa80160c6",
+      "success": true,
+      "error": null,
+      "latency": 0.0022101402282714844,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "888e552c-00ae-4c84-8008-8c3e4a444657",
+      "success": true,
+      "error": null,
+      "latency": 0.0018320083618164062,
+      "persona": "balanced",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "89eb14e8-3367-4e1c-8354-fc525ee88627",
+      "success": true,
+      "error": null,
+      "latency": 0.0018618106842041016,
+      "persona": "balanced",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "8bea75c1-b866-47aa-a3d4-526b2b54ff7a",
+      "success": true,
+      "error": null,
+      "latency": 0.001828908920288086,
+      "persona": "balanced",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "8fb51ba1-b319-45d0-a84a-3aeed636a89d",
+      "success": true,
+      "error": null,
+      "latency": 0.0018210411071777344,
+      "persona": "savings_builder",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "935e2c27-5485-40db-a208-c875c41c233d",
+      "success": true,
+      "error": null,
+      "latency": 0.0019779205322265625,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "976710d7-6418-4dde-ab44-312aa565cd41",
+      "success": true,
+      "error": null,
+      "latency": 0.0019659996032714844,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "9ab4a698-76ae-4304-8e8a-4293673a38f7",
+      "success": true,
+      "error": null,
+      "latency": 0.0023398399353027344,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "9d26e2d1-f052-4bff-a817-91ea24301bac",
+      "success": true,
+      "error": null,
+      "latency": 0.0024771690368652344,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "a07f3385-3f3f-462f-aa2b-ec6b90efb126",
+      "success": true,
+      "error": null,
+      "latency": 0.0020706653594970703,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "a11244cb-1243-47d7-8a22-46d5fe22a8c3",
+      "success": true,
+      "error": null,
+      "latency": 0.002334117889404297,
+      "persona": "savings_builder",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "a23e189b-4367-40b2-9a3a-1233df5325cf",
+      "success": true,
+      "error": null,
+      "latency": 0.00238800048828125,
+      "persona": "savings_builder",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "af734c45-f2f3-4f61-b370-0e9292f1da69",
+      "success": true,
+      "error": null,
+      "latency": 0.0020558834075927734,
+      "persona": "savings_builder",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "b69f68c3-e60f-4420-ac33-350c73b911d8",
+      "success": true,
+      "error": null,
+      "latency": 0.0018608570098876953,
+      "persona": "savings_builder",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "b6b4aaa5-39c4-4eed-a97f-8f1ed783b9d0",
+      "success": true,
+      "error": null,
+      "latency": 0.0018150806427001953,
+      "persona": "savings_builder",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "bdd640fb-0667-4ad1-9c80-317fa3b1799d",
+      "success": true,
+      "error": null,
+      "latency": 0.002372264862060547,
+      "persona": "savings_builder",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "c6e79a7b-f712-4813-8e01-009d8d59b363",
+      "success": true,
+      "error": null,
+      "latency": 0.0019459724426269531,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "c809a0b4-71a8-4189-965b-b785b8f985fc",
+      "success": true,
+      "error": null,
+      "latency": 0.001898050308227539,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "d1453eb7-8e59-4579-a4cf-d9b9050e1961",
+      "success": true,
+      "error": null,
+      "latency": 0.002112150192260742,
+      "persona": "balanced",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "d52d8f91-064f-4164-b947-2ea41a85fd69",
+      "success": true,
+      "error": null,
+      "latency": 0.002009868621826172,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "de0e1824-5a3c-4a65-9ceb-bf94f2f1feb0",
+      "success": true,
+      "error": null,
+      "latency": 0.0020911693572998047,
+      "persona": "balanced",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "ed86a0c9-7dea-4676-bf6f-b946e10d1490",
+      "success": true,
+      "error": null,
+      "latency": 0.002074003219604492,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "effb89b5-7565-438f-bd04-dd10300a1b1b",
+      "success": true,
+      "error": null,
+      "latency": 0.0017547607421875,
+      "persona": "savings_builder",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "f527ed6a-e3a2-42fd-ab7b-2f0d2a47452f",
+      "success": true,
+      "error": null,
+      "latency": 0.00168609619140625,
+      "persona": "balanced",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "ff2f2142-dc01-4a6b-ae0e-c269744d101f",
+      "success": true,
+      "error": null,
+      "latency": 0.001744985580444336,
+      "persona": "high_utilization",
+      "signal_count": 4,
+      "recommendation_count": 3
+    },
+    {
+      "user_id": "ffba47b9-50fd-4b74-9b27-737f463ba616",
+      "success": true,
+      "error": null,
+      "latency": 0.0017018318176269531,
+      "persona": "savings_builder",
+      "signal_count": 4,
+      "recommendation_count": 3
+    }
+  ]
+}

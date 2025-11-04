@@ -76,7 +76,7 @@ development_status:
 
   epic-6: backlog
   6-1-guardrails-implementation: done
-  6-2-evaluation-harness: ready-for-dev
+  6-2-evaluation-harness: review
   6-3-documentation-polish: ready-for-dev
   epic-6-retrospective: optional
 
