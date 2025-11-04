@@ -2,6 +2,7 @@
 
 from typing import List
 from pydantic import BaseModel, Field
+from spendsense.utils.guardrails import DISCLAIMER
 
 
 class EducationItemResponse(BaseModel):
@@ -78,3 +79,41 @@ class RecommendationResponse(BaseModel):
             persona=recommendation.persona,
             confidence=recommendation.confidence
         )
+
+
+class InsightsResponse(BaseModel):
+    """Insights response with recommendations and disclaimer"""
+    recommendations: List[RecommendationResponse] = Field(..., description="List of personalized recommendations")
+    disclaimer: str = Field(default=DISCLAIMER, description="Legal disclaimer for educational content")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "recommendations": [
+                        {
+                            "content": {
+                                "id": "credit-util-101",
+                                "title": "Understanding Credit Utilization: The 30% Rule",
+                                "summary": "Learn why keeping credit utilization below 30% is crucial for your credit score.",
+                                "body": "Credit utilization is one of the most important factors...",
+                                "cta": "Review Your Credit Cards",
+                                "source": "template",
+                                "relevance_score": 0.85
+                            },
+                            "rationale": {
+                                "persona_type": "high_utilization",
+                                "confidence": 0.95,
+                                "explanation": "You've been identified as a High Utilization user...",
+                                "key_signals": ["high_utilization_50", "interest_charges"]
+                            },
+                            "persona": "high_utilization",
+                            "confidence": 0.95
+                        }
+                    ],
+                    "disclaimer": DISCLAIMER
+                }
+            ]
+        }
+    }
+

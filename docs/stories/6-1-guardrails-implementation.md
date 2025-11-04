@@ -87,6 +87,8 @@ Successfully implemented all guardrails functionality:
    - Disclaimer contains all required terms
    - Integration test confirms no violations in generated recommendations
    - All imports work correctly, no runtime errors
+   - Blocking behavior tests verify ValueError raised on tone violations
+   - Consent enforcement tests verify 403 response for non-consented users
 
 ## File List
 
@@ -95,11 +97,12 @@ Successfully implemented all guardrails functionality:
 - spendsense-backend/src/spendsense/utils/guardrails.py
 - spendsense-backend/scripts/test_guardrails.py
 - spendsense-backend/scripts/test_insights_with_guardrails.py
+- spendsense-backend/scripts/test_guardrails_blocking.py
 
 **Modified:**
-- spendsense-backend/src/spendsense/generators/template.py (added import, tone checking)
+- spendsense-backend/src/spendsense/generators/template.py (added import, tone checking with ValueError on violations)
 - spendsense-backend/src/spendsense/schemas/insight.py (added InsightsResponse)
-- spendsense-backend/src/spendsense/routers/insights.py (updated response model)
+- spendsense-backend/src/spendsense/routers/insights.py (updated response model, added consent enforcement with 403 response)
 
 ## Change Log
 
@@ -108,6 +111,7 @@ Successfully implemented all guardrails functionality:
 | 2025-11-03 | Peter (SM) | Initial story creation |
 | 2025-11-04 | Claude (Dev) | Implemented guardrails with tone checking, consent verification, and disclaimer |
 | 2025-11-04 | Peter (via Code Review) | Senior Developer Review notes appended - APPROVED |
+| 2025-11-04 | Claude (Dev) | Production hardening: tone violations now block (raise ValueError), consent checking enforced in API (403 response) |
 
 ## Senior Developer Review (AI)
 

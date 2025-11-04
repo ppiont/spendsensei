@@ -14,6 +14,7 @@ from pathlib import Path
 
 from spendsense.generators.base import ContentGenerator, EducationItem, Rationale
 from spendsense.services.features import BehaviorSignals
+from spendsense.utils.guardrails import check_tone
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -301,6 +302,16 @@ class TemplateGenerator(ContentGenerator):
 
         # Generate explanation based on persona type
         explanation = self._generate_explanation(persona_type, signals, signal_tags)
+
+        # Apply tone checking guardrail - BLOCK on violations
+        is_valid, violations = check_tone(explanation)
+        if not is_valid:
+            error_msg = (
+                f"Tone guardrail violation: Content contains inappropriate language. "
+                f"Found {len(violations)} violations: {violations}"
+            )
+            logger.error(error_msg)
+            raise ValueError(error_msg)
 
         rationale = Rationale(
             persona_type=persona_type,

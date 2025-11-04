@@ -7,9 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from spendsense.database import get_db
 from spendsense.models.user import User
-from spendsense.schemas.insight import RecommendationResponse
+from spendsense.schemas.insight import RecommendationResponse, InsightsResponse
 from spendsense.services.recommendations import generate_recommendations
 from spendsense.generators.template import TemplateGenerator
+from spendsense.utils.guardrails import check_consent
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -21,7 +22,7 @@ generator = TemplateGenerator()
 router = APIRouter(prefix="/insights", tags=["insights"])
 
 
-@router.get("/{user_id}", response_model=list[RecommendationResponse])
+@router.get("/{user_id}", response_model=InsightsResponse)
 async def get_user_insights(
     user_id: str,
     window: int = Query(30, ge=1, le=365, description="Analysis window in days (1-365, default 30)"),
@@ -41,7 +42,7 @@ async def get_user_insights(
         db: Database session
 
     Returns:
-        list[RecommendationResponse]: List of personalized recommendations (usually 3)
+        InsightsResponse: Personalized recommendations with disclaimer
 
     Raises:
         HTTPException: 404 if user not found
@@ -60,6 +61,14 @@ async def get_user_insights(
                 detail=f"User {user_id} not found"
             )
 
+        # Check user consent before generating recommendations
+        if not check_consent(user.consent):
+            logger.warning(f"User {user_id} has not provided consent for recommendations")
+            raise HTTPException(
+                status_code=403,
+                detail="User consent required. Please accept terms before accessing insights."
+            )
+
         logger.info(f"Generating insights for user {user_id} with {window}-day window")
 
         # Generate recommendations using the complete pipeline
@@ -75,11 +84,13 @@ async def get_user_insights(
             f"(persona: {recommendations[0].persona if recommendations else 'none'})"
         )
 
-        # Convert to API response schemas
-        return [
+        # Convert to API response schemas with disclaimer
+        recommendation_responses = [
             RecommendationResponse.from_recommendation(rec)
             for rec in recommendations
         ]
+
+        return InsightsResponse(recommendations=recommendation_responses)
 
     except HTTPException:
         raise
