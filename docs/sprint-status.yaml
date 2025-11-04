@@ -63,7 +63,7 @@ development_status:
   4-1-api-schemas-configuration: done
   4-2-user-consent-endpoints: done
   4-3-account-transaction-endpoints: review
-  4-4-insights-endpoint: drafted
+  4-4-insights-endpoint: review
   epic-4-retrospective: optional
 
   epic-5: backlog
