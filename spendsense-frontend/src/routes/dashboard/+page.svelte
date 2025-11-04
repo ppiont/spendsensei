@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { api } from '$lib/api/client';
-	import { formatCurrency } from '$lib/types';
+	import { formatCurrency, formatCategory } from '$lib/types';
 	import type { Account, Transaction } from '$lib/types';
 
 	// Svelte 5 runes for reactive state
@@ -167,7 +167,7 @@
 								<div class="mb-3 sm:mb-0">
 									<h3 class="text-base font-medium text-foreground">{account.name}</h3>
 									<p class="text-sm text-muted-foreground">
-										{account.subtype} •••• {account.mask}
+										{formatCategory(account.subtype)} •••• {account.mask}
 									</p>
 								</div>
 								<div class="text-left sm:text-right">
@@ -205,7 +205,7 @@
 										{txn.merchant_name || 'Unknown'}
 									</p>
 									<p class="text-sm text-muted-foreground">
-										{txn.category}
+										{formatCategory(txn.category)}
 									</p>
 									<p class="text-xs text-muted-foreground">
 										{new Date(txn.date).toLocaleDateString()}

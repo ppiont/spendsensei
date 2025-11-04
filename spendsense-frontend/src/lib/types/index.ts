@@ -92,3 +92,12 @@ export function formatCurrency(cents: number): string {
     currency: 'USD'
   }).format(centsToDollars(cents));
 }
+
+// Helper function to format category/subtype strings (snake_case → Title Case)
+export function formatCategory(category: string): string {
+  return category
+    .toLowerCase()
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}

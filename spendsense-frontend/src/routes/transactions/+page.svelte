@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { api } from '$lib/api/client';
-	import { formatCurrency } from '$lib/types';
+	import { formatCurrency, formatCategory } from '$lib/types';
 	import type { Transaction } from '$lib/types';
 
 	// Svelte 5 runes for reactive state
@@ -180,7 +180,7 @@
 						>
 							{#each categories as category}
 								<option value={category}>
-									{category === 'all' ? 'All Categories' : category.replace(/_/g, ' ')}
+									{category === 'all' ? 'All Categories' : formatCategory(category)}
 								</option>
 							{/each}
 						</select>
@@ -201,7 +201,7 @@
 							{#each categoryBreakdown.slice(0, 5) as { category, amount }}
 								<div class="space-y-2">
 									<div class="flex justify-between text-sm">
-										<span class="font-medium text-foreground">{category.replace(/_/g, ' ')}</span>
+										<span class="font-medium text-foreground">{formatCategory(category)}</span>
 										<span class="text-muted-foreground">{formatCurrency(amount)}</span>
 									</div>
 									<div class="h-2 bg-muted rounded-full overflow-hidden">
@@ -250,7 +250,7 @@
 											{txn.merchant_name || 'Unknown'}
 										</td>
 										<td class="px-4 py-3 text-sm text-muted-foreground">
-											{txn.category.replace(/_/g, ' ')}
+											{formatCategory(txn.category)}
 										</td>
 										<td
 											class="px-4 py-3 text-sm font-semibold text-right {txn.amount < 0
