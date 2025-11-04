@@ -22,7 +22,16 @@
       "Bash(python scripts/test_savings_analysis.py:*)",
       "Bash(python scripts/test_income_analysis.py:*)",
       "Bash(git log:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(chmod:*)",
+      "Bash(if [ -f \"pyproject.toml\" ])",
+      "Bash(then cat pyproject.toml)",
+      "Bash(elif [ -f \"requirements.txt\" ])",
+      "Bash(then cat requirements.txt)",
+      "Bash(fi)",
+      "Bash(pip install:*)",
+      "SlashCommand(/bmad:bmm:agents:dev)",
+      "Bash(timeout 5 uv run:*)"
     ],
     "deny": [],
     "ask": []
