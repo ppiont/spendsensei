@@ -1,0 +1,26 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>7</epicId>
+    <storyId>2</storyId>
+    <title>Dashboard Page Redesign</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-04</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/7-2-dashboard-page-redesign.md</sourceStoryPath>
+  </metadata>
+  <story>
+    <asA>user</asA>
+    <iWant>a calm, data-focused dashboard with prominent KPIs and clear recommendations</iWant>
+    <soThat>I can understand my financial health at a glance without feeling overwhelmed</soThat>
+    <tasks>Implement Direction 6 layout (persona badge + metrics grid + recommendations), 5 KPI cards, wire to API, format values, apply generous spacing (32px padding, 24px gaps), responsive behavior</tasks>
+  </story>
+  <acceptanceCriteria>10 criteria covering layout structure, KPI cards (Net Worth featured, 4 supporting), API integration, formatting, spacing, persona badge, recommendations, shadows, responsive design</acceptanceCriteria>
+  <artifacts>
+    <docs><artifact><path>docs/ux-design-specification.md</path><title>UX Spec</title><section>Direction 6 Layout</section><snippet>Dashboard Metrics layout with KPI grid, featured KPI spans 2 columns, 3-column recommendation grid</snippet></artifact><artifact><path>docs/epics.md</path><title>Epic 7</title><section>Story 7.2 (lines 1579-1634)</section><snippet>Direction 6 implementation, 5 KPIs, API wiring, formatCurrency helper, generous spacing, responsive breakpoints</snippet></artifact></docs>
+    <code><artifact><path>spendsense-frontend/src/routes/dashboard/+page.svelte</path><kind>route</kind><symbol>existing dashboard</symbol><lines>N/A</lines><reason>Replace with Direction 6 layout using KpiCard and RecommendationCard components from 7.1</reason></artifact><artifact><path>spendsense-frontend/src/lib/api/client.ts</path><kind>api_client</kind><symbol>fetchAccounts, fetchInsights</symbol><lines>N/A</lines><reason>Already implemented API client for fetching account and insights data</reason></artifact></code>
+    <dependencies><npm><package name="shadcn-svelte">UI components</package></npm></dependencies>
+  </artifacts>
+  <constraints><constraint type="design"><rule>Direction 6 layout: top bar with persona badge, 4-column metrics grid (featured spans 2), 3-column recommendations. 32px card padding, 24px gaps, 48px section margins</rule><source>docs/ux-design-specification.md</source></constraint><constraint type="responsive"><rule>Desktop 1024px+: 4-column grid. Tablet 768-1023px: 2-column. Mobile &lt;768px: 1-column stack</rule><source>docs/epics.md Story 7.2 AC #10</source></constraint></constraints>
+  <interfaces><interface><name>KpiCard from 7.1</name><kind>component</kind><signature>Props: label, value, change, variant</signature><path>spendsense-frontend/src/lib/components/KpiCard.svelte</path><description>Use for 5 KPI displays. Featured variant for Net Worth (spans 2 columns with grid-column: span 2)</description></interface><interface><name>fetchAccounts API</name><kind>api_function</kind><signature>fetchAccounts(userId): Promise&lt;Account[]&gt;</signature><path>spendsense-frontend/src/lib/api/client.ts</path><description>Fetch user accounts to calculate Net Worth, savings rate, credit health, emergency fund, subscriptions</description></interface></interfaces>
+  <tests><standards>Visual and functional testing: Verify Direction 6 layout renders, 5 KPI cards display with correct data, featured KPI spans 2 columns, persona badge shows, recommendations display, responsive behavior at 3 breakpoints, generous spacing visible</standards><locations><location type="page">spendsense-frontend/src/routes/dashboard/+page.svelte</location></locations><ideas><test id="AC1-3" criteria="Layout and KPIs">Verify Direction 6 structure visible. Check 5 KPI cards render (Net Worth featured, 4 supporting). Confirm API data wires correctly.</test><test id="AC4-7" criteria="Formatting and styling">Test formatCurrency displays $X,XXX.XX. Verify 32px padding, 24px gaps. Check shadows: subtle at rest, soft on hover with 2px lift.</test><test id="AC8-10" criteria="Persona and responsive">Test persona badge displays with gradient avatar. Verify 3 recommendation cards show. Test responsive: 4col → 2col → 1col at breakpoints.</test></ideas></tests>
+</story-context>

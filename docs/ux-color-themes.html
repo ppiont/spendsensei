@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpendSense Color Theme Explorer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+            background: #f7fafc;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .header {
+            max-width: 1400px;
+            margin: 0 auto 3rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.125rem;
+            color: #2d3748;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(650px, 1fr));
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .theme-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+        }
+
+        .theme-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .theme-name {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .theme-description {
+            font-size: 0.95rem;
+            color: #4a5568;
+            margin-bottom: 0.75rem;
+        }
+
+        .theme-personality {
+            font-size: 0.875rem;
+            color: #718096;
+            font-style: italic;
+        }
+
+        /* Color Swatches */
+        .color-palette {
+            margin-bottom: 2rem;
+        }
+
+        .palette-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .palette-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .swatch-row {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .swatch {
+            flex: 1;
+            min-width: 80px;
+        }
+
+        .swatch-color {
+            height: 60px;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .swatch-label {
+            font-size: 0.75rem;
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        .swatch-hex {
+            font-size: 0.7rem;
+            color: #718096;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Component Examples */
+        .components {
+            margin-top: 2rem;
+        }
+
+        .component-section {
+            margin-bottom: 2rem;
+        }
+
+        .component-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Buttons */
+        .button-row {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.75rem;
+        }
+
+        .btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 6px;
+            border: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Cards */
+        .card-examples {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .card {
+            padding: 1.25rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-content {
+            font-size: 0.875rem;
+            color: #4a5568;
+        }
+
+        .card-metric {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-label {
+            font-size: 0.75rem;
+            color: #718096;
+            margin-bottom: 0.75rem;
+        }
+
+        .card-progress {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.75rem;
+        }
+
+        .card-progress-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* Inputs */
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .input {
+            width: 100%;
+            padding: 0.625rem 0.75rem;
+            border-radius: 6px;
+            border: 1px solid #cbd5e0;
+            font-size: 0.875rem;
+            transition: all 0.15s ease;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: start;
+            gap: 0.75rem;
+        }
+
+        .alert-icon {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            font-weight: bold;
+        }
+
+        /* Comparison Mode */
+        .compare-toggle {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            z-index: 100;
+            border: 2px solid #2C5282;
+            color: #2C5282;
+        }
+
+        .compare-toggle:hover {
+            background: #2C5282;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .theme-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .compare-toggle {
+                top: auto;
+                bottom: 2rem;
+                right: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 SpendSense Color Theme Explorer</h1>
+        <p>Explore 4 carefully crafted theme variations based on fintech best practices. Each uses the researched color palette optimized for trust, calm, and clarity.</p>
+    </div>
+
+    <div class="theme-grid">
+        <!-- Theme 1: Trust Blue (Primary) -->
+        <div class="theme-card">
+            <div class="theme-header">
+                <h2 class="theme-name" style="color: #2C5282;">1. Trust Blue</h2>
+                <p class="theme-description">Deep blue dominant with sage green accents. Professional, trustworthy, and calming.</p>
+                <p class="theme-personality"><strong>Best for:</strong> Financial dashboards, data-heavy views, conveying security and stability</p>
+            </div>
+
+            <div class="color-palette">
+                <div class="palette-section">
+                    <div class="palette-label">Primary Colors</div>
+                    <div class="swatch-row">
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #1A365D;"></div>
+                            <div class="swatch-label">Deep Blue Dark</div>
+                            <div class="swatch-hex">#1A365D</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #2C5282;"></div>
+                            <div class="swatch-label">Deep Blue</div>
+                            <div class="swatch-hex">#2C5282</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #38A169;"></div>
+                            <div class="swatch-label">Sage Green</div>
+                            <div class="swatch-hex">#38A169</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Accent Colors</div>
+                    <div class="swatch-row">
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #F56565;"></div>
+                            <div class="swatch-label">Warm Coral</div>
+                            <div class="swatch-hex">#F56565</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #ECC94B;"></div>
+                            <div class="swatch-label">Golden Yellow</div>
+                            <div class="swatch-hex">#ECC94B</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Neutrals</div>
+                    <div class="swatch-row">
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #FFFFFF; border: 2px solid #e2e8f0;"></div>
+                            <div class="swatch-label">White</div>
+                            <div class="swatch-hex">#FFFFFF</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #F7FAFC;"></div>
+                            <div class="swatch-label">Soft Gray</div>
+                            <div class="swatch-hex">#F7FAFC</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #E2E8F0;"></div>
+                            <div class="swatch-label">Light Gray</div>
+                            <div class="swatch-hex">#E2E8F0</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #2D3748;"></div>
+                            <div class="swatch-label">Charcoal</div>
+                            <div class="swatch-hex">#2D3748</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="components">
+                <div class="component-section">
+                    <div class="component-title">Buttons</div>
+                    <div class="button-row">
+                        <button class="btn" style="background: #2C5282; color: white;">Primary Action</button>
+                        <button class="btn" style="background: #38A169; color: white;">Success</button>
+                        <button class="btn" style="background: white; color: #2C5282; border: 2px solid #2C5282;">Secondary</button>
+                        <button class="btn" style="background: #F56565; color: white;">Alert</button>
+                    </div>
+                </div>
+
+                <div class="component-section">
+                    <div class="component-title">KPI Cards</div>
+                    <div class="card-examples">
+                        <div class="card" style="background: white; border-color: #E2E8F0;">
+                            <div class="card-title" style="color: #2D3748;">Credit Utilization</div>
+                            <div class="card-metric" style="color: #2C5282;">68%</div>
+                            <div class="card-label">$3,400 of $5,000 limit</div>
+                            <div class="card-progress" style="background: #E2E8F0;">
+                                <div class="card-progress-bar" style="width: 68%; background: #2C5282;"></div>
+                            </div>
+                        </div>
+
+                        <div class="card" style="background: #F0FFF4; border-color: #38A169;">
+                            <div class="card-title" style="color: #2D3748;">Savings Growth</div>
+                            <div class="card-metric" style="color: #38A169;">+$240</div>
+                            <div class="card-label">+2.1% this month</div>
+                            <div class="card-progress" style="background: #C6F6D5;">
+                                <div class="card-progress-bar" style="width: 75%; background: #38A169;"></div>
+                            </div>
+                        </div>
+
+                        <div class="card" style="background: #FFF5F5; border-color: #F56565;">
+                            <div class="card-title" style="color: #2D3748;">Payment Due Soon</div>
+                            <div class="card-metric" style="color: #F56565;">3 days</div>
+                            <div class="card-label">Minimum payment: $85</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="component-section">
+                    <div class="component-title">Alerts</div>
+                    <div class="alert" style="background: #EBF8FF; border-left: 4px solid #2C5282;">
+                        <div class="alert-icon" style="color: #2C5282;">ℹ️</div>
+                        <div>Your persona has been updated based on recent activity.</div>
+                    </div>
+                    <div class="alert" style="background: #F0FFF4; border-left: 4px solid #38A169;">
+                        <div class="alert-icon" style="color: #38A169;">✓</div>
+                        <div>Great job! You've saved $240 this month.</div>
+                    </div>
+                    <div class="alert" style="background: #FFF5F5; border-left: 4px solid #F56565;">
+                        <div class="alert-icon" style="color: #F56565;">⚠</div>
+                        <div>High utilization detected. Consider reducing balance below 30%.</div>
+                    </div>
+                </div>
+
+                <div class="component-section">
+                    <div class="component-title">Form Input</div>
+                    <div class="input-group">
+                        <label class="input-label" style="color: #2D3748;">Email Address</label>
+                        <input type="email" class="input" placeholder="you@example.com" style="--primary: #2C5282; --primary-light: rgba(44, 82, 130, 0.1);">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme 2: Growth Green -->
+        <div class="theme-card">
+            <div class="theme-header">
+                <h2 class="theme-name" style="color: #38A169;">2. Growth Green</h2>
+                <p class="theme-description">Sage green forward with blue supporting. Optimistic, growth-oriented, and encouraging.</p>
+                <p class="theme-personality"><strong>Best for:</strong> Savings-focused features, positive progress tracking, motivational content</p>
+            </div>
+
+            <div class="color-palette">
+                <div class="palette-section">
+                    <div class="palette-label">Primary Colors</div>
+                    <div class="swatch-row">
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #38A169;"></div>
+                            <div class="swatch-label">Sage Green</div>
+                            <div class="swatch-hex">#38A169</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #48BB78;"></div>
+                            <div class="swatch-label">Sage Green Light</div>
+                            <div class="swatch-hex">#48BB78</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #2C5282;"></div>
+                            <div class="swatch-label">Deep Blue</div>
+                            <div class="swatch-hex">#2C5282</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Accent Colors</div>
+                    <div class="swatch-row">
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #F56565;"></div>
+                            <div class="swatch-label">Warm Coral</div>
+                            <div class="swatch-hex">#F56565</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #ECC94B;"></div>
+                            <div class="swatch-label">Golden Yellow</div>
+                            <div class="swatch-hex">#ECC94B</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Neutrals</div>
+                    <div class="swatch-row">
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #FFFFFF; border: 2px solid #e2e8f0;"></div>
+                            <div class="swatch-label">White</div>
+                            <div class="swatch-hex">#FFFFFF</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #F7FAFC;"></div>
+                            <div class="swatch-label">Soft Gray</div>
+                            <div class="swatch-hex">#F7FAFC</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #E2E8F0;"></div>
+                            <div class="swatch-label">Light Gray</div>
+                            <div class="swatch-hex">#E2E8F0</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #2D3748;"></div>
+                            <div class="swatch-label">Charcoal</div>
+                            <div class="swatch-hex">#2D3748</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="components">
+                <div class="component-section">
+                    <div class="component-title">Buttons</div>
+                    <div class="button-row">
+                        <button class="btn" style="background: #38A169; color: white;">Primary Action</button>
+                        <button class="btn" style="background: #2C5282; color: white;">Secondary</button>
+                        <button class="btn" style="background: white; color: #38A169; border: 2px solid #38A169;">Outline</button>
+                        <button class="btn" style="background: #F56565; color: white;">Alert</button>
+                    </div>
+                </div>
+
+                <div class="component-section">
+                    <div class="component-title">KPI Cards</div>
+                    <div class="card-examples">
+                        <div class="card" style="background: white; border-color: #E2E8F0;">
+                            <div class="card-title" style="color: #2D3748;">Monthly Savings</div>
+                            <div class="card-metric" style="color: #38A169;">$240</div>
+                            <div class="card-label">+12% from last month</div>
+                            <div class="card-progress" style="background: #E2E8F0;">
+                                <div class="card-progress-bar" style="width: 80%; background: #38A169;"></div>
+                            </div>
+                        </div>
+
+                        <div class="card" style="background: #EBF8FF; border-color: #2C5282;">
+                            <div class="card-title" style="color: #2D3748;">Emergency Fund</div>
+                            <div class="card-metric" style="color: #2C5282;">$2,400</div>
+                            <div class="card-label">3 months coverage</div>
+                            <div class="card-progress" style="background: #BEE3F8;">
+                                <div class="card-progress-bar" style="width: 60%; background: #2C5282;"></div>
+                            </div>
+                        </div>
+
+                        <div class="card" style="background: #FFF5F5; border-color: #F56565;">
+                            <div class="card-title" style="color: #2D3748;">Subscription Cost</div>
+                            <div class="card-metric" style="color: #F56565;">$87/mo</div>
+                            <div class="card-label">7 active subscriptions</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="component-section">
+                    <div class="component-title">Alerts</div>
+                    <div class="alert" style="background: #EBF8FF; border-left: 4px solid #2C5282;">
+                        <div class="alert-icon" style="color: #2C5282;">ℹ️</div>
+                        <div>We noticed you're building an emergency fund. Keep it up!</div>
+                    </div>
+                    <div class="alert" style="background: #F0FFF4; border-left: 4px solid #38A169;">
+                        <div class="alert-icon" style="color: #38A169;">✓</div>
+                        <div>Milestone reached: 3 months of emergency savings!</div>
+                    </div>
+                    <div class="alert" style="background: #FFFAF0; border-left: 4px solid #ECC94B;">
+                        <div class="alert-icon" style="color: #D69E2E;">💡</div>
+                        <div>Tip: Automate your savings to make it effortless.</div>
+                    </div>
+                </div>
+
+                <div class="component-section">
+                    <div class="component-title">Form Input</div>
+                    <div class="input-group">
+                        <label class="input-label" style="color: #2D3748;">Savings Goal</label>
+                        <input type="text" class="input" placeholder="Enter amount" style="--primary: #38A169; --primary-light: rgba(56, 161, 105, 0.1);">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme 3: Balanced Calm (RECOMMENDED) -->
+        <div class="theme-card" style="border: 3px solid #2C5282;">
+            <div class="theme-header">
+                <h2 class="theme-name" style="color: #2C5282;">3. Balanced Calm ⭐ RECOMMENDED</h2>
+                <p class="theme-description">Equal blue/green balance with generous neutral space. Professional yet approachable, calm and focused.</p>
+                <p class="theme-personality"><strong>Best for:</strong> Complete platform, balanced tone, Stripe/Linear aesthetic, universal appeal</p>
+            </div>
+
+            <div class="color-palette">
+                <div class="palette-section">
+                    <div class="palette-label">Primary Colors</div>
+                    <div class="swatch-row">
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #2C5282;"></div>
+                            <div class="swatch-label">Deep Blue</div>
+                            <div class="swatch-hex">#2C5282</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #38A169;"></div>
+                            <div class="swatch-label">Sage Green</div>
+                            <div class="swatch-hex">#38A169</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Accent Colors</div>
+                    <div class="swatch-row">
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #F56565;"></div>
+                            <div class="swatch-label">Warm Coral</div>
+                            <div class="swatch-hex">#F56565</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #ECC94B;"></div>
+                            <div class="swatch-label">Golden Yellow</div>
+                            <div class="swatch-hex">#ECC94B</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Neutrals (Generous Use - 30%+)</div>
+                    <div class="swatch-row">
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #FFFFFF; border: 2px solid #e2e8f0;"></div>
+                            <div class="swatch-label">White</div>
+                            <div class="swatch-hex">#FFFFFF</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #F7FAFC;"></div>
+                            <div class="swatch-label">Soft Gray</div>
+                            <div class="swatch-hex">#F7FAFC</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #E2E8F0;"></div>
+                            <div class="swatch-label">Light Gray</div>
+                            <div class="swatch-hex">#E2E8F0</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #CBD5E0;"></div>
+                            <div class="swatch-label">Med Gray</div>
+                            <div class="swatch-hex">#CBD5E0</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #2D3748;"></div>
+                            <div class="swatch-label">Charcoal</div>
+                            <div class="swatch-hex">#2D3748</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="components">
+                <div class="component-section">
+                    <div class="component-title">Buttons</div>
+                    <div class="button-row">
+                        <button class="btn" style="background: #2C5282; color: white;">Primary</button>
+                        <button class="btn" style="background: #38A169; color: white;">Success</button>
+                        <button class="btn" style="background: #F7FAFC; color: #2D3748; border: 1px solid #CBD5E0;">Neutral</button>
+                        <button class="btn" style="background: #F56565; color: white;">Warning</button>
+                    </div>
+                </div>
+
+                <div class="component-section">
+                    <div class="component-title">KPI Cards (with generous spacing)</div>
+                    <div class="card-examples">
+                        <div class="card" style="background: #FFFFFF; border-color: #E2E8F0; padding: 1.5rem;">
+                            <div class="card-title" style="color: #2D3748;">Your Persona</div>
+                            <div class="card-metric" style="color: #2C5282; font-size: 1.5rem;">Savings Builder</div>
+                            <div class="card-label" style="margin-top: 0.5rem;">Based on your recent activity</div>
+                        </div>
+
+                        <div class="card" style="background: #F7FAFC; border-color: #E2E8F0; padding: 1.5rem;">
+                            <div class="card-title" style="color: #2D3748;">Net Worth</div>
+                            <div class="card-metric" style="color: #2D3748;">$12,847</div>
+                            <div class="card-label">↑ +$240 this month</div>
+                            <div style="margin-top: 1rem; padding: 0.75rem; background: white; border-radius: 6px; font-size: 0.8rem; color: #4a5568;">
+                                <strong style="color: #38A169;">✓ On track</strong> to reach your $15,000 goal
+                            </div>
+                        </div>
+
+                        <div class="card" style="background: #FFFFFF; border-color: #E2E8F0; border-left: 4px solid #2C5282; padding: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
+                                <div class="card-title" style="color: #2D3748;">Recommendation</div>
+                                <span style="font-size: 0.75rem; background: #EBF8FF; color: #2C5282; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 600;">EDUCATION</span>
+                            </div>
+                            <div style="font-size: 0.95rem; color: #2D3748; margin-bottom: 0.5rem;">Consider automating your savings</div>
+                            <div style="font-size: 0.8rem; color: #718096; background: #F7FAFC; padding: 0.75rem; border-radius: 6px; margin-top: 0.75rem;">
+                                <strong style="color: #2D3748;">Because:</strong> You're saving $240/month consistently. Automation makes it effortless.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="component-section">
+                    <div class="component-title">Alerts</div>
+                    <div class="alert" style="background: #F7FAFC; border-left: 4px solid #CBD5E0;">
+                        <div class="alert-icon" style="color: #4a5568;">ℹ️</div>
+                        <div style="color: #2D3748;">Your data is encrypted and never shared without permission.</div>
+                    </div>
+                    <div class="alert" style="background: #F0FFF4; border-left: 4px solid #38A169;">
+                        <div class="alert-icon" style="color: #38A169;">✓</div>
+                        <div style="color: #2D3748;">You've completed your financial profile.</div>
+                    </div>
+                    <div class="alert" style="background: #FFFAF0; border-left: 4px solid #ECC94B;">
+                        <div class="alert-icon" style="color: #D69E2E;">💡</div>
+                        <div style="color: #2D3748;">Tip: Review your subscriptions monthly to avoid unwanted charges.</div>
+                    </div>
+                </div>
+
+                <div class="component-section">
+                    <div class="component-title">Form Input</div>
+                    <div class="input-group">
+                        <label class="input-label" style="color: #2D3748;">Monthly Budget Goal</label>
+                        <input type="text" class="input" placeholder="$2,500" style="--primary: #2C5282; --primary-light: rgba(44, 82, 130, 0.1);">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme 4: Minimal Gray -->
+        <div class="theme-card">
+            <div class="theme-header">
+                <h2 class="theme-name" style="color: #2D3748;">4. Minimal Gray</h2>
+                <p class="theme-description">Neutrals dominant with purposeful blue/green accents. Ultra-clean, sophisticated, and extremely calm.</p>
+                <p class="theme-personality"><strong>Best for:</strong> Premium feel, data-focused views, minimalist aesthetic, power users</p>
+            </div>
+
+            <div class="color-palette">
+                <div class="palette-section">
+                    <div class="palette-label">Primary Colors (Accent Use Only)</div>
+                    <div class="swatch-row">
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #2C5282;"></div>
+                            <div class="swatch-label">Deep Blue</div>
+                            <div class="swatch-hex">#2C5282</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #38A169;"></div>
+                            <div class="swatch-label">Sage Green</div>
+                            <div class="swatch-hex">#38A169</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Accent Colors (Sparingly)</div>
+                    <div class="swatch-row">
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #F56565;"></div>
+                            <div class="swatch-label">Warm Coral</div>
+                            <div class="swatch-hex">#F56565</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #ECC94B;"></div>
+                            <div class="swatch-label">Golden Yellow</div>
+                            <div class="swatch-hex">#ECC94B</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Neutrals (Primary Palette - 50%+)</div>
+                    <div class="swatch-row">
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #FFFFFF; border: 2px solid #e2e8f0;"></div>
+                            <div class="swatch-label">White</div>
+                            <div class="swatch-hex">#FFFFFF</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #F7FAFC;"></div>
+                            <div class="swatch-label">Soft Gray</div>
+                            <div class="swatch-hex">#F7FAFC</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #E2E8F0;"></div>
+                            <div class="swatch-label">Light Gray</div>
+                            <div class="swatch-hex">#E2E8F0</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #CBD5E0;"></div>
+                            <div class="swatch-label">Med Gray</div>
+                            <div class="swatch-hex">#CBD5E0</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #4A5568;"></div>
+                            <div class="swatch-label">Dark Gray</div>
+                            <div class="swatch-hex">#4A5568</div>
+                        </div>
+                        <div class="swatch">
+                            <div class="swatch-color" style="background: #2D3748;"></div>
+                            <div class="swatch-label">Charcoal</div>
+                            <div class="swatch-hex">#2D3748</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="components">
+                <div class="component-section">
+                    <div class="component-title">Buttons</div>
+                    <div class="button-row">
+                        <button class="btn" style="background: #2D3748; color: white;">Primary</button>
+                        <button class="btn" style="background: white; color: #2D3748; border: 2px solid #2D3748;">Secondary</button>
+                        <button class="btn" style="background: #F7FAFC; color: #4A5568; border: 1px solid #CBD5E0;">Tertiary</button>
+                    </div>
+                </div>
+
+                <div class="component-section">
+                    <div class="component-title">KPI Cards (Maximum white space)</div>
+                    <div class="card-examples">
+                        <div class="card" style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 2rem;">
+                            <div class="card-label" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #718096; margin-bottom: 0.75rem;">Total Balance</div>
+                            <div class="card-metric" style="color: #2D3748; font-size: 2.25rem;">$12,847</div>
+                            <div style="margin-top: 1rem; font-size: 0.8rem; color: #4a5568;">
+                                <span style="color: #38A169;">↑ $240</span> this month
+                            </div>
+                        </div>
+
+                        <div class="card" style="background: #F7FAFC; border: 1px solid #E2E8F0; padding: 2rem;">
+                            <div class="card-label" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #718096; margin-bottom: 0.75rem;">Savings Rate</div>
+                            <div class="card-metric" style="color: #2D3748; font-size: 2.25rem;">15%</div>
+                            <div class="card-progress" style="background: #E2E8F0; margin-top: 1.25rem;">
+                                <div class="card-progress-bar" style="width: 15%; background: #4A5568;"></div>
+                            </div>
+                        </div>
+
+                        <div class="card" style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 2rem;">
+                            <div class="card-label" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #718096; margin-bottom: 0.75rem;">Recommendation</div>
+                            <div style="font-size: 0.95rem; color: #2D3748; line-height: 1.6; margin-bottom: 1rem;">Optimize your emergency fund allocation</div>
+                            <div style="font-size: 0.75rem; color: #718096; padding-top: 1rem; border-top: 1px solid #E2E8F0;">
+                                Based on 3 months coverage analysis
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="component-section">
+                    <div class="component-title">Alerts</div>
+                    <div class="alert" style="background: #F7FAFC; border: 1px solid #CBD5E0; border-left: 3px solid #4A5568;">
+                        <div style="color: #2D3748; font-size: 0.875rem;">Your profile has been updated successfully.</div>
+                    </div>
+                    <div class="alert" style="background: #F7FAFC; border: 1px solid #CBD5E0; border-left: 3px solid #38A169;">
+                        <div style="color: #2D3748; font-size: 0.875rem;"><strong style="color: #38A169;">Milestone:</strong> 3 months of consistent saving.</div>
+                    </div>
+                    <div class="alert" style="background: #F7FAFC; border: 1px solid #CBD5E0; border-left: 3px solid #F56565;">
+                        <div style="color: #2D3748; font-size: 0.875rem;"><strong style="color: #F56565;">Attention:</strong> Payment due in 3 days.</div>
+                    </div>
+                </div>
+
+                <div class="component-section">
+                    <div class="component-title">Form Input</div>
+                    <div class="input-group">
+                        <label class="input-label" style="color: #4A5568; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.1em;">Account Name</label>
+                        <input type="text" class="input" placeholder="Primary Checking" style="--primary: #2D3748; --primary-light: rgba(45, 55, 72, 0.05); background: #F7FAFC;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="compare-toggle" onclick="alert('Comparison mode: Open this file in multiple browser tabs to compare themes side-by-side!')">
+        💡 Compare Themes
+    </button>
+
+    <div style="max-width: 1400px; margin: 3rem auto; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.07);">
+        <h3 style="font-size: 1.5rem; color: #2D3748; margin-bottom: 1rem;">🎯 Which Theme Feels Right?</h3>
+        <p style="color: #4a5568; margin-bottom: 1.5rem;">Each theme uses the same research-backed color palette, but with different emphasis:</p>
+        <ul style="list-style: none; padding: 0; color: #2D3748; line-height: 1.8;">
+            <li><strong style="color: #2C5282;">Theme 1 (Trust Blue):</strong> Best for financial dashboards where security and professionalism are paramount</li>
+            <li><strong style="color: #38A169;">Theme 2 (Growth Green):</strong> Best for savings-focused features and motivational content</li>
+            <li><strong style="color: #2C5282;">Theme 3 (Balanced Calm) ⭐:</strong> Best all-around choice - professional yet approachable, matches Linear/Stripe aesthetic</li>
+            <li><strong style="color: #4A5568;">Theme 4 (Minimal Gray):</strong> Best for sophisticated, data-focused views with maximum calm</li>
+        </ul>
+        <p style="margin-top: 1.5rem; padding: 1rem; background: #F7FAFC; border-left: 4px solid #2C5282; color: #2D3748; border-radius: 4px;">
+            <strong>Recommendation:</strong> Theme 3 (Balanced Calm) provides the best foundation for SpendSense. It balances trust (blue) with growth (green), uses generous white space for calm, and matches your Linear/Stripe inspiration perfectly.
+        </p>
+    </div>
+</body>
+</html>

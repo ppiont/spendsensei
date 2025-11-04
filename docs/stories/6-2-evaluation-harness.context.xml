@@ -1,0 +1,336 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>6</epicId>
+    <storyId>2</storyId>
+    <title>Evaluation Harness</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-04</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/6-2-evaluation-harness.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>to measure system performance against PRD requirements</iWant>
+    <soThat>I can verify quality and identify issues</soThat>
+    <tasks>
+- [ ] Create scripts/evaluate.py
+- [ ] Implement coverage measurement
+- [ ] Implement explainability measurement
+- [ ] Implement latency measurement
+- [ ] Run against all users
+- [ ] Generate metrics report
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+1. Create evaluation script `scripts/evaluate.py`
+2. Measure Coverage (% users with persona + ≥3 signals)
+3. Measure Explainability (% recommendations with rationales)
+4. Measure Latency (average recommendation generation time)
+5. Measure Auditability (% with complete decision trace)
+6. Run evaluation against all synthetic users
+7. Generate metrics JSON file
+8. Calculate summary statistics
+9. Print results to console
+10. Verify meets targets: 100% coverage, 100% explainability, <5s latency
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <!-- PRD - Success Criteria -->
+      <artifact>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Success Criteria (Table)</section>
+        <snippet>Coverage: 100% users with persona + ≥3 behaviors. Explainability: 100% recommendations with rationales. Latency: &lt;5s to generate recommendations. Auditability: 100% with decision trace. Measured via evaluation harness in scripts/evaluate.py.</snippet>
+      </artifact>
+
+      <!-- Epic Breakdown - Story 6.2 Details -->
+      <artifact>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Story 6.2: Evaluation Harness (lines 950-980)</section>
+        <snippet>Create scripts/evaluate.py to measure Coverage (% users with persona + ≥3 signals), Explainability (% with rationales), Latency (P50/P95/P99), Auditability (% with complete trace). Run against all synthetic users, output to data/evaluation_results.json.</snippet>
+      </artifact>
+
+      <!-- Architecture - Performance Targets -->
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Performance Considerations</section>
+        <snippet>Target &lt;5s for recommendation generation. Expected performance: feature computation ~100-200ms, persona assignment ~10ms, content generation ~1ms, total &lt;500ms per user for 50-100 users.</snippet>
+      </artifact>
+    </docs>
+
+    <code>
+      <!-- Recommendation Engine - Main Target -->
+      <artifact>
+        <path>spendsense-backend/src/spendsense/services/recommendations.py</path>
+        <kind>module</kind>
+        <symbol>generate_recommendations()</symbol>
+        <lines>39-177</lines>
+        <reason>Main function to evaluate. Returns List[Recommendation] with full traceability (persona, confidence, content, rationale). Measure latency of this function call.</reason>
+      </artifact>
+
+      <!-- Persona Assignment - Coverage Metric -->
+      <artifact>
+        <path>spendsense-backend/src/spendsense/services/personas.py</path>
+        <kind>module</kind>
+        <symbol>assign_persona()</symbol>
+        <lines>N/A</lines>
+        <reason>Returns persona_type, confidence, and signals. Coverage metric checks if signals has ≥3 non-empty signal categories (credit, income, subscriptions, savings).</reason>
+      </artifact>
+
+      <!-- Signal Computation - Coverage Data Source -->
+      <artifact>
+        <path>spendsense-backend/src/spendsense/services/features.py</path>
+        <kind>module</kind>
+        <symbol>compute_signals()</symbol>
+        <lines>N/A</lines>
+        <reason>Returns BehaviorSignals with credit, income, subscriptions, savings dicts. Count non-empty dicts for coverage metric (≥3 required).</reason>
+      </artifact>
+
+      <!-- Existing Test Pattern -->
+      <artifact>
+        <path>spendsense-backend/scripts/test_recommendation_engine.py</path>
+        <kind>test_script</kind>
+        <symbol>test_recommendation_engine()</symbol>
+        <lines>29-80</lines>
+        <reason>Example pattern for iterating all users, calling generate_recommendations(), measuring time with time.time(). Shows async db session handling and user query patterns.</reason>
+      </artifact>
+
+      <!-- Database Session Pattern -->
+      <artifact>
+        <path>spendsense-backend/src/spendsense/database.py</path>
+        <kind>module</kind>
+        <symbol>AsyncSessionLocal</symbol>
+        <lines>N/A</lines>
+        <reason>Async session factory for database queries. Use in evaluation script to fetch all users and run recommendations.</reason>
+      </artifact>
+
+      <!-- User Model -->
+      <artifact>
+        <path>spendsense-backend/src/spendsense/models/user.py</path>
+        <kind>model</kind>
+        <symbol>User</symbol>
+        <lines>N/A</lines>
+        <reason>SQLAlchemy model for querying all users. Use select(User.id) to get all user IDs for evaluation.</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <!-- Python Backend Dependencies -->
+      <python>
+        <package name="sqlalchemy" version=">=2.0.44">Async ORM for querying users</package>
+        <package name="aiosqlite" version=">=0.21.0">Async SQLite driver</package>
+        <package name="pydantic" version=">=2.12.3">Recommendation model validation</package>
+      </python>
+
+      <!-- Python Standard Library -->
+      <standard_library>
+        <module name="asyncio">Async execution for database operations</module>
+        <module name="time">Latency measurement with time.time()</module>
+        <module name="json">Output metrics to data/evaluation_results.json</module>
+        <module name="sys">Path manipulation for imports</module>
+        <module name="pathlib">Path handling</module>
+        <module name="statistics">Calculate P50/P95/P99 latency percentiles</module>
+      </standard_library>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <!-- Architecture Constraints -->
+    <constraint type="architecture">
+      <rule>No automated testing framework - this is a standalone evaluation script, not a test suite</rule>
+      <source>docs/architecture.md - ADR-001</source>
+    </constraint>
+
+    <constraint type="pattern">
+      <rule>Follow existing test script pattern: add src to sys.path, use AsyncSessionLocal, query all users, iterate with async</rule>
+      <source>spendsense-backend/scripts/test_recommendation_engine.py</source>
+    </constraint>
+
+    <constraint type="output">
+      <rule>CLI command: uv run python scripts/evaluate.py. Output metrics JSON to data/evaluation_results.json. Print summary to console.</rule>
+      <source>docs/epics.md - Story 6.2 Technical Notes</source>
+    </constraint>
+
+    <constraint type="metrics">
+      <rule>Coverage = (users with assigned persona AND ≥3 detected signals) / total users * 100</rule>
+      <rule>Explainability = (recommendations with non-empty rationale.explanation AND rationale.key_signals) / total recommendations * 100</rule>
+      <rule>Latency = measure time.time() before/after generate_recommendations() call, calculate avg/P50/P95/P99</rule>
+      <rule>Auditability = (recommendations with persona + confidence + signals + rationale) / total recommendations * 100</rule>
+      <source>docs/PRD.md - Success Criteria table</source>
+    </constraint>
+
+    <constraint type="targets">
+      <rule>Coverage target: 100% (all users should have persona + ≥3 signals)</rule>
+      <rule>Explainability target: 100% (all recommendations should have rationales)</rule>
+      <rule>Latency target: &lt;5s per user (average should be well under 5 seconds)</rule>
+      <rule>Auditability target: 100% (all recommendations should have complete trace)</rule>
+      <source>docs/epics.md - Story 6.2 AC #10</source>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <!-- generate_recommendations() Function -->
+    <interface>
+      <name>generate_recommendations()</name>
+      <kind>async_function</kind>
+      <signature>async def generate_recommendations(db: AsyncSession, user_id: str, generator: ContentGenerator = None, window_days: int = 30) -> List[Recommendation]</signature>
+      <path>spendsense-backend/src/spendsense/services/recommendations.py:39-177</path>
+      <description>Main function to evaluate. Measure latency by timing this call. Returns list of Recommendation objects for explainability/auditability checks.</description>
+    </interface>
+
+    <!-- Recommendation Model Structure -->
+    <interface>
+      <name>Recommendation (Pydantic Model)</name>
+      <kind>pydantic_model</kind>
+      <signature>class Recommendation(BaseModel): content: EducationItem, rationale: Rationale, persona: str, confidence: float</signature>
+      <path>spendsense-backend/src/spendsense/services/recommendations.py:26-36</path>
+      <description>Check rationale.explanation (str), rationale.key_signals (List[str]), persona (str), confidence (float) for auditability metric.</description>
+    </interface>
+
+    <!-- BehaviorSignals Structure -->
+    <interface>
+      <name>BehaviorSignals (dataclass)</name>
+      <kind>dataclass</kind>
+      <signature>class BehaviorSignals: subscriptions: dict, savings: dict, credit: dict, income: dict</signature>
+      <path>spendsense-backend/src/spendsense/services/features.py</path>
+      <description>Count non-empty dicts (truthy values) for coverage metric. Need ≥3 signal categories to pass coverage.</description>
+    </interface>
+
+    <!-- User Query Pattern -->
+    <interface>
+      <name>select(User.id)</name>
+      <kind>sqlalchemy_query</kind>
+      <signature>result = await db.execute(select(User.id)); user_ids = [row[0] for row in result.all()]</signature>
+      <path>Example in scripts/test_recommendation_engine.py:42-44</path>
+      <description>Pattern for fetching all user IDs from database. Use this to iterate over all synthetic users for evaluation.</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Manual validation of evaluation script output. Run script with: uv run python scripts/evaluate.py
+
+      Verify output includes:
+      1. Console summary with all 4 metrics (coverage, explainability, latency, auditability)
+      2. JSON file at data/evaluation_results.json with detailed results
+      3. Pass/fail indicators for each metric vs target
+      4. Latency percentiles (P50, P95, P99)
+      5. Persona distribution breakdown
+    </standards>
+
+    <locations>
+      <location type="evaluation_script">spendsense-backend/scripts/evaluate.py (to be created)</location>
+      <location type="output_json">spendsense-backend/data/evaluation_results.json (generated by script)</location>
+      <location type="console">stdout for human-readable summary</location>
+    </locations>
+
+    <ideas>
+      <!-- Test Ideas Mapped to Acceptance Criteria -->
+      <test id="AC1" criteria="Create evaluation script scripts/evaluate.py">
+        Verify file exists, has executable permissions (chmod +x).
+        Check shebang line (#!/usr/bin/env python3).
+        Test imports successfully: uv run python -c "import scripts.evaluate"
+      </test>
+
+      <test id="AC2" criteria="Measure Coverage">
+        For each user, check:
+        - Has assigned persona (not None)
+        - signals.credit is truthy
+        - signals.income is truthy
+        - signals.subscriptions is truthy
+        - signals.savings is truthy
+        Count users with ≥3 truthy signals.
+        Calculate coverage_pct = (users_with_coverage / total_users) * 100
+      </test>
+
+      <test id="AC3" criteria="Measure Explainability">
+        For each recommendation:
+        - Check rationale.explanation is non-empty string
+        - Check rationale.key_signals is non-empty list
+        Count recommendations with both conditions true.
+        Calculate explainability_pct = (recs_with_rationale / total_recs) * 100
+      </test>
+
+      <test id="AC4" criteria="Measure Latency">
+        For each user:
+        - Record start_time = time.time()
+        - Call generate_recommendations()
+        - Record end_time = time.time()
+        - latency = end_time - start_time
+        Store all latencies, calculate:
+        - Average latency
+        - P50 (median)
+        - P95 (95th percentile)
+        - P99 (99th percentile)
+      </test>
+
+      <test id="AC5" criteria="Measure Auditability">
+        For each recommendation, verify all fields present:
+        - rec.persona (string)
+        - rec.confidence (float 0.0-1.0)
+        - rec.rationale.explanation (string)
+        - rec.rationale.key_signals (list)
+        - rec.content.id (string)
+        Count recommendations with all fields.
+        Calculate auditability_pct = (complete_recs / total_recs) * 100
+      </test>
+
+      <test id="AC6" criteria="Run evaluation against all synthetic users">
+        Query database for all User.id values.
+        Iterate through all users (should be 50-100).
+        Handle users with missing data gracefully (log but don't fail).
+        Report total users evaluated.
+      </test>
+
+      <test id="AC7" criteria="Generate metrics JSON file">
+        Write results to data/evaluation_results.json with structure:
+        {
+          "timestamp": "ISO 8601",
+          "total_users": int,
+          "total_recommendations": int,
+          "metrics": {
+            "coverage": {"value": float, "target": 100.0, "pass": bool},
+            "explainability": {"value": float, "target": 100.0, "pass": bool},
+            "latency_avg": {"value": float, "target": 5.0, "pass": bool},
+            "auditability": {"value": float, "target": 100.0, "pass": bool}
+          },
+          "latency_percentiles": {"p50": float, "p95": float, "p99": float},
+          "persona_distribution": {persona: count}
+        }
+      </test>
+
+      <test id="AC8" criteria="Calculate summary statistics">
+        Aggregate across all users:
+        - Total users evaluated
+        - Average signals per user
+        - Persona distribution (count per persona type)
+        - Latency distribution (min, max, avg, P50, P95, P99)
+        Include in both JSON and console output.
+      </test>
+
+      <test id="AC9" criteria="Print results to console">
+        Format human-readable output with:
+        - Header with timestamp
+        - Metrics table with pass/fail indicators
+        - Latency breakdown
+        - Persona distribution
+        - Overall PASS/FAIL based on all metrics meeting targets
+      </test>
+
+      <test id="AC10" criteria="Verify meets targets">
+        Check:
+        - coverage >= 100.0%
+        - explainability >= 100.0%
+        - latency_avg < 5.0 seconds
+        - auditability >= 100.0%
+        If all pass, print "✓ ALL METRICS PASS"
+        If any fail, print "✗ METRICS FAILED" with details
+      </test>
+    </ideas>
+  </tests>
+</story-context>

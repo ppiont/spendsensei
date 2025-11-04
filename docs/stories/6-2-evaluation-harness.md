@@ -1,6 +1,6 @@
 # Story 6.2: Evaluation Harness
 
-Status: drafted
+Status: ready-for-dev
 
 ## Story
 
@@ -33,6 +33,8 @@ So that I can verify quality and identify issues.
 ## Dev Agent Record
 
 ### Context Reference
+
+- docs/stories/6-2-evaluation-harness.context.xml
 
 ### Agent Model Used
 

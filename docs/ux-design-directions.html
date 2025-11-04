@@ -1,0 +1,1651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpendSense Design Directions</title>
+    <style>
+        :root {
+            /* Colors - Balanced Calm Theme */
+            --blue-primary: #2C5282;
+            --blue-dark: #1A365D;
+            --green-primary: #38A169;
+            --green-light: #48BB78;
+            --coral: #F56565;
+            --yellow: #ECC94B;
+            --white: #FFFFFF;
+            --gray-50: #F7FAFC;
+            --gray-100: #E2E8F0;
+            --gray-200: #CBD5E0;
+            --gray-600: #4A5568;
+            --gray-800: #2D3748;
+
+            /* Spacing - Generous */
+            --space-xs: 0.25rem;
+            --space-sm: 0.5rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --space-2xl: 3rem;
+            --space-3xl: 4rem;
+
+            /* Shadows */
+            --shadow-subtle: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-soft: 0 4px 6px rgba(0,0,0,0.07);
+            --shadow-medium: 0 10px 15px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-800);
+            line-height: 1.6;
+        }
+
+        .nav-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-bottom: 1px solid var(--gray-100);
+            z-index: 100;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .nav-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--space-md) var(--space-xl);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--blue-primary);
+        }
+
+        .nav-controls {
+            display: flex;
+            gap: var(--space-md);
+        }
+
+        .nav-btn {
+            padding: 0.5rem 1rem;
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.15s ease;
+        }
+
+        .nav-btn:hover {
+            background: white;
+            border-color: var(--blue-primary);
+            color: var(--blue-primary);
+        }
+
+        .nav-btn.active {
+            background: var(--blue-primary);
+            color: white;
+            border-color: var(--blue-primary);
+        }
+
+        .direction-container {
+            display: none;
+            padding-top: 80px;
+        }
+
+        .direction-container.active {
+            display: block;
+        }
+
+        .direction-header {
+            background: white;
+            padding: var(--space-2xl) var(--space-xl);
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .direction-header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .direction-number {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--blue-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-sm);
+        }
+
+        .direction-name {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: var(--space-md);
+        }
+
+        .direction-description {
+            font-size: 1.125rem;
+            color: var(--gray-600);
+            margin-bottom: var(--space-lg);
+            max-width: 700px;
+        }
+
+        .direction-features {
+            display: flex;
+            gap: var(--space-lg);
+            flex-wrap: wrap;
+        }
+
+        .feature-tag {
+            padding: 0.5rem 1rem;
+            background: var(--gray-50);
+            border-radius: 6px;
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        .mockup-frame {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--space-2xl);
+        }
+
+        /* Common UI Elements */
+        .btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 6px;
+            border: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-primary {
+            background: var(--blue-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--blue-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .btn-success {
+            background: var(--green-primary);
+            color: white;
+        }
+
+        .btn-outline {
+            background: white;
+            color: var(--blue-primary);
+            border: 2px solid var(--blue-primary);
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: var(--space-xl);
+            box-shadow: var(--shadow-subtle);
+            border: 1px solid var(--gray-100);
+        }
+
+        .card-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-md);
+        }
+
+        .metric-large {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            line-height: 1.2;
+            margin-bottom: var(--space-sm);
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        /* Shared Header Styles */
+        .app-header {
+            background: white;
+            border-bottom: 1px solid var(--gray-100);
+            padding: var(--space-lg) var(--space-xl);
+        }
+
+        .app-header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .app-logo {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--blue-primary);
+        }
+
+        .app-nav {
+            display: flex;
+            gap: var(--space-lg);
+        }
+
+        .app-nav-link {
+            padding: 0.5rem 1rem;
+            color: var(--gray-600);
+            text-decoration: none;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+
+        .app-nav-link:hover {
+            background: var(--gray-50);
+            color: var(--blue-primary);
+        }
+
+        .app-nav-link.active {
+            color: var(--blue-primary);
+            font-weight: 500;
+        }
+
+        /* DIRECTION 1: CLEAN HIERARCHY */
+        .dir1-layout {
+            min-height: 100vh;
+            background: var(--gray-50);
+        }
+
+        .dir1-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-2xl);
+        }
+
+        .dir1-hero {
+            background: white;
+            border-radius: 12px;
+            padding: var(--space-2xl);
+            margin-bottom: var(--space-2xl);
+            box-shadow: var(--shadow-soft);
+            text-align: center;
+        }
+
+        .dir1-persona {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #EBF8FF;
+            color: var(--blue-primary);
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-md);
+        }
+
+        .dir1-hero-title {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: var(--space-md);
+        }
+
+        .dir1-hero-subtitle {
+            font-size: 1.125rem;
+            color: var(--gray-600);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .dir1-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-xl);
+            margin-bottom: var(--space-2xl);
+        }
+
+        .dir1-recommendations {
+            background: white;
+            border-radius: 12px;
+            padding: var(--space-2xl);
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .dir1-section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: var(--space-xl);
+        }
+
+        .dir1-rec-grid {
+            display: grid;
+            gap: var(--space-xl);
+        }
+
+        .dir1-rec-card {
+            padding: var(--space-xl);
+            border: 2px solid var(--gray-100);
+            border-radius: 8px;
+            border-left: 4px solid var(--blue-primary);
+        }
+
+        .dir1-rec-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: var(--space-md);
+        }
+
+        .dir1-rec-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .dir1-rec-badge {
+            padding: 0.25rem 0.75rem;
+            background: #EBF8FF;
+            color: var(--blue-primary);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .dir1-rec-body {
+            color: var(--gray-600);
+            margin-bottom: var(--space-lg);
+            line-height: 1.7;
+        }
+
+        .dir1-rec-rationale {
+            background: var(--gray-50);
+            padding: var(--space-lg);
+            border-radius: 6px;
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        .dir1-rec-rationale strong {
+            color: var(--gray-800);
+        }
+
+        /* DIRECTION 2: SIDEBAR FOCUS */
+        .dir2-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .dir2-sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid var(--gray-100);
+            padding: var(--space-xl);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .dir2-main {
+            flex: 1;
+            margin-left: 280px;
+            background: var(--gray-50);
+        }
+
+        .dir2-sidebar-logo {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--blue-primary);
+            margin-bottom: var(--space-2xl);
+            padding-bottom: var(--space-lg);
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .dir2-persona-card {
+            background: linear-gradient(135deg, #EBF8FF 0%, #F0FFF4 100%);
+            padding: var(--space-lg);
+            border-radius: 8px;
+            margin-bottom: var(--space-xl);
+        }
+
+        .dir2-persona-label {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-sm);
+        }
+
+        .dir2-persona-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--blue-primary);
+        }
+
+        .dir2-nav-section {
+            margin-bottom: var(--space-xl);
+        }
+
+        .dir2-nav-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-md);
+        }
+
+        .dir2-nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .dir2-nav-link {
+            padding: 0.75rem 1rem;
+            color: var(--gray-600);
+            text-decoration: none;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.15s ease;
+        }
+
+        .dir2-nav-link:hover {
+            background: var(--gray-50);
+            color: var(--blue-primary);
+        }
+
+        .dir2-nav-link.active {
+            background: #EBF8FF;
+            color: var(--blue-primary);
+            font-weight: 500;
+        }
+
+        .dir2-content {
+            padding: var(--space-2xl);
+        }
+
+        .dir2-header {
+            margin-bottom: var(--space-2xl);
+        }
+
+        .dir2-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: var(--space-sm);
+        }
+
+        .dir2-subtitle {
+            font-size: 1rem;
+            color: var(--gray-600);
+        }
+
+        .dir2-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-xl);
+        }
+
+        /* DIRECTION 3: CARD MASONRY */
+        .dir3-layout {
+            min-height: 100vh;
+            background: white;
+        }
+
+        .dir3-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--space-2xl) var(--space-xl);
+        }
+
+        .dir3-welcome {
+            max-width: 800px;
+            margin: 0 auto var(--space-3xl);
+            text-align: center;
+        }
+
+        .dir3-welcome-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--gray-50);
+            border: 1px solid var(--gray-100);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin-bottom: var(--space-lg);
+        }
+
+        .dir3-title {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: var(--space-md);
+        }
+
+        .dir3-subtitle {
+            font-size: 1.125rem;
+            color: var(--gray-600);
+            line-height: 1.7;
+        }
+
+        .dir3-masonry {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-xl);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .dir3-card {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-100);
+            border-radius: 12px;
+            padding: var(--space-2xl);
+            transition: all 0.15s ease;
+        }
+
+        .dir3-card:hover {
+            box-shadow: var(--shadow-soft);
+            border-color: var(--gray-200);
+        }
+
+        .dir3-card.highlight {
+            background: linear-gradient(135deg, #EBF8FF 0%, #F0FFF4 100%);
+            border: 2px solid var(--blue-primary);
+            grid-column: span 2;
+        }
+
+        .dir3-card-icon {
+            width: 48px;
+            height: 48px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: var(--space-lg);
+        }
+
+        .dir3-card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: var(--space-md);
+        }
+
+        .dir3-card-content {
+            color: var(--gray-600);
+            line-height: 1.7;
+        }
+
+        /* DIRECTION 4: SPLIT DASHBOARD */
+        .dir4-layout {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            min-height: 100vh;
+        }
+
+        .dir4-left {
+            background: white;
+            padding: var(--space-2xl);
+        }
+
+        .dir4-right {
+            background: var(--gray-50);
+            padding: var(--space-2xl);
+            border-left: 1px solid var(--gray-100);
+        }
+
+        .dir4-section {
+            margin-bottom: var(--space-3xl);
+        }
+
+        .dir4-section-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-lg);
+        }
+
+        .dir4-big-metric {
+            margin-bottom: var(--space-2xl);
+        }
+
+        .dir4-big-number {
+            font-size: 4rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            line-height: 1;
+            margin-bottom: var(--space-sm);
+        }
+
+        .dir4-big-label {
+            font-size: 1rem;
+            color: var(--gray-600);
+        }
+
+        .dir4-mini-cards {
+            display: grid;
+            gap: var(--space-lg);
+        }
+
+        .dir4-mini-card {
+            padding: var(--space-lg);
+            background: var(--gray-50);
+            border-radius: 8px;
+            border-left: 3px solid transparent;
+        }
+
+        .dir4-mini-card.green {
+            border-left-color: var(--green-primary);
+        }
+
+        .dir4-mini-card.blue {
+            border-left-color: var(--blue-primary);
+        }
+
+        .dir4-mini-card.coral {
+            border-left-color: var(--coral);
+        }
+
+        .dir4-sidebar-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: var(--space-xl);
+        }
+
+        .dir4-rec-item {
+            padding: var(--space-lg);
+            background: white;
+            border-radius: 8px;
+            margin-bottom: var(--space-lg);
+            border: 1px solid var(--gray-100);
+        }
+
+        .dir4-rec-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .dir4-rec-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+        }
+
+        .dir4-rec-type {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--blue-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .dir4-rec-text {
+            font-size: 0.95rem;
+            color: var(--gray-800);
+            margin-bottom: var(--space-sm);
+            font-weight: 500;
+        }
+
+        .dir4-rec-reason {
+            font-size: 0.8rem;
+            color: var(--gray-600);
+        }
+
+        /* DIRECTION 5: MINIMAL FOCUS */
+        .dir5-layout {
+            min-height: 100vh;
+            background: white;
+        }
+
+        .dir5-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: var(--space-3xl) var(--space-xl);
+        }
+
+        .dir5-breadcrumb {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin-bottom: var(--space-2xl);
+        }
+
+        .dir5-hero {
+            margin-bottom: var(--space-3xl);
+            padding-bottom: var(--space-2xl);
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .dir5-title {
+            font-size: 3rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: var(--space-lg);
+            line-height: 1.1;
+        }
+
+        .dir5-description {
+            font-size: 1.25rem;
+            color: var(--gray-600);
+            line-height: 1.7;
+        }
+
+        .dir5-focus-card {
+            background: var(--gray-50);
+            border-radius: 12px;
+            padding: var(--space-3xl);
+            margin-bottom: var(--space-2xl);
+        }
+
+        .dir5-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: var(--space-lg);
+        }
+
+        .dir5-value {
+            font-size: 3.5rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: var(--space-md);
+            line-height: 1;
+        }
+
+        .dir5-context {
+            font-size: 1.125rem;
+            color: var(--gray-600);
+        }
+
+        .dir5-stack {
+            display: grid;
+            gap: var(--space-2xl);
+        }
+
+        .dir5-item {
+            padding: var(--space-2xl);
+            border-left: 2px solid var(--gray-100);
+        }
+
+        .dir5-item-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: var(--space-md);
+        }
+
+        .dir5-item-body {
+            font-size: 1rem;
+            color: var(--gray-600);
+            line-height: 1.7;
+            margin-bottom: var(--space-lg);
+        }
+
+        .dir5-item-detail {
+            padding: var(--space-lg);
+            background: var(--gray-50);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        /* DIRECTION 6: DASHBOARD METRICS */
+        .dir6-layout {
+            min-height: 100vh;
+            background: var(--gray-50);
+        }
+
+        .dir6-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--space-xl);
+        }
+
+        .dir6-top-bar {
+            background: white;
+            border-radius: 12px;
+            padding: var(--space-lg) var(--space-xl);
+            margin-bottom: var(--space-xl);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .dir6-persona-badge {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .dir6-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--blue-primary), var(--green-primary));
+            border-radius: 50%;
+        }
+
+        .dir6-persona-info h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .dir6-persona-info p {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        .dir6-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-lg);
+            margin-bottom: var(--space-xl);
+        }
+
+        .dir6-metric-card {
+            background: white;
+            border-radius: 8px;
+            padding: var(--space-xl);
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .dir6-metric-card.featured {
+            grid-column: span 2;
+            background: linear-gradient(135deg, #EBF8FF 0%, white 100%);
+        }
+
+        .dir6-metric-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-md);
+        }
+
+        .dir6-metric-value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: var(--space-sm);
+        }
+
+        .dir6-metric-change {
+            font-size: 0.875rem;
+            color: var(--green-primary);
+        }
+
+        .dir6-bottom-section {
+            background: white;
+            border-radius: 12px;
+            padding: var(--space-2xl);
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .dir6-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-xl);
+        }
+
+        .dir6-section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .dir6-recs-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-lg);
+        }
+
+        .dir6-rec-card {
+            padding: var(--space-xl);
+            border: 1px solid var(--gray-100);
+            border-radius: 8px;
+            transition: all 0.15s ease;
+        }
+
+        .dir6-rec-card:hover {
+            box-shadow: var(--shadow-soft);
+            border-color: var(--blue-primary);
+        }
+
+        .dir6-rec-icon {
+            width: 40px;
+            height: 40px;
+            background: #EBF8FF;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--space-md);
+            font-size: 1.25rem;
+        }
+
+        .dir6-rec-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: var(--space-sm);
+        }
+
+        .dir6-rec-desc {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin-bottom: var(--space-md);
+            line-height: 1.6;
+        }
+
+        .dir6-rec-reason {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+            padding: var(--space-sm) var(--space-md);
+            background: var(--gray-50);
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .dir1-metrics,
+            .dir2-grid,
+            .dir3-masonry,
+            .dir6-metrics-grid,
+            .dir6-recs-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .dir4-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .dir2-sidebar {
+                display: none;
+            }
+
+            .dir2-main {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-container">
+        <div class="nav-inner">
+            <div class="nav-title">SpendSense Design Directions</div>
+            <div class="nav-controls">
+                <button class="nav-btn active" onclick="showDirection(1)">Direction 1</button>
+                <button class="nav-btn" onclick="showDirection(2)">Direction 2</button>
+                <button class="nav-btn" onclick="showDirection(3)">Direction 3</button>
+                <button class="nav-btn" onclick="showDirection(4)">Direction 4</button>
+                <button class="nav-btn" onclick="showDirection(5)">Direction 5</button>
+                <button class="nav-btn" onclick="showDirection(6)">Direction 6</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIRECTION 1: CLEAN HIERARCHY -->
+    <div id="direction-1" class="direction-container active">
+        <div class="direction-header">
+            <div class="direction-header-inner">
+                <div class="direction-number">Direction 1</div>
+                <h1 class="direction-name">Clean Hierarchy</h1>
+                <p class="direction-description">Centered hero persona with clear visual hierarchy. Recommendations presented in clean, spacious cards with prominent "because" rationales.</p>
+                <div class="direction-features">
+                    <span class="feature-tag">✓ Hero persona focus</span>
+                    <span class="feature-tag">✓ Maximum white space</span>
+                    <span class="feature-tag">✓ Clear information hierarchy</span>
+                    <span class="feature-tag">✓ Best for: Insights page</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mockup-frame">
+            <div class="dir1-layout">
+                <div class="app-header">
+                    <div class="app-header-content">
+                        <div class="app-logo">SpendSense</div>
+                        <nav class="app-nav">
+                            <a href="#" class="app-nav-link">Dashboard</a>
+                            <a href="#" class="app-nav-link active">Insights</a>
+                            <a href="#" class="app-nav-link">Transactions</a>
+                        </nav>
+                    </div>
+                </div>
+
+                <div class="dir1-content">
+                    <div class="dir1-hero">
+                        <div class="dir1-persona">YOUR PERSONA</div>
+                        <h1 class="dir1-hero-title">Savings Builder</h1>
+                        <p class="dir1-hero-subtitle">Based on your consistent $240/month savings and low credit utilization, we've identified growth-focused education for you.</p>
+                    </div>
+
+                    <div class="dir1-metrics">
+                        <div class="card">
+                            <div class="card-title">Net Worth</div>
+                            <div class="metric-large">$12,847</div>
+                            <div class="metric-label" style="color: var(--green-primary);">↑ $240 this month</div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-title">Savings Rate</div>
+                            <div class="metric-large">15%</div>
+                            <div class="metric-label">Of monthly income</div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-title">Credit Health</div>
+                            <div class="metric-large">Good</div>
+                            <div class="metric-label">28% utilization</div>
+                        </div>
+                    </div>
+
+                    <div class="dir1-recommendations">
+                        <h2 class="dir1-section-title">Personalized Recommendations</h2>
+
+                        <div class="dir1-rec-grid">
+                            <div class="dir1-rec-card">
+                                <div class="dir1-rec-header">
+                                    <div class="dir1-rec-title">Automate Your Savings</div>
+                                    <div class="dir1-rec-badge">EDUCATION</div>
+                                </div>
+                                <div class="dir1-rec-body">
+                                    You're already saving $240/month consistently. Set up automatic transfers to make it effortless and never miss a month.
+                                </div>
+                                <div class="dir1-rec-rationale">
+                                    <strong>Because:</strong> You've saved consistently for 6 months. Automation removes the mental burden and ensures you never forget.
+                                </div>
+                            </div>
+
+                            <div class="dir1-rec-card">
+                                <div class="dir1-rec-header">
+                                    <div class="dir1-rec-title">Optimize Your Emergency Fund</div>
+                                    <div class="dir1-rec-badge">EDUCATION</div>
+                                </div>
+                                <div class="dir1-rec-body">
+                                    With $2,400 saved, you have 3 months of coverage. Consider a high-yield savings account to maximize growth while maintaining accessibility.
+                                </div>
+                                <div class="dir1-rec-rationale">
+                                    <strong>Because:</strong> Your emergency fund is at $2,400, covering 3 months of expenses. A HYSA could earn 4-5% APY vs. 0.01% in checking.
+                                </div>
+                            </div>
+
+                            <div class="dir1-rec-card">
+                                <div class="dir1-rec-header">
+                                    <div class="dir1-rec-title">Review Subscription Costs</div>
+                                    <div class="dir1-rec-badge">EDUCATION</div>
+                                </div>
+                                <div class="dir1-rec-body">
+                                    We detected 5 recurring subscriptions totaling $87/month. A quick audit could free up funds for savings goals.
+                                </div>
+                                <div class="dir1-rec-rationale">
+                                    <strong>Because:</strong> We detected recurring charges from Netflix ($15), Spotify ($10), Adobe ($20), NYT ($17), and Gym ($25).
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIRECTION 2: SIDEBAR FOCUS -->
+    <div id="direction-2" class="direction-container">
+        <div class="direction-header">
+            <div class="direction-header-inner">
+                <div class="direction-number">Direction 2</div>
+                <h1 class="direction-name">Sidebar Focus</h1>
+                <p class="direction-description">Persistent sidebar with persona always visible. Main content area for metrics and recommendations. Clean navigation structure.</p>
+                <div class="direction-features">
+                    <span class="feature-tag">✓ Persistent sidebar navigation</span>
+                    <span class="feature-tag">✓ Persona always visible</span>
+                    <span class="feature-tag">✓ Efficient use of space</span>
+                    <span class="feature-tag">✓ Best for: Dashboard + Insights</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mockup-frame">
+            <div class="dir2-layout">
+                <aside class="dir2-sidebar">
+                    <div class="dir2-sidebar-logo">SpendSense</div>
+
+                    <div class="dir2-persona-card">
+                        <div class="dir2-persona-label">Your Persona</div>
+                        <div class="dir2-persona-name">Savings Builder</div>
+                    </div>
+
+                    <nav class="dir2-nav-section">
+                        <div class="dir2-nav-title">Overview</div>
+                        <div class="dir2-nav-links">
+                            <a href="#" class="dir2-nav-link active">
+                                <span>📊</span> Dashboard
+                            </a>
+                            <a href="#" class="dir2-nav-link">
+                                <span>💡</span> Insights
+                            </a>
+                            <a href="#" class="dir2-nav-link">
+                                <span>💳</span> Transactions
+                            </a>
+                        </div>
+                    </nav>
+
+                    <nav class="dir2-nav-section">
+                        <div class="dir2-nav-title">Account</div>
+                        <div class="dir2-nav-links">
+                            <a href="#" class="dir2-nav-link">
+                                <span>⚙️</span> Settings
+                            </a>
+                            <a href="#" class="dir2-nav-link">
+                                <span>🔒</span> Privacy
+                            </a>
+                        </div>
+                    </nav>
+                </aside>
+
+                <main class="dir2-main">
+                    <div class="dir2-content">
+                        <div class="dir2-header">
+                            <h1 class="dir2-title">Dashboard</h1>
+                            <p class="dir2-subtitle">Here's your financial overview and personalized insights</p>
+                        </div>
+
+                        <div class="dir2-grid">
+                            <div class="card">
+                                <div class="card-title">Total Balance</div>
+                                <div class="metric-large">$12,847</div>
+                                <div class="metric-label" style="color: var(--green-primary);">↑ $240 this month</div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-title">Monthly Savings</div>
+                                <div class="metric-large">$240</div>
+                                <div class="metric-label">15% of income</div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-title">Credit Utilization</div>
+                                <div class="metric-large">28%</div>
+                                <div class="metric-label">Well below 30% threshold</div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-title">Emergency Fund</div>
+                                <div class="metric-large">$2,400</div>
+                                <div class="metric-label">3 months coverage</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: var(--space-2xl);">
+                            <h2 class="dir2-title" style="margin-bottom: var(--space-xl);">Top Recommendations</h2>
+                            <div style="display: grid; gap: var(--space-xl);">
+                                <div class="card">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--space-md);">
+                                        <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-800);">Automate Your Savings</h3>
+                                        <span style="padding: 0.25rem 0.75rem; background: #EBF8FF; color: var(--blue-primary); border-radius: 4px; font-size: 0.75rem; font-weight: 600;">EDUCATION</span>
+                                    </div>
+                                    <p style="color: var(--gray-600); margin-bottom: var(--space-lg); line-height: 1.7;">Set up automatic transfers to make your consistent $240/month savings effortless.</p>
+                                    <div style="background: var(--gray-50); padding: var(--space-md); border-radius: 6px; font-size: 0.875rem; color: var(--gray-600);">
+                                        <strong style="color: var(--gray-800);">Because:</strong> You've saved consistently for 6 months. Automation ensures you never miss a month.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIRECTION 3: CARD MASONRY -->
+    <div id="direction-3" class="direction-container">
+        <div class="direction-header">
+            <div class="direction-header-inner">
+                <div class="direction-number">Direction 3</div>
+                <h1 class="direction-name">Card Masonry</h1>
+                <p class="direction-description">Pinterest-style card grid with varying sizes. Hero persona card spans multiple columns. Engaging, scannable layout.</p>
+                <div class="direction-features">
+                    <span class="feature-tag">✓ Masonry grid layout</span>
+                    <span class="feature-tag">✓ Visual variety</span>
+                    <span class="feature-tag">✓ Scannable content</span>
+                    <span class="feature-tag">✓ Best for: Dashboard overview</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mockup-frame">
+            <div class="dir3-layout">
+                <div class="app-header">
+                    <div class="app-header-content">
+                        <div class="app-logo">SpendSense</div>
+                        <nav class="app-nav">
+                            <a href="#" class="app-nav-link active">Dashboard</a>
+                            <a href="#" class="app-nav-link">Insights</a>
+                            <a href="#" class="app-nav-link">Transactions</a>
+                        </nav>
+                    </div>
+                </div>
+
+                <div class="dir3-content">
+                    <div class="dir3-welcome">
+                        <div class="dir3-welcome-badge">
+                            <span>👋</span> Welcome back, Peter
+                        </div>
+                        <h1 class="dir3-title">Your Financial Snapshot</h1>
+                        <p class="dir3-subtitle">You're making great progress. Here's what's happening with your money.</p>
+                    </div>
+
+                    <div class="dir3-masonry">
+                        <div class="dir3-card highlight">
+                            <div class="dir3-card-icon">🎯</div>
+                            <h3 class="dir3-card-title" style="font-size: 1.5rem;">You're a Savings Builder</h3>
+                            <div class="dir3-card-content">
+                                <p style="margin-bottom: var(--space-md);">Based on your consistent $240/month savings and low credit utilization, we've identified growth-focused education for you.</p>
+                                <div style="display: flex; gap: var(--space-md);">
+                                    <div>
+                                        <div style="font-size: 1.75rem; font-weight: 600; color: var(--green-primary);">+2.1%</div>
+                                        <div style="font-size: 0.875rem; color: var(--gray-600);">Savings growth</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 1.75rem; font-weight: 600; color: var(--blue-primary);">28%</div>
+                                        <div style="font-size: 0.875rem; color: var(--gray-600);">Credit utilization</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dir3-card">
+                            <div class="dir3-card-icon">💰</div>
+                            <h3 class="dir3-card-title">Net Worth</h3>
+                            <div class="dir3-card-content">
+                                <div style="font-size: 2rem; font-weight: 600; color: var(--gray-800); margin-bottom: var(--space-sm);">$12,847</div>
+                                <div style="color: var(--green-primary); font-size: 0.875rem;">↑ $240 this month</div>
+                            </div>
+                        </div>
+
+                        <div class="dir3-card">
+                            <div class="dir3-card-icon">📈</div>
+                            <h3 class="dir3-card-title">Monthly Savings</h3>
+                            <div class="dir3-card-content">
+                                <div style="font-size: 2rem; font-weight: 600; color: var(--gray-800); margin-bottom: var(--space-sm);">$240</div>
+                                <div style="color: var(--gray-600); font-size: 0.875rem;">15% of income</div>
+                            </div>
+                        </div>
+
+                        <div class="dir3-card">
+                            <div class="dir3-card-icon">💡</div>
+                            <h3 class="dir3-card-title">Recommendation</h3>
+                            <div class="dir3-card-content">
+                                <p style="font-weight: 500; margin-bottom: var(--space-sm);">Automate your savings</p>
+                                <p style="font-size: 0.875rem;">Make your consistent savings effortless with automatic transfers.</p>
+                            </div>
+                        </div>
+
+                        <div class="dir3-card">
+                            <div class="dir3-card-icon">🛡️</div>
+                            <h3 class="dir3-card-title">Emergency Fund</h3>
+                            <div class="dir3-card-content">
+                                <div style="font-size: 2rem; font-weight: 600; color: var(--gray-800); margin-bottom: var(--space-sm);">$2,400</div>
+                                <div style="color: var(--gray-600); font-size: 0.875rem;">3 months coverage</div>
+                            </div>
+                        </div>
+
+                        <div class="dir3-card">
+                            <div class="dir3-card-icon">💳</div>
+                            <h3 class="dir3-card-title">Credit Health</h3>
+                            <div class="dir3-card-content">
+                                <div style="font-size: 2rem; font-weight: 600; color: var(--gray-800); margin-bottom: var(--space-sm);">Good</div>
+                                <div style="color: var(--gray-600); font-size: 0.875rem;">28% utilization</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIRECTION 4: SPLIT DASHBOARD -->
+    <div id="direction-4" class="direction-container">
+        <div class="direction-header">
+            <div class="direction-header-inner">
+                <div class="direction-number">Direction 4</div>
+                <h1 class="direction-name">Split Dashboard</h1>
+                <p class="direction-description">Two-column layout with metrics on left, recommendations on right. Efficient information density while maintaining calm aesthetic.</p>
+                <div class="direction-features">
+                    <span class="feature-tag">✓ Two-column efficiency</span>
+                    <span class="feature-tag">✓ Metrics + actions visible</span>
+                    <span class="feature-tag">✓ Power user friendly</span>
+                    <span class="feature-tag">✓ Best for: Dashboard power view</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mockup-frame">
+            <div class="dir4-layout">
+                <div class="dir4-left">
+                    <div class="dir4-section">
+                        <div class="dir4-section-label">Your Financial Health</div>
+                        <div class="dir4-big-metric">
+                            <div class="dir4-big-number">$12,847</div>
+                            <div class="dir4-big-label">Total Net Worth</div>
+                        </div>
+                    </div>
+
+                    <div class="dir4-section">
+                        <div class="dir4-section-label">Key Metrics</div>
+                        <div class="dir4-mini-cards">
+                            <div class="dir4-mini-card green">
+                                <div style="font-size: 1.5rem; font-weight: 600; color: var(--gray-800); margin-bottom: 0.25rem;">$240</div>
+                                <div style="font-size: 0.875rem; color: var(--gray-600);">Monthly Savings (15% of income)</div>
+                            </div>
+
+                            <div class="dir4-mini-card blue">
+                                <div style="font-size: 1.5rem; font-weight: 600; color: var(--gray-800); margin-bottom: 0.25rem;">28%</div>
+                                <div style="font-size: 0.875rem; color: var(--gray-600);">Credit Utilization (Healthy)</div>
+                            </div>
+
+                            <div class="dir4-mini-card green">
+                                <div style="font-size: 1.5rem; font-weight: 600; color: var(--gray-800); margin-bottom: 0.25rem;">$2,400</div>
+                                <div style="font-size: 0.875rem; color: var(--gray-600);">Emergency Fund (3 months)</div>
+                            </div>
+
+                            <div class="dir4-mini-card coral">
+                                <div style="font-size: 1.5rem; font-weight: 600; color: var(--gray-800); margin-bottom: 0.25rem;">$87/mo</div>
+                                <div style="font-size: 0.875rem; color: var(--gray-600);">Subscription Costs (5 active)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dir4-section">
+                        <div class="dir4-section-label">Your Persona</div>
+                        <div style="padding: var(--space-xl); background: linear-gradient(135deg, #EBF8FF 0%, #F0FFF4 100%); border-radius: 8px;">
+                            <h3 style="font-size: 1.5rem; font-weight: 600; color: var(--blue-primary); margin-bottom: var(--space-sm);">Savings Builder</h3>
+                            <p style="color: var(--gray-600); line-height: 1.7;">You're building wealth through consistent saving and smart credit management.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dir4-right">
+                    <h2 class="dir4-sidebar-title">Personalized for You</h2>
+
+                    <div class="dir4-rec-item">
+                        <div class="dir4-rec-meta">
+                            <div class="dir4-rec-type">Education</div>
+                            <div style="font-size: 0.75rem; color: var(--gray-600);">Priority: High</div>
+                        </div>
+                        <div class="dir4-rec-text">Automate Your Savings</div>
+                        <div class="dir4-rec-reason">Because: You've saved consistently for 6 months ($240/mo). Automation removes the mental burden.</div>
+                        <button class="btn btn-primary" style="margin-top: var(--space-md); width: 100%;">Learn More</button>
+                    </div>
+
+                    <div class="dir4-rec-item">
+                        <div class="dir4-rec-meta">
+                            <div class="dir4-rec-type">Education</div>
+                            <div style="font-size: 0.75rem; color: var(--gray-600);">Priority: Medium</div>
+                        </div>
+                        <div class="dir4-rec-text">Optimize Emergency Fund</div>
+                        <div class="dir4-rec-reason">Because: Your $2,400 emergency fund could earn 4-5% APY in a high-yield savings account.</div>
+                        <button class="btn btn-outline" style="margin-top: var(--space-md); width: 100%;">Learn More</button>
+                    </div>
+
+                    <div class="dir4-rec-item">
+                        <div class="dir4-rec-meta">
+                            <div class="dir4-rec-type">Education</div>
+                            <div style="font-size: 0.75rem; color: var(--gray-600);">Priority: Low</div>
+                        </div>
+                        <div class="dir4-rec-text">Review Subscriptions</div>
+                        <div class="dir4-rec-reason">Because: We detected 5 recurring subscriptions ($87/mo). A quick audit could free up funds.</div>
+                        <button class="btn btn-outline" style="margin-top: var(--space-md); width: 100%;">Learn More</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIRECTION 5: MINIMAL FOCUS -->
+    <div id="direction-5" class="direction-container">
+        <div class="direction-header">
+            <div class="direction-header-inner">
+                <div class="direction-number">Direction 5</div>
+                <h1 class="direction-name">Minimal Focus</h1>
+                <p class="direction-description">Ultra-minimal, content-focused layout. Maximum white space, clear typography hierarchy. One thing at a time approach.</p>
+                <div class="direction-features">
+                    <span class="feature-tag">✓ Maximum white space</span>
+                    <span class="feature-tag">✓ Content-first approach</span>
+                    <span class="feature-tag">✓ Reading-optimized</span>
+                    <span class="feature-tag">✓ Best for: Insights detail view</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mockup-frame">
+            <div class="dir5-layout">
+                <div class="app-header">
+                    <div class="app-header-content">
+                        <div class="app-logo">SpendSense</div>
+                        <nav class="app-nav">
+                            <a href="#" class="app-nav-link">Dashboard</a>
+                            <a href="#" class="app-nav-link active">Insights</a>
+                            <a href="#" class="app-nav-link">Transactions</a>
+                        </nav>
+                    </div>
+                </div>
+
+                <div class="dir5-content">
+                    <div class="dir5-breadcrumb">
+                        Dashboard / Insights / Your Persona
+                    </div>
+
+                    <div class="dir5-hero">
+                        <h1 class="dir5-title">Savings Builder</h1>
+                        <p class="dir5-description">You're building wealth through consistent saving and smart credit management. Here's what we recommend based on your financial behavior.</p>
+                    </div>
+
+                    <div class="dir5-focus-card">
+                        <div class="dir5-label">Your Primary Metric</div>
+                        <div class="dir5-value">$240/mo</div>
+                        <div class="dir5-context">Consistent monthly savings over the past 6 months, representing 15% of your income.</div>
+                    </div>
+
+                    <div class="dir5-stack">
+                        <div class="dir5-item">
+                            <h3 class="dir5-item-title">1. Automate Your Savings</h3>
+                            <div class="dir5-item-body">
+                                You're already saving $240 every month like clockwork. The next step is to remove the mental effort entirely by setting up automatic transfers to your savings account on payday.
+                            </div>
+                            <div class="dir5-item-detail">
+                                <strong style="color: var(--gray-800);">Why this matters:</strong> You've demonstrated the discipline to save consistently for 6 months. Automation ensures you never miss a month and removes the temptation to skip when life gets busy.
+                            </div>
+                        </div>
+
+                        <div class="dir5-item">
+                            <h3 class="dir5-item-title">2. Optimize Your Emergency Fund</h3>
+                            <div class="dir5-item-body">
+                                With $2,400 saved, you have 3 months of expenses covered—excellent progress. Consider moving this to a high-yield savings account to earn 4-5% APY while maintaining full access.
+                            </div>
+                            <div class="dir5-item-detail">
+                                <strong style="color: var(--gray-800);">Why this matters:</strong> Your emergency fund is currently earning ~0.01% in a standard savings account. A HYSA would generate an extra $96-$120 per year with zero additional risk or effort.
+                            </div>
+                        </div>
+
+                        <div class="dir5-item">
+                            <h3 class="dir5-item-title">3. Review Subscription Costs</h3>
+                            <div class="dir5-item-body">
+                                We detected 5 recurring subscriptions totaling $87/month. A quick 15-minute audit could identify services you no longer use, freeing up funds for savings goals.
+                            </div>
+                            <div class="dir5-item-detail">
+                                <strong style="color: var(--gray-800);">Why this matters:</strong> Based on your transactions: Netflix ($15), Spotify ($10), Adobe ($20), NYT ($17), Gym ($25). Even cutting one unused service would add $120-$300/year to your savings.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIRECTION 6: DASHBOARD METRICS -->
+    <div id="direction-6" class="direction-container">
+        <div class="direction-header">
+            <div class="direction-header-inner">
+                <div class="direction-number">Direction 6</div>
+                <h1 class="direction-name">Dashboard Metrics</h1>
+                <p class="direction-description">Stripe-inspired dashboard with prominent KPIs. Clean metrics grid with recommendations below. Professional, data-focused.</p>
+                <div class="direction-features">
+                    <span class="feature-tag">✓ Stripe-inspired metrics</span>
+                    <span class="feature-tag">✓ Data-focused layout</span>
+                    <span class="feature-tag">✓ Professional aesthetic</span>
+                    <span class="feature-tag">✓ Best for: Dashboard main view</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mockup-frame">
+            <div class="dir6-layout">
+                <div class="app-header">
+                    <div class="app-header-content">
+                        <div class="app-logo">SpendSense</div>
+                        <nav class="app-nav">
+                            <a href="#" class="app-nav-link active">Dashboard</a>
+                            <a href="#" class="app-nav-link">Insights</a>
+                            <a href="#" class="app-nav-link">Transactions</a>
+                        </nav>
+                    </div>
+                </div>
+
+                <div class="dir6-content">
+                    <div class="dir6-top-bar">
+                        <div class="dir6-persona-badge">
+                            <div class="dir6-avatar"></div>
+                            <div class="dir6-persona-info">
+                                <h3>Savings Builder</h3>
+                                <p>Building wealth consistently</p>
+                            </div>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary">View All Insights</button>
+                        </div>
+                    </div>
+
+                    <div class="dir6-metrics-grid">
+                        <div class="dir6-metric-card featured">
+                            <div class="dir6-metric-label">Total Net Worth</div>
+                            <div class="dir6-metric-value">$12,847</div>
+                            <div class="dir6-metric-change">↑ $240 this month (+1.9%)</div>
+                        </div>
+
+                        <div class="dir6-metric-card">
+                            <div class="dir6-metric-label">Monthly Savings</div>
+                            <div class="dir6-metric-value">$240</div>
+                            <div style="font-size: 0.875rem; color: var(--gray-600);">15% of income</div>
+                        </div>
+
+                        <div class="dir6-metric-card">
+                            <div class="dir6-metric-label">Credit Health</div>
+                            <div class="dir6-metric-value">Good</div>
+                            <div style="font-size: 0.875rem; color: var(--gray-600);">28% utilization</div>
+                        </div>
+
+                        <div class="dir6-metric-card">
+                            <div class="dir6-metric-label">Emergency Fund</div>
+                            <div class="dir6-metric-value">$2,400</div>
+                            <div style="font-size: 0.875rem; color: var(--gray-600);">3 months coverage</div>
+                        </div>
+
+                        <div class="dir6-metric-card">
+                            <div class="dir6-metric-label">Subscriptions</div>
+                            <div class="dir6-metric-value">$87/mo</div>
+                            <div style="font-size: 0.875rem; color: var(--gray-600);">5 active services</div>
+                        </div>
+                    </div>
+
+                    <div class="dir6-bottom-section">
+                        <div class="dir6-section-header">
+                            <h2 class="dir6-section-title">Recommendations for You</h2>
+                            <button class="btn btn-outline">View All</button>
+                        </div>
+
+                        <div class="dir6-recs-grid">
+                            <div class="dir6-rec-card">
+                                <div class="dir6-rec-icon">💰</div>
+                                <div class="dir6-rec-title">Automate Your Savings</div>
+                                <div class="dir6-rec-desc">Set up automatic transfers to make your consistent $240/month savings effortless.</div>
+                                <div class="dir6-rec-reason">Based on 6 months of consistent saving</div>
+                            </div>
+
+                            <div class="dir6-rec-card">
+                                <div class="dir6-rec-icon">🛡️</div>
+                                <div class="dir6-rec-title">Optimize Emergency Fund</div>
+                                <div class="dir6-rec-desc">Move your $2,400 emergency fund to a HYSA earning 4-5% APY.</div>
+                                <div class="dir6-rec-reason">Could earn extra $96-$120/year</div>
+                            </div>
+
+                            <div class="dir6-rec-card">
+                                <div class="dir6-rec-icon">📊</div>
+                                <div class="dir6-rec-title">Review Subscriptions</div>
+                                <div class="dir6-rec-desc">Audit your 5 subscriptions ($87/mo) to identify unused services.</div>
+                                <div class="dir6-rec-reason">Detected recurring charges totaling $87/mo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showDirection(num) {
+            // Hide all directions
+            document.querySelectorAll('.direction-container').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Show selected direction
+            document.getElementById('direction-' + num).classList.add('active');
+
+            // Update nav buttons
+            document.querySelectorAll('.nav-btn').forEach((btn, index) => {
+                btn.classList.toggle('active', index + 1 === num);
+            });
+
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>

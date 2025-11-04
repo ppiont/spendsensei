@@ -1,6 +1,6 @@
 # Story 6.3: Documentation & Polish
 
-Status: drafted
+Status: ready-for-dev
 
 ## Story
 
@@ -33,6 +33,8 @@ So that others can understand design decisions and limitations.
 ## Dev Agent Record
 
 ### Context Reference
+
+- docs/stories/6-3-documentation-polish.context.xml
 
 ### Agent Model Used
 

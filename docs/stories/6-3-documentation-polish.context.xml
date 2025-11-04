@@ -1,0 +1,167 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>6</epicId>
+    <storyId>3</storyId>
+    <title>Documentation & Polish</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-04</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/6-3-documentation-polish.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>comprehensive documentation of the system</iWant>
+    <soThat>others can understand design decisions and limitations</soThat>
+    <tasks>
+- [ ] Create DECISION_LOG.md
+- [ ] Create SCHEMA.md
+- [ ] Create LIMITATIONS.md
+- [ ] Update README.md
+- [ ] Add docstrings
+- [ ] Run linters and fix violations
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+1. Create `docs/DECISION_LOG.md`
+2. Create `docs/SCHEMA.md`
+3. Create `docs/LIMITATIONS.md`
+4. Update root README.md
+5. Add docstrings to all public functions
+6. Run linters: `ruff check` and `biome check`
+7. Fix any linting violations
+8. Verify both backend and frontend start
+9. Test complete user flow end-to-end
+10. Create final summary of deliverables
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Decision documentation examples and database schema details</section>
+        <snippet>Why SQLite (local-first), why template-based (zero cost, explainability), why no caching (simpler). Schema with all tables, relationships, indexes.</snippet>
+      </artifact>
+
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Complete ADR section (lines 631-705)</section>
+        <snippet>ADR-001 through ADR-006 covering: No testing, Template-based content, On-demand computation, SQLite WAL mode, shadcn-svelte, Bun over npm. Database schema with all tables documented.</snippet>
+      </artifact>
+
+      <artifact>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Story 6.3 Details (lines 983-1025)</section>
+        <snippet>Document decisions (SQLite, template, no caching, no testing), schema with ERD, limitations (50-100 users max, no production scale, template less personalized, no auth). Update README with quick start, architecture, features, eval results.</snippet>
+      </artifact>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>spendsense-backend/src/spendsense/</path>
+        <kind>module_directory</kind>
+        <symbol>all modules needing docstrings</symbol>
+        <lines>N/A</lines>
+        <reason>Add Google-style docstrings to: database.py, models/*, services/*, generators/*, routers/*, utils/*. Focus on public functions/classes.</reason>
+      </artifact>
+
+      <artifact>
+        <path>spendsense-backend/ruff.toml</path>
+        <kind>config</kind>
+        <symbol>linting configuration</symbol>
+        <lines>N/A</lines>
+        <reason>Backend linting config. Run: uv run ruff check src/ && uv run ruff format src/</reason>
+      </artifact>
+
+      <artifact>
+        <path>spendsense-frontend/biome.json</path>
+        <kind>config</kind>
+        <symbol>linting configuration</symbol>
+        <lines>N/A</lines>
+        <reason>Frontend linting config. Run: bun run biome check src/ && bun run biome format --write src/</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <python>
+        <package name="ruff" version=">=0.14.3">Linting and formatting</package>
+      </python>
+
+      <standard_library>
+        <module name="sys">Quick start verification</module>
+      </standard_library>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="documentation_format">
+      <rule>All docs in Markdown format. Google-style docstrings for Python. README includes copy-paste commands.</rule>
+      <source>docs/epics.md - Story 6.3 Technical Notes</source>
+    </constraint>
+
+    <constraint type="linting">
+      <rule>Linting must pass 100% - zero errors allowed before marking story done</rule>
+      <source>docs/epics.md - Story 6.3 AC #7</source>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Quick Start Commands</name>
+      <kind>cli_commands</kind>
+      <signature>uv run uvicorn spendsense.main:app --reload (backend), bun run dev (frontend)</signature>
+      <path>docs/architecture.md:605-629</path>
+      <description>Commands to start backend and frontend. Document in README for easy copy-paste.</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Manual verification:
+      1. Check all 3 new docs exist and contain required sections
+      2. Verify README updated with quick start
+      3. Run linters: ruff check passes, biome check passes
+      4. Start backend: uvicorn should start without errors
+      5. Start frontend: dev server should start
+      6. Test user flow: dashboard → transactions → insights
+    </standards>
+
+    <locations>
+      <location type="new_docs">docs/DECISION_LOG.md, docs/SCHEMA.md, docs/LIMITATIONS.md</location>
+      <location type="updated_doc">README.md (root)</location>
+      <location type="linting">Terminal output from ruff/biome commands</location>
+    </locations>
+
+    <ideas>
+      <test id="AC1-3" criteria="Create documentation files">
+        Verify DECISION_LOG.md has: SQLite decision, template decision, no caching, no testing.
+        Verify SCHEMA.md has: ERD diagram, table descriptions, indexes, query patterns.
+        Verify LIMITATIONS.md has: 50-100 user max, no production scale, synthetic data only, no auth, template less personalized than AI.
+      </test>
+
+      <test id="AC4" criteria="Update README">
+        Check README includes: Quick start commands, architecture overview, features list, evaluation results summary.
+      </test>
+
+      <test id="AC5-7" criteria="Docstrings and linting">
+        Run ruff check and verify 0 errors.
+        Run biome check and verify 0 errors.
+        Spot-check that public functions have docstrings (e.g., generate_recommendations(), compute_signals()).
+      </test>
+
+      <test id="AC8-9" criteria="Verification and end-to-end test">
+        Start backend: uv run uvicorn spendsense.main:app --reload
+        Start frontend: bun run dev
+        Test flow: Select user → view dashboard → view transactions → view insights → confirm recommendations displayed.
+      </test>
+
+      <test id="AC10" criteria="Final summary">
+        Document what was delivered: 6 epics, 20+ stories, backend API, frontend UI, 5 personas, template-based recommendations, evaluation metrics.
+      </test>
+    </ideas>
+  </tests>
+</story-context>

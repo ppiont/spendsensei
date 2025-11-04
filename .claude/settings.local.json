@@ -44,7 +44,9 @@
       "Bash(bun pm:*)",
       "Bash(bun run:*)",
       "mcp__GitKraken__git_status",
-      "mcp__GitKraken__git_add_or_commit"
+      "mcp__GitKraken__git_add_or_commit",
+      "Bash(git push:*)",
+      "SlashCommand(/bmad:bmm:workflows:story-context)"
     ],
     "deny": [],
     "ask": []

@@ -75,7 +75,15 @@ development_status:
   epic-5-retrospective: optional
 
   epic-6: backlog
-  6-1-guardrails-implementation: drafted
-  6-2-evaluation-harness: drafted
-  6-3-documentation-polish: drafted
+  6-1-guardrails-implementation: done
+  6-2-evaluation-harness: ready-for-dev
+  6-3-documentation-polish: ready-for-dev
   epic-6-retrospective: optional
+
+  epic-7: backlog
+  7-1-design-system-foundation: ready-for-dev
+  7-2-dashboard-page-redesign: ready-for-dev
+  7-3-insights-page-redesign: ready-for-dev
+  7-4-transactions-page-redesign: ready-for-dev
+  7-5-responsive-accessibility-polish: ready-for-dev
+  epic-7-retrospective: optional

@@ -1,0 +1,281 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>6</epicId>
+    <storyId>1</storyId>
+    <title>Guardrails Implementation</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-04</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/6-1-guardrails-implementation.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>platform</asA>
+    <iWant>to enforce ethical guidelines and tone standards</iWant>
+    <soThat>all recommendations are respectful and appropriate</soThat>
+    <tasks>
+- [ ] Create utils/guardrails.py
+- [ ] Define shame patterns
+- [ ] Implement check_tone()
+- [ ] Implement check_consent()
+- [ ] Add disclaimer constant
+- [ ] Integrate with generation pipeline
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+1. Create `utils/guardrails.py` module
+2. Define `SHAME_PATTERNS` list with regex patterns
+3. Implement `check_tone(text)` function
+4. Implement `check_consent(user_consent)` function
+5. Define `DISCLAIMER` constant
+6. Add tone checking to rationale generation
+7. Add disclaimer to all recommendations
+8. Test with edge cases
+9. Verify catches shaming language
+10. Confirm all recommendations include disclaimer
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <!-- PRD - Project Requirements -->
+      <artifact>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Guardrails & Quality Assurance (Epic 6)</section>
+        <snippet>Epic 6 covers guardrails implementation, evaluation harness, and documentation polish. Story 6.1 focuses on ethical guidelines enforcement with tone checking for shaming language, consent verification, and disclaimer addition to all recommendations.</snippet>
+      </artifact>
+
+      <!-- Epic Breakdown - Story 6.1 Details -->
+      <artifact>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Story 6.1: Guardrails Implementation (lines 912-947)</section>
+        <snippet>Create utils/guardrails.py with SHAME_PATTERNS regex list, check_tone() and check_consent() functions, DISCLAIMER constant. Apply tone checking to rationale generation and append disclaimer to all recommendation responses.</snippet>
+      </artifact>
+
+      <!-- Architecture - Error Handling & Patterns -->
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Error Handling & Logging Strategy</section>
+        <snippet>Global exception handler in main.py logs all errors. Use Python logging with INFO level. Guardrails include tone checking (no shaming language), disclaimer on all recommendations, consent field tracked in users table.</snippet>
+      </artifact>
+    </docs>
+
+    <code>
+      <!-- Content Generator Base Class -->
+      <artifact>
+        <path>spendsense-backend/src/spendsense/generators/base.py</path>
+        <kind>module</kind>
+        <symbol>ContentGenerator (ABC)</symbol>
+        <lines>47-109</lines>
+        <reason>Abstract base class for content generators. Guardrails will need to integrate with generate_rationale() method which returns Rationale objects containing explanation text that must be checked for tone.</reason>
+      </artifact>
+
+      <!-- Template Generator Implementation -->
+      <artifact>
+        <path>spendsense-backend/src/spendsense/generators/template.py</path>
+        <kind>module</kind>
+        <symbol>TemplateGenerator.generate_rationale()</symbol>
+        <lines>261-314</lines>
+        <reason>Current rationale generation implementation. Guardrails tone checking should be integrated here to validate explanation text before returning Rationale objects.</reason>
+      </artifact>
+
+      <artifact>
+        <path>spendsense-backend/src/spendsense/generators/template.py</path>
+        <kind>module</kind>
+        <symbol>TemplateGenerator._generate_explanation()</symbol>
+        <lines>315-431</lines>
+        <reason>Generates persona-specific explanation text templates. This is where tone violations could occur - should be validated by guardrails before returning.</reason>
+      </artifact>
+
+      <!-- Recommendation Engine -->
+      <artifact>
+        <path>spendsense-backend/src/spendsense/services/recommendations.py</path>
+        <kind>module</kind>
+        <symbol>generate_recommendations()</symbol>
+        <lines>39-177</lines>
+        <reason>Main orchestration function that generates recommendations. Disclaimer should be added at this level to all recommendation responses.</reason>
+      </artifact>
+
+      <!-- User Model with Consent Field -->
+      <artifact>
+        <path>spendsense-backend/src/spendsense/models/user.py</path>
+        <kind>model</kind>
+        <symbol>User.consent</symbol>
+        <lines>N/A</lines>
+        <reason>Users table has consent boolean field that check_consent() function should verify before generating recommendations.</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <!-- Python Backend Dependencies -->
+      <python>
+        <package name="fastapi" version=">=0.121.0">Web framework for API endpoints</package>
+        <package name="pydantic" version=">=2.12.3">Data validation and schemas</package>
+        <package name="sqlalchemy" version=">=2.0.44">ORM for database operations</package>
+        <package name="aiosqlite" version=">=0.21.0">Async SQLite driver</package>
+        <package name="pyyaml" version="implicit">YAML parsing for content catalog (imported in template.py)</package>
+      </python>
+
+      <!-- Python Standard Library -->
+      <standard_library>
+        <module name="re">Regular expressions for SHAME_PATTERNS matching</module>
+        <module name="logging">Error and warning logging for guardrails violations</module>
+      </standard_library>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <!-- Development Constraints -->
+    <constraint type="architecture">
+      <rule>No automated testing framework - manual verification only</rule>
+      <source>docs/architecture.md - ADR-001</source>
+    </constraint>
+
+    <constraint type="code_style">
+      <rule>Python naming: snake_case for files/functions, PascalCase for classes, UPPER_SNAKE_CASE for constants</rule>
+      <source>docs/architecture.md - Backend Naming Conventions</source>
+    </constraint>
+
+    <constraint type="logging">
+      <rule>Use Python logging module with INFO level, log guardrails violations but don't block (development mode)</rule>
+      <source>docs/architecture.md - Logging Strategy</source>
+    </constraint>
+
+    <constraint type="pattern">
+      <rule>Guardrails applied during content generation - integrate with existing generator interface, don't break AI-agnostic design</rule>
+      <source>docs/epics.md - Story 6.1 Technical Notes</source>
+    </constraint>
+
+    <constraint type="disclaimer">
+      <rule>Disclaimer must be appended to every insight response - not per recommendation item, but at API response level</rule>
+      <source>docs/epics.md - Story 6.1 AC #7</source>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <!-- ContentGenerator Interface -->
+    <interface>
+      <name>ContentGenerator.generate_rationale()</name>
+      <kind>abstract_method</kind>
+      <signature>async def generate_rationale(persona_type: str, confidence: float, signals: BehaviorSignals) -> Rationale</signature>
+      <path>spendsense-backend/src/spendsense/generators/base.py:84-109</path>
+      <description>Returns Rationale object with explanation text. Tone checking should validate explanation field before returning.</description>
+    </interface>
+
+    <!-- Rationale Model -->
+    <interface>
+      <name>Rationale (Pydantic Model)</name>
+      <kind>pydantic_model</kind>
+      <signature>class Rationale(BaseModel): persona_type: str, confidence: float, explanation: str, key_signals: List[str]</signature>
+      <path>spendsense-backend/src/spendsense/generators/base.py:34-44</path>
+      <description>Model returned by generate_rationale(). The explanation field is the text to be validated for tone.</description>
+    </interface>
+
+    <!-- Recommendation Model -->
+    <interface>
+      <name>Recommendation (Pydantic Model)</name>
+      <kind>pydantic_model</kind>
+      <signature>class Recommendation(BaseModel): content: EducationItem, rationale: Rationale, persona: str, confidence: float</signature>
+      <path>spendsense-backend/src/spendsense/services/recommendations.py:26-36</path>
+      <description>Complete recommendation object. Disclaimer should be added at API response level, not to individual Recommendation objects.</description>
+    </interface>
+
+    <!-- User Model Consent Field -->
+    <interface>
+      <name>User.consent</name>
+      <kind>sqlalchemy_column</kind>
+      <signature>consent: Mapped[bool] = mapped_column(default=False)</signature>
+      <path>spendsense-backend/src/spendsense/models/user.py</path>
+      <description>Boolean field indicating user consent for data processing. check_consent() should verify this before generating recommendations.</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Manual testing only per ADR-001. Test guardrails using:
+      1. Manual function calls with edge case inputs
+      2. Integration testing via API endpoints with curl
+      3. Verification using operator view in frontend
+      4. Linting with ruff to catch syntax errors
+
+      No pytest or automated test framework. Guardrails should log violations clearly for manual inspection during development.
+    </standards>
+
+    <locations>
+      <location type="manual_test_scripts">spendsense-backend/scripts/test_*.py</location>
+      <location type="api_testing">curl commands against http://localhost:8000</location>
+      <location type="frontend_verification">http://localhost:5173/insights for visual inspection of disclaimer</location>
+      <location type="operator_view">http://localhost:5173/operator for detailed signal inspection</location>
+    </locations>
+
+    <ideas>
+      <!-- Test Ideas Mapped to Acceptance Criteria -->
+      <test id="AC1" criteria="Create utils/guardrails.py module">
+        Verify module exists and imports successfully. Check file structure follows conventions (snake_case filename).
+      </test>
+
+      <test id="AC2" criteria="Define SHAME_PATTERNS list with regex patterns">
+        Test patterns match expected shaming language (case-insensitive):
+        - "you're overspending"
+        - "bad financial habits"
+        - "irresponsible"
+        - "careless"
+        - "wasting money"
+        - "poor choices"
+        Test patterns don't match neutral language like "high spending" or "variable income".
+      </test>
+
+      <test id="AC3" criteria="Implement check_tone(text) function">
+        Test returns (True, []) for clean text.
+        Test returns (False, [pattern]) for shaming text.
+        Test case-insensitive matching ("YOU'RE OVERSPENDING" should match).
+        Test boundary cases: empty string, None, very long text.
+      </test>
+
+      <test id="AC4" criteria="Implement check_consent(user_consent) function">
+        Test returns True when user_consent=True.
+        Test returns False when user_consent=False.
+        Test handles None gracefully.
+      </test>
+
+      <test id="AC5" criteria="Define DISCLAIMER constant">
+        Verify disclaimer text is clear and appropriate.
+        Check it mentions this is educational content, not financial advice.
+      </test>
+
+      <test id="AC6" criteria="Add tone checking to rationale generation">
+        Generate rationale for each persona type.
+        Run check_tone() on explanation text.
+        Verify no shaming patterns in default templates.
+        Test that violations are logged (check logs).
+      </test>
+
+      <test id="AC7" criteria="Add disclaimer to all recommendations">
+        Call /insights endpoint for multiple users.
+        Verify response includes disclaimer field.
+        Check disclaimer is same constant from guardrails.py.
+      </test>
+
+      <test id="AC8" criteria="Test with edge cases">
+        Test with boundary language (e.g., "You have high spending patterns" - should pass).
+        Test with obvious violations (e.g., "You're wasting money on subscriptions" - should fail).
+        Test with empty/null rationale text.
+      </test>
+
+      <test id="AC9" criteria="Verify catches shaming language">
+        Manually inject shaming text into template.
+        Run rationale generation.
+        Confirm logged warning about tone violation.
+      </test>
+
+      <test id="AC10" criteria="Confirm all recommendations include disclaimer">
+        Test /insights endpoint with window=30d and window=180d.
+        Test across all 5 persona types (use synthetic users).
+        Verify disclaimer present in every response.
+      </test>
+    </ideas>
+  </tests>
+</story-context>

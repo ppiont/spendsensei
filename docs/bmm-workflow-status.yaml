@@ -37,7 +37,7 @@ workflow_status:
   # Phase 2: Planning
   prd: docs/PRD.md
   validate-prd: optional
-  create-design: conditional
+  create-design: docs/ux-design-specification.md
   tech-spec: optional
 
   # Phase 3: Solutioning

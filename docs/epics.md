@@ -1514,3 +1514,340 @@ bun run dev
 
 ---
 
+## Epic 7: UX Redesign - Calm & Focused Interface
+
+**Goal:** Transform SpendSense UI to match the Stripe-inspired, calm, focused aesthetic defined in the UX Design Specification.
+
+**Value Proposition:** Creates a professional, trustworthy interface that reduces financial anxiety through visual clarity and generous spacing. Implements the "calm and focused" design philosophy inspired by Linear and Stripe dashboards.
+
+**Technical Scope:**
+- shadcn-svelte component integration
+- Tailwind CSS v4 configuration with SpendSense design tokens
+- Direction 6 layout (Dashboard Metrics with KPI grid)
+- Balanced Calm color theme (Deep Blue + Sage Green)
+- Inter typography + JetBrains Mono for financial data
+- Generous spacing system (32px cards, 24px gaps)
+- Responsive design with accessibility (WCAG 2.1 AA)
+
+**Reference:** `docs/ux-design-specification.md`
+
+---
+
+### Story 7.1: Design System Foundation
+
+As a frontend developer,
+I want to set up the shadcn-svelte design system with SpendSense design tokens,
+So that I have a consistent foundation for building the calm, focused interface.
+
+**Acceptance Criteria:**
+1. Install shadcn-svelte: `bunx shadcn-svelte@latest init`
+2. Configure Tailwind CSS with SpendSense tokens:
+   - Colors: blue-primary (#2C5282), green-primary (#38A169), coral (#F56565), yellow (#ECC94B)
+   - Neutrals: gray-50 through gray-800
+   - Spacing: Extended scale with 18, 22 (generous spacing)
+   - Shadows: subtle (1px 2px), soft (4px 6px)
+   - Border radius: sm (4px), md (6px), lg (8px), xl (12px)
+3. Add Inter font family for UI (weights: 400, 500, 600)
+4. Add JetBrains Mono for financial data/numbers
+5. Install core shadcn components:
+   - Button, Card, Input, Select, Badge, Alert
+   - Tabs, Tooltip, Dialog (Modal), Table, Progress
+6. Create `lib/components/ui/` directory structure
+7. Create base KPI Card component (`KpiCard.svelte`):
+   - Props: label, value, change, variant (standard/featured/alert/success)
+   - Anatomy: uppercase label, large value, optional change indicator
+   - States: default (white bg, subtle shadow), featured (2x width), alert (coral border-left)
+8. Create base Recommendation Card component (`RecommendationCard.svelte`):
+   - Props: icon, title, body, rationale, cta
+   - Anatomy: 40px icon circle, badge, title, body, gray-50 rationale box
+   - States: default, hover (blue border), expanded
+9. Create Persona Badge component (`PersonaBadge.svelte`):
+   - Props: personaName, description, confidence
+   - Anatomy: gradient avatar (blue→green), semibold name, subtext
+10. Verify components render with generous spacing (32px card padding)
+
+**Prerequisites:** Story 5.5 (Operator View) - Frontend complete
+
+**Technical Notes:**
+- Tailwind v4 syntax (no @apply directives)
+- Components use Svelte 5 runes ($state, $derived)
+- All spacing uses 8px base unit scale
+- Shadows are subtle (not dramatic) per UX spec
+- Typography: 16px minimum for body text (accessibility)
+
+---
+
+### Story 7.2: Dashboard Page Redesign
+
+As a user,
+I want a calm, data-focused dashboard with prominent KPIs and clear recommendations,
+So that I can understand my financial health at a glance without feeling overwhelmed.
+
+**Acceptance Criteria:**
+1. Implement Direction 6 layout structure:
+   - Top bar: Persona badge with gradient avatar + user selector
+   - Metrics grid: 4-column layout (featured KPI spans 2 columns)
+   - Recommendations section: 3-column grid below metrics
+2. Replace existing dashboard with new layout
+3. Add 5 KPI cards using `KpiCard` component:
+   - **Featured (2x width):** Total Net Worth with trend
+   - **Supporting:** Monthly Savings Rate
+   - **Supporting:** Credit Health (utilization %)
+   - **Supporting:** Emergency Fund (months)
+   - **Supporting:** Monthly Subscriptions
+4. Wire KPI cards to real API data from `/accounts` endpoint
+5. Format financial values:
+   - Currency: formatCurrency() helper (dollars with 2 decimals)
+   - Percentages: 1 decimal place with % symbol
+   - Trends: green arrow up (positive), red arrow down (negative)
+6. Update recommendation cards with "Because..." rationales:
+   - Use `RecommendationCard` component
+   - Show icon (40px blue circle) with relevant emoji/icon
+   - Display rationale in gray-50 background box
+   - Add "Learn More" CTA button (blue-primary)
+7. Apply generous spacing:
+   - Card padding: 32px (p-8)
+   - Grid gaps: 24px (gap-6)
+   - Section margins: 48px (space-y-12)
+8. Add persona badge to top bar with:
+   - Gradient avatar (blue→green)
+   - Persona name (semibold, gray-800)
+   - Confidence percentage (small, gray-600)
+9. Implement subtle shadows:
+   - Cards at rest: shadow-subtle
+   - Cards on hover: shadow-soft with 2px lift
+10. Verify responsive behavior:
+    - Desktop (1024px+): 4-column grid
+    - Tablet (768-1023px): 2-column grid
+    - Mobile (<768px): 1-column stack
+
+**Prerequisites:** Story 7.1 (Design System Foundation)
+
+**Technical Notes:**
+- Use CSS Grid for metrics layout
+- Featured KPI: `grid-column: span 2`
+- Maintain existing API integration from Story 5.2
+- Use $state for selected user
+- Use $derived for computed net worth
+- Smooth transitions: 150-300ms ease
+
+---
+
+### Story 7.3: Insights Page Redesign
+
+As a user,
+I want a focused insights page that explains my persona and shows personalized recommendations,
+So that I can understand why I'm seeing specific financial education content.
+
+**Acceptance Criteria:**
+1. Adapt Direction 6 layout for insights-focused view:
+   - Prominent persona explanation section at top
+   - 3-column recommendation grid below
+2. Replace existing insights page with new layout
+3. Add persona explanation section:
+   - Large persona badge (avatar + name + confidence)
+   - Plain-language description of persona type
+   - "What this means" expandable section
+   - Window selector (30d / 180d tabs)
+4. Implement expandable recommendation cards:
+   - Collapsed: Title + summary + "Because..." (3 lines max)
+   - Expanded: Full body text + detailed rationale + data citations
+   - Smooth expand/collapse animation (300ms)
+   - Click anywhere on card to expand
+5. Update color usage per UX spec:
+   - Blue = Trust (primary actions, financial data)
+   - Green = Growth (positive outcomes, savings)
+   - Coral = Caution (high utilization, warnings only)
+   - Yellow = Learn (educational highlights)
+6. Add data citations to rationales:
+   - "Based on your card ending in 4523 at 68% utilization"
+   - "You have 5 recurring subscriptions totaling $87/month"
+   - Use monospace font for numbers
+7. Include disclaimer at bottom:
+   - shadcn Alert component (blue, info variant)
+   - "This is educational content, not financial advice"
+8. Apply generous white space:
+   - Persona section padding: 48px (p-12)
+   - Card padding: 32px (p-8)
+   - Between sections: 48px (space-y-12)
+9. Add loading states:
+   - Skeleton loaders for cards (not spinners)
+   - Fade-in animation when loaded (300ms)
+10. Verify window selector updates recommendations:
+    - Tabs component for 30d / 180d
+    - Active tab: blue-primary background
+    - API call on tab change
+
+**Prerequisites:** Story 7.2 (Dashboard Page Redesign)
+
+**Technical Notes:**
+- Use shadcn Tabs for window selector
+- Expandable cards: $state for expanded IDs
+- Use shadcn Alert for disclaimer
+- Maintain API integration from Story 5.4
+- Progressive disclosure: details hidden until requested
+- No layout shift when expanding cards
+
+---
+
+### Story 7.4: Transactions Page Redesign
+
+As a user,
+I want a clean, scannable transaction list with effective filtering,
+So that I can review my spending patterns without visual clutter.
+
+**Acceptance Criteria:**
+1. Replace existing transactions page with calm aesthetic
+2. Implement shadcn Table component:
+   - Columns: Date, Merchant, Category, Amount, Status
+   - Alternating row backgrounds (white / gray-50)
+   - Hover state: gray-100 background
+3. Apply generous spacing:
+   - Table cell padding: 12px vertical, 16px horizontal
+   - Row height: minimum 48px for touch targets
+4. Format transaction data:
+   - Date: Gray-600, small (MMM DD, YYYY)
+   - Merchant: Semibold, gray-800
+   - Category: Badge with semantic color
+   - Amount: JetBrains Mono, right-aligned
+   - Debit: Red-600, Credit: Green-600
+5. Update category badges:
+   - Blue: INCOME
+   - Green: SAVINGS
+   - Coral: HIGH_VALUE (>$200)
+   - Gray: DEFAULT
+   - Small, rounded (sm), uppercase text
+6. Add filter controls in top bar:
+   - Category dropdown (shadcn Select)
+   - Date range buttons (30d, 90d, 180d, All)
+   - Search by merchant (shadcn Input)
+   - Clear filters button (ghost variant)
+7. Implement pagination:
+   - Show 25 transactions per page
+   - shadcn Pagination component
+   - Page numbers + Next/Prev buttons
+8. Add category spending summary card:
+   - Total spend by category
+   - Percentage breakdown
+   - Simple bar chart (optional)
+9. Implement responsive behavior:
+   - Desktop: Full table with all columns
+   - Tablet: Hide status column, collapse date
+   - Mobile: Card view (not table)
+10. Add empty state:
+    - "No transactions match your filters"
+    - Reset filters button
+    - Subtle illustration (optional)
+
+**Prerequisites:** Story 7.3 (Insights Page Redesign)
+
+**Technical Notes:**
+- Use shadcn Table, Select, Input components
+- Client-side filtering for categories
+- Maintain offset pagination with API
+- $state for active filters
+- Touch targets: minimum 44x44px (mobile)
+- No horizontal scroll on mobile
+
+---
+
+### Story 7.5: Responsive & Accessibility Polish
+
+As a user,
+I want the interface to work perfectly on any device and be fully accessible,
+So that everyone can use SpendSense regardless of device or ability.
+
+**Acceptance Criteria:**
+1. Implement responsive breakpoints:
+   - Mobile: 320px - 767px (1-column layouts)
+   - Tablet: 768px - 1023px (2-column layouts)
+   - Desktop: 1024px - 1439px (3-4 column layouts)
+   - Wide: 1440px+ (max-width 1400px container)
+2. Add keyboard navigation:
+   - Tab order follows visual hierarchy
+   - 2px blue outline on all focus states
+   - Escape closes modals/dropdowns
+   - Arrow keys navigate tables/lists
+   - Enter activates buttons/links
+3. Test WCAG 2.1 AA compliance:
+   - Color contrast: 4.5:1 minimum for text
+   - All interactive elements have visible focus
+   - No color-only indicators (always pair with icon/label)
+   - Form labels properly associated
+   - ARIA labels on icon-only buttons
+4. Add skeleton loaders for loading states:
+   - KPI cards: animated gray-200 rectangles
+   - Recommendation cards: title + body skeleton
+   - Transactions: table row skeletons
+   - No spinners unless <3 elements loading
+5. Verify touch targets on mobile:
+   - Minimum 44x44px for all tappable elements
+   - 8px spacing between touch targets
+   - Full-width buttons for primary actions
+   - No hover-only interactions
+6. Implement smooth transitions:
+   - Page navigation: fade-in 300ms
+   - Card hover: lift 2px + shadow 150ms
+   - Expand/collapse: height 300ms ease
+   - Respect `prefers-reduced-motion`
+7. Add ARIA live regions:
+   - Recommendation updates announced
+   - Filter changes announced
+   - Error messages announced
+8. Test with screen readers:
+   - VoiceOver (macOS) or NVDA (Windows)
+   - All content navigable
+   - Semantic HTML (nav, main, aside, article)
+   - Skip to main content link
+9. Test responsive behavior:
+   - Dashboard grid: 4 → 2 → 1 columns
+   - Recommendations: 3 → 2 → 1 columns
+   - Transactions: table → card view
+   - Navigation: horizontal → hamburger menu
+10. Run Lighthouse accessibility audit:
+    - Score: 95+ required
+    - Fix all critical issues
+    - Document any minor issues
+
+**Prerequisites:** Story 7.4 (Transactions Page Redesign)
+
+**Technical Notes:**
+- Use Tailwind responsive utilities (md:, lg:, xl:)
+- Focus-visible for keyboard-only focus indicators
+- prefers-reduced-motion CSS media query
+- Semantic HTML over divs
+- ARIA attributes where needed
+- Test on real devices (not just browser resize)
+- Lighthouse CI integration (optional)
+
+---
+
+## Epic 7 Implementation Notes
+
+**Design Reference:** All specifications from `docs/ux-design-specification.md`
+
+**Key Principles:**
+- Generous spacing is a feature (32px card padding minimum)
+- White space reduces cognitive load
+- Subtle depth (soft shadows, not dramatic)
+- Color with purpose (not decoration)
+- Instant feedback (smooth transitions)
+
+**Testing Checklist:**
+- [ ] Lighthouse accessibility score 95+
+- [ ] Manual keyboard navigation test
+- [ ] Screen reader test (VoiceOver/NVDA)
+- [ ] Color contrast verification
+- [ ] Touch target verification (mobile)
+- [ ] Responsive behavior at all breakpoints
+- [ ] Visual comparison with UX spec mockups
+
+**Completion Criteria:**
+- All 5 stories complete
+- UX spec fully implemented
+- Accessibility audit passing
+- Responsive design verified
+- No regressions in existing functionality
+
+---
+
