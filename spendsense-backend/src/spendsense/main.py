@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 
 from spendsense.database import init_db
 from spendsense.config import settings
-from spendsense.routers import users_router
+from spendsense.routers import users_router, accounts_router, transactions_router
 
 # Set up logging
 logging.basicConfig(level=settings.log_level)
@@ -22,6 +22,8 @@ app = FastAPI(
 
 # Register routers
 app.include_router(users_router)
+app.include_router(accounts_router)
+app.include_router(transactions_router)
 
 # Add CORS middleware
 app.add_middleware(

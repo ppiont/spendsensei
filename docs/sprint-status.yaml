@@ -60,9 +60,9 @@ development_status:
   epic-3-retrospective: optional
 
   epic-4: backlog
-  4-1-api-schemas-configuration: review
-  4-2-user-consent-endpoints: review
-  4-3-account-transaction-endpoints: drafted
+  4-1-api-schemas-configuration: done
+  4-2-user-consent-endpoints: done
+  4-3-account-transaction-endpoints: review
   4-4-insights-endpoint: drafted
   epic-4-retrospective: optional
 
