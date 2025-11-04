@@ -59,15 +59,15 @@ development_status:
   3-5-recommendation-engine: done
   epic-3-retrospective: optional
 
-  epic-4: backlog
+  epic-4: done
   4-1-api-schemas-configuration: done
   4-2-user-consent-endpoints: done
-  4-3-account-transaction-endpoints: review
-  4-4-insights-endpoint: review
+  4-3-account-transaction-endpoints: done
+  4-4-insights-endpoint: done
   epic-4-retrospective: optional
 
   epic-5: backlog
-  5-1-api-client-type-definitions: drafted
+  5-1-api-client-type-definitions: done
   5-2-dashboard-page: drafted
   5-3-transactions-page: drafted
   5-4-insights-page: drafted

@@ -1,6 +1,6 @@
 # Story 4.4: Insights Endpoint
 
-Status: review
+Status: done
 
 ## Story
 
