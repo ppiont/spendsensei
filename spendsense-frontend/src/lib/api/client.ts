@@ -117,6 +117,14 @@ async function handleResponse<T>(response: Response): Promise<T> {
  */
 export const userAPI = {
   /**
+   * Get all users
+   */
+  async getUsers(): Promise<User[]> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/users`);
+    return handleResponse<User[]>(response);
+  },
+
+  /**
    * Create a new user
    */
   async createUser(userData: UserCreate): Promise<User> {

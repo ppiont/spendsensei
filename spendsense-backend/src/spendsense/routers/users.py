@@ -13,6 +13,39 @@ from spendsense.schemas.user import UserCreate, UserResponse
 router = APIRouter(prefix="/users", tags=["users"])
 
 
+@router.get("", response_model=list[UserResponse])
+async def get_users(
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get all users.
+
+    Args:
+        db: Database session
+
+    Returns:
+        list[UserResponse]: List of all users ordered by name
+
+    Raises:
+        HTTPException: 500 if database error occurs
+    """
+    try:
+        # Get all users ordered by name
+        result = await db.execute(
+            select(User).order_by(User.name)
+        )
+        users = result.scalars().all()
+
+        # Return response
+        return [UserResponse.from_orm(user) for user in users]
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch users: {str(e)}"
+        )
+
+
 @router.post("", response_model=UserResponse, status_code=201)
 async def create_user(
     user_data: UserCreate,

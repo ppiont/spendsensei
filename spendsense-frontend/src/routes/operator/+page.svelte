@@ -1,23 +1,17 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { api } from '$lib/api/client';
-	import type { Recommendation } from '$lib/types';
+	import type { Recommendation, User } from '$lib/types';
 
 	// Svelte 5 runes for reactive state
-	let selectedUserId = $state('bdd640fb-0667-4ad1-9c80-317fa3b1799d');
+	let selectedUserId = $state('');
 	let recommendations = $state<Recommendation[]>([]);
 	let loading = $state(false);
 	let error = $state<string | null>(null);
 	let selectedWindow = $state(30);
-
-	// Available test users
-	const testUsers = [
-		{ id: 'bdd640fb-0667-4ad1-9c80-317fa3b1799d', name: 'Daniel Doyle' },
-		{ id: '97d7a560-adb1-4670-ad9f-b00d4882d73c', name: 'Mr. Andrew Foster' },
-		{ id: '37c86152-beed-4af9-80c5-9f30d1031424', name: 'Amber Cooper' },
-		{ id: 'dc268108-7140-41a1-afc2-ccfc9db7284b', name: 'Steven Taylor' },
-		{ id: 'c7a9f33c-22d8-49d3-b3e4-f986f18cccdc', name: 'Ashley Garcia' }
-	];
+	let users = $state<User[]>([]);
+	let usersLoading = $state(true);
+	let usersError = $state<string | null>(null);
 
 	// Get full data from first recommendation
 	const fullData = $derived(recommendations.length > 0 ? recommendations[0] : null);
@@ -25,6 +19,26 @@
 	// Format JSON for display
 	function formatJSON(obj: any): string {
 		return JSON.stringify(obj, null, 2);
+	}
+
+	// Fetch all users
+	async function fetchUsers() {
+		usersLoading = true;
+		usersError = null;
+
+		try {
+			const data = await api.users.getUsers();
+			users = data;
+			// Set first user as selected by default
+			if (data.length > 0 && !selectedUserId) {
+				selectedUserId = data[0].id;
+			}
+		} catch (err: any) {
+			usersError = err.detail || err.message || 'Failed to load users';
+			console.error('Failed to fetch users:', err);
+		} finally {
+			usersLoading = false;
+		}
 	}
 
 	// Fetch insights for inspection
@@ -46,8 +60,11 @@
 	}
 
 	// Load data on mount
-	onMount(() => {
-		inspectUser();
+	onMount(async () => {
+		await fetchUsers();
+		if (selectedUserId) {
+			await inspectUser();
+		}
 	});
 </script>
 
@@ -66,19 +83,33 @@
 
 		<!-- Controls -->
 		<section class="bg-card rounded-lg border border-border shadow-sm p-6 mb-6">
+			{#if usersError}
+				<div class="bg-destructive/10 border border-destructive/30 rounded-lg p-4 mb-4">
+					<strong class="text-destructive block mb-2">Error loading users:</strong>
+					<p class="text-destructive/90">{usersError}</p>
+				</div>
+			{/if}
+
 			<div class="flex flex-col md:flex-row gap-4 items-start md:items-end">
 				<div class="flex flex-col gap-2 flex-1">
 					<label for="user-select" class="text-sm font-medium text-muted-foreground"
-						>Select User:</label
+						>Select User ({users.length} total):</label
 					>
 					<select
 						id="user-select"
 						bind:value={selectedUserId}
-						class="px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+						disabled={usersLoading || users.length === 0}
+						class="px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed"
 					>
-						{#each testUsers as user}
-							<option value={user.id}>{user.name}</option>
-						{/each}
+						{#if usersLoading}
+							<option>Loading users...</option>
+						{:else if users.length === 0}
+							<option>No users found</option>
+						{:else}
+							{#each users as user}
+								<option value={user.id}>{user.name}</option>
+							{/each}
+						{/if}
 					</select>
 				</div>
 
