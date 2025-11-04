@@ -5,32 +5,24 @@
 	import type { Account, Transaction } from '$lib/types';
 
 	// Svelte 5 runes for reactive state
-	let selectedUserId = $state('bdd640fb-0667-4ad1-9c80-317fa3b1799d');
+	let users = $state<Array<{ id: string; name: string }>>([]);
+	let selectedUserId = $state('');
 	let accounts = $state<Account[]>([]);
 	let transactions = $state<Transaction[]>([]);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 
-	// Available test users
-	const testUsers = [
-		{ id: 'bdd640fb-0667-4ad1-9c80-317fa3b1799d', name: 'Daniel Doyle' },
-		{ id: '97d7a560-adb1-4670-ad9f-b00d4882d73c', name: 'Mr. Andrew Foster' },
-		{ id: '37c86152-beed-4af9-80c5-9f30d1031424', name: 'Amber Cooper' },
-		{ id: 'dc268108-7140-41a1-afc2-ccfc9db7284b', name: 'Steven Taylor' },
-		{ id: 'c7a9f33c-22d8-49d3-b3e4-f986f18cccdc', name: 'Ashley Garcia' }
-	];
-
 	// Derived values using $derived rune
 	const assets = $derived(
 		accounts
 			.filter((a) => a.type === 'depository')
-			.reduce((sum, a) => sum + a.balance, 0)
+			.reduce((sum, a) => sum + a.current_balance, 0)
 	);
 
 	const liabilities = $derived(
 		accounts
 			.filter((a) => a.type === 'credit')
-			.reduce((sum, a) => sum + a.balance, 0)
+			.reduce((sum, a) => sum + a.current_balance, 0)
 	);
 
 	const netWorth = $derived(assets - liabilities);
@@ -57,9 +49,25 @@
 		}
 	}
 
-	// Load data on mount and when user changes
-	onMount(() => {
-		loadUserData();
+	// Fetch all users
+	async function loadUsers() {
+		try {
+			const data = await api.users.getUsers();
+			users = data.map((u) => ({ id: u.id, name: u.name }));
+			if (users.length > 0 && !selectedUserId) {
+				selectedUserId = users[0].id;
+			}
+		} catch (err: any) {
+			console.error('Error loading users:', err);
+		}
+	}
+
+	// Load data on mount
+	onMount(async () => {
+		await loadUsers();
+		if (selectedUserId) {
+			loadUserData();
+		}
 	});
 
 	// Reload when user selection changes
@@ -83,7 +91,7 @@
 					bind:value={selectedUserId}
 					class="px-4 py-2 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
 				>
-					{#each testUsers as user}
+					{#each users as user}
 						<option value={user.id}>{user.name}</option>
 					{/each}
 				</select>
@@ -172,7 +180,7 @@
 								</div>
 								<div class="text-left sm:text-right">
 									<p class="text-lg font-semibold text-foreground">
-										{formatCurrency(account.balance)}
+										{formatCurrency(account.current_balance)}
 									</p>
 									{#if account.type === 'credit' && account.limit}
 										<p class="text-sm text-muted-foreground">
@@ -205,7 +213,7 @@
 										{txn.merchant_name || 'Unknown'}
 									</p>
 									<p class="text-sm text-muted-foreground">
-										{formatCategory(txn.category)}
+										{formatCategory(txn.personal_finance_category_primary)}
 									</p>
 									<p class="text-xs text-muted-foreground">
 										{new Date(txn.date).toLocaleDateString()}

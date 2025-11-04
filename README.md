@@ -1,80 +1,98 @@
 # SpendSense
 
-**Gauntlet Week 4 - Full-Stack Financial Education Platform**
+**Personalized Financial Education Platform**
 
-SpendSense is a personalized financial education platform that analyzes user spending patterns and provides tailored recommendations to improve financial health. Built with FastAPI, SvelteKit, and SQLite.
-
-## Project Status
-
-**Current Status:** ✅ **EPICS 1-5 COMPLETE** (5/6 epics done)
-
-### Completed Epics
-
-- ✅ **Epic 1: Foundation** - Backend/Frontend setup, Database, Synthetic data
-- ✅ **Epic 2: Signal Detection** - Subscription detection, Savings analysis, Credit utilization, Income analysis
-- ✅ **Epic 3: Persona System** - Persona assignment, Content catalog, Recommendation engine
-- ✅ **Epic 4: API Layer** - REST API with schemas, endpoints for users/accounts/transactions/insights
-- ✅ **Epic 5: Frontend** - Dashboard, Transactions, Insights pages, Operator view
-
-### Remaining Work
-
-- 🚧 **Epic 6: Quality** - Guardrails, Evaluation harness, Documentation polish (3 stories drafted)
+SpendSense analyzes your spending patterns and provides tailored financial recommendations to improve your financial health. Built with FastAPI, SvelteKit, and SQLite.
 
 ## Quick Start
 
-### Backend (FastAPI)
+### 1. Start the Backend
 
 ```bash
 cd spendsense-backend
-uv sync
+uv sync                              # Install dependencies
 uv run uvicorn spendsense.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Visit: http://localhost:8000/docs
+The API will be available at:
+- **API**: http://localhost:8000
+- **API Docs**: http://localhost:8000/docs
 
-### Frontend (SvelteKit)
+### 2. Start the Frontend
 
 ```bash
 cd spendsense-frontend
-npm install
-npm run dev
+npm install                          # or: bun install
+npm run dev                          # or: bun run dev
 ```
 
-Visit: http://localhost:5173/
+The app will be available at: http://localhost:5173
+
+### 3. Explore the App
+
+The database comes pre-loaded with 50 synthetic users with realistic financial data. Try switching between users in the dropdown to see different financial profiles!
+
+## What Does SpendSense Do?
+
+SpendSense provides personalized financial education by:
+
+1. **Analyzing Spending Patterns** - Detects subscriptions, savings habits, credit usage, and income patterns
+2. **Assigning Financial Personas** - Classifies users into personas like "High Utilization" or "Savings Builder"
+3. **Generating Recommendations** - Provides 3 personalized educational items based on your financial behavior
+4. **Tracking Progress** - Shows complete decision traceability in the Operator view
 
 ## Features
 
-### For Users
-- **Dashboard** - View account balances, net worth, and recent transactions
-- **Transaction History** - Full transaction list with filtering and category breakdown
-- **Personalized Insights** - AI-generated financial recommendations based on spending patterns
-- **Persona Assignment** - Automatic classification into financial personas (high_utilization, variable_income, etc.)
+### Pages
 
-### For Developers
-- **Operator View** - Internal inspection tool showing complete decision traceability
-- **API Documentation** - Auto-generated OpenAPI docs at /docs
-- **Synthetic Data** - 5 test users with realistic financial data
-- **Type Safety** - Full TypeScript types matching backend Pydantic schemas
+- **Dashboard** (`/dashboard`) - Account balances, net worth, recent transactions
+- **Transactions** (`/transactions`) - Full transaction history with filtering, search, and category breakdown
+- **Insights** (`/insights`) - Personalized financial recommendations with explanations
+- **Operator** (`/operator`) - Internal debugging view showing complete persona assignment and recommendation logic
 
-## Architecture
+### Key Capabilities
 
-### Backend Stack
-- **FastAPI** - Modern Python web framework
+- Real-time persona assignment based on spending behavior
+- Content catalog with 12 educational items mapped to financial signals
+- Transaction categorization using Plaid-compliant two-level hierarchy
+- Confidence scoring for all recommendations
+- Complete audit trail of all decisions
+
+## Tech Stack
+
+### Backend
+- **FastAPI** - Modern async Python web framework
 - **SQLAlchemy** - Async ORM with SQLite
-- **Pydantic** - Data validation and settings management
-- **Python 3.11+** - Modern Python features
+- **Pydantic** - Data validation and schemas
+- **Python 3.11+**
 
-### Frontend Stack
+### Frontend
 - **SvelteKit** - Full-stack web framework
-- **Svelte 5** - Latest with runes ($state, $derived, $effect)
+- **Svelte 5** - With runes ($state, $derived, $effect)
 - **TypeScript** - Type-safe API client
-- **Vite** - Fast build tool
+- **Tailwind CSS** - Utility-first styling
 
-### Key Components
-1. **Signal Detection** - Analyzes transactions for behavioral patterns
-2. **Persona Engine** - Assigns users to financial personas
-3. **Content Catalog** - Educational content mapped to personas
-4. **Recommendation Engine** - Generates personalized insights
+## API Endpoints
+
+```
+POST   /users                     # Create user
+POST   /users/consent             # Update consent
+GET    /accounts/{user_id}        # Get accounts
+GET    /transactions/{user_id}    # Get transactions (paginated)
+GET    /insights/{user_id}        # Get recommendations (window param)
+```
+
+Full API documentation available at http://localhost:8000/docs
+
+## Data Model
+
+SpendSense uses a Plaid-compliant data model:
+
+- **Users** - Basic user information and consent status
+- **Accounts** - Depository accounts (checking, savings) and credit cards with balances, limits, and payment tracking
+- **Transactions** - Two-level category hierarchy (primary + detailed), payment channels, merchant entity IDs
+- **Personas** - Assigned personas with confidence scores
+- **Content** - Educational content catalog with signal tags
 
 ## Project Structure
 
@@ -83,75 +101,57 @@ spendsensei/
 ├── spendsense-backend/          # FastAPI backend
 │   ├── src/spendsense/
 │   │   ├── routers/             # API endpoints
-│   │   ├── services/            # Business logic
+│   │   ├── services/            # Business logic (signals, personas, recommendations)
 │   │   ├── generators/          # Content generation
-│   │   ├── schemas/             # Pydantic models
-│   │   └── models/              # SQLAlchemy models
-│   ├── data/                    # SQLite database
-│   └── scripts/                 # Test scripts
+│   │   ├── schemas/             # Pydantic models for API
+│   │   └── models/              # SQLAlchemy ORM models
+│   ├── data/                    # SQLite database and content catalog
+│   └── scripts/                 # Test and utility scripts
 ├── spendsense-frontend/         # SvelteKit frontend
 │   └── src/
-│       ├── routes/              # Pages
-│       └── lib/                 # API client & types
-├── docs/                        # Project documentation
-│   ├── PRD.md
-│   ├── architecture.md
-│   ├── epics.md
-│   ├── sprint-status.yaml
-│   └── stories/                 # User story files
-└── bmad/                        # BMAD workflow system
-
+│       ├── routes/              # Pages (dashboard, transactions, insights, operator)
+│       └── lib/                 # API client and TypeScript types
+└── docs/                        # Project documentation (PRD, architecture, etc.)
 ```
-
-## API Endpoints
-
-- `POST /users` - Create new user
-- `POST /users/consent` - Update user consent
-- `GET /accounts/{user_id}` - Get user accounts
-- `GET /transactions/{user_id}` - Get user transactions (paginated)
-- `GET /insights/{user_id}?window=30` - Get personalized recommendations
-
-## Test Users
-
-The system includes 5 synthetic users with realistic financial data:
-
-- Daniel Doyle (bdd640fb-0667-4ad1-9c80-317fa3b1799d)
-- Mr. Andrew Foster (97d7a560-adb1-4670-ad9f-b00d4882d73c)
-- Amber Cooper (37c86152-beed-4af9-80c5-9f30d1031424)
-- Steven Taylor (dc268108-7140-41a1-afc2-ccfc9db7284b)
-- Ashley Garcia (c7a9f33c-22d8-49d3-b3e4-f986f18cccdc)
 
 ## Development
 
-### Running Tests
-
-Backend tests are located in `spendsense-backend/scripts/test_*.py`:
+### Regenerating Synthetic Data
 
 ```bash
-# Run all feature tests
+cd spendsense-backend
+uv run python scripts/init_and_load_data.py
+```
+
+This will:
+1. Drop and recreate the database
+2. Generate 50 users with realistic financial profiles
+3. Create 1-3 accounts per user (checking, savings, credit cards)
+4. Generate 20-100 transactions per account with realistic categories
+
+### Running Tests
+
+```bash
 cd spendsense-backend
 python scripts/test_signal_computation.py
 python scripts/test_recommendation_engine.py
-python scripts/test_account_transaction_endpoints.py
 python scripts/test_insights_endpoint.py
 ```
 
-### Code Generation
+### Understanding the Recommendation Pipeline
 
-This project uses the BMAD (Business Model Accelerator Development) workflow system for structured development. See `bmad/` directory for workflow definitions.
+1. **Signal Detection** (`services/features.py`) - Analyzes transactions for patterns
+2. **Persona Assignment** (`services/personas.py`) - Matches signals to persona types
+3. **Content Generation** (`generators/template.py`) - Scores and selects relevant content
+4. **Recommendation Engine** (`services/recommendations.py`) - Orchestrates the full pipeline
 
 ## Documentation
 
+- **Project Description**: `docs/Project Description.md` - Original requirements
 - **PRD**: `docs/PRD.md` - Product Requirements Document
-- **Architecture**: `docs/architecture.md` - Technical architecture decisions
-- **Epics**: `docs/epics.md` - Epic and story breakdown
-- **Sprint Status**: `docs/sprint-status.yaml` - Current development status
-- **Stories**: `docs/stories/*.md` - Individual user story files
+- **Architecture**: `docs/architecture.md` - Technical decisions and rationale
+- **Status**: `docs/STATUS.md` - Current project status and completion details
 
 ## License
 
-Private project - Gauntlet Week 4
-
-## Credits
-
-Built with Claude Code by Peter Piont
+This is a Gauntlet Week 4 project.

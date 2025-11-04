@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class Transaction(Base):
-    """Transaction entity with indexed queries for performance"""
+    """Transaction entity with indexed queries for performance - Plaid-compliant schema"""
 
     __tablename__ = "transactions"
 
@@ -24,10 +24,25 @@ class Transaction(Base):
     amount: Mapped[int] = mapped_column(
         Integer, nullable=False
     )  # In cents, positive = debit
+
+    # Plaid merchant fields
     merchant_name: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
-    category: Mapped[str] = mapped_column(
+    merchant_entity_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)  # Normalized merchant ID
+
+    # Plaid category fields (two-level hierarchy)
+    personal_finance_category_primary: Mapped[str] = mapped_column(
         String(100), nullable=False
     )  # e.g., FOOD_AND_DRINK, INCOME
+    personal_finance_category_detailed: Mapped[Optional[str]] = mapped_column(
+        String(100), nullable=True
+    )  # e.g., RESTAURANTS, FAST_FOOD
+
+    # Plaid payment channel
+    payment_channel: Mapped[Optional[str]] = mapped_column(
+        String(20), nullable=True
+    )  # 'online', 'in_store', 'other'
+
+    # Plaid pending status
     pending: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # Relationships

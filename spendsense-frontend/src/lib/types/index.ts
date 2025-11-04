@@ -18,7 +18,7 @@ export interface UserCreate {
   email: string;
 }
 
-// Account types
+// Account types - Plaid-compliant
 export interface Account {
   id: string;
   user_id: string;
@@ -26,22 +26,33 @@ export interface Account {
   subtype: 'checking' | 'savings' | 'credit_card';
   name: string;
   mask: string;
-  balance: number; // in cents
+  current_balance: number; // in cents
+  available_balance?: number; // in cents
   limit?: number; // in cents, credit cards only
   currency: string;
+  holder_category: string; // 'personal' or 'business'
   apr?: number;
   min_payment?: number; // in cents
   is_overdue: boolean;
+  last_payment_amount?: number; // in cents
+  last_payment_date?: string; // ISO 8601 format
+  next_payment_due_date?: string; // ISO 8601 format
+  last_statement_balance?: number; // in cents
+  last_statement_date?: string; // ISO 8601 format
+  interest_rate?: number;
 }
 
-// Transaction types
+// Transaction types - Plaid-compliant
 export interface Transaction {
   id: string;
   account_id: string;
   date: string; // ISO 8601 format
   amount: number; // in cents, positive = debit, negative = credit
   merchant_name?: string;
-  category: string;
+  merchant_entity_id?: string; // Normalized merchant ID
+  personal_finance_category_primary: string; // e.g., FOOD_AND_DRINK, INCOME
+  personal_finance_category_detailed?: string; // e.g., RESTAURANTS, GROCERIES
+  payment_channel?: string; // 'online', 'in_store', 'other'
   pending: boolean;
 }
 

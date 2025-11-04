@@ -5,7 +5,8 @@
 	import type { Transaction } from '$lib/types';
 
 	// Svelte 5 runes for reactive state
-	let selectedUserId = $state('bdd640fb-0667-4ad1-9c80-317fa3b1799d');
+	let users = $state<Array<{ id: string; name: string }>>([]);
+	let selectedUserId = $state('');
 	let allTransactions = $state<Transaction[]>([]);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
@@ -18,18 +19,9 @@
 	let searchQuery = $state('');
 	let selectedCategory = $state('all');
 
-	// Available test users
-	const testUsers = [
-		{ id: 'bdd640fb-0667-4ad1-9c80-317fa3b1799d', name: 'Daniel Doyle' },
-		{ id: '97d7a560-adb1-4670-ad9f-b00d4882d73c', name: 'Mr. Andrew Foster' },
-		{ id: '37c86152-beed-4af9-80c5-9f30d1031424', name: 'Amber Cooper' },
-		{ id: 'dc268108-7140-41a1-afc2-ccfc9db7284b', name: 'Steven Taylor' },
-		{ id: 'c7a9f33c-22d8-49d3-b3e4-f986f18cccdc', name: 'Ashley Garcia' }
-	];
-
 	// Get unique categories from transactions
 	const categories = $derived(
-		['all', ...new Set(allTransactions.map((t) => t.category))].sort()
+		['all', ...new Set(allTransactions.map((t) => t.personal_finance_category_primary))].sort()
 	);
 
 	// Filter transactions by search and category
@@ -39,7 +31,7 @@
 				searchQuery === '' ||
 				txn.merchant_name?.toLowerCase().includes(searchQuery.toLowerCase());
 			const matchesCategory =
-				selectedCategory === 'all' || txn.category === selectedCategory;
+				selectedCategory === 'all' || txn.personal_finance_category_primary === selectedCategory;
 			return matchesSearch && matchesCategory;
 		})
 	);
@@ -59,8 +51,8 @@
 		filteredTransactions
 			.filter((t) => t.amount > 0) // Only expenses (positive amounts)
 			.forEach((t) => {
-				const current = breakdown.get(t.category) || 0;
-				breakdown.set(t.category, current + t.amount);
+				const current = breakdown.get(t.personal_finance_category_primary) || 0;
+				breakdown.set(t.personal_finance_category_primary, current + t.amount);
 			});
 
 		return Array.from(breakdown.entries())
@@ -86,9 +78,25 @@
 		}
 	}
 
+	// Fetch all users
+	async function loadUsers() {
+		try {
+			const data = await api.users.getUsers();
+			users = data.map((u) => ({ id: u.id, name: u.name }));
+			if (users.length > 0 && !selectedUserId) {
+				selectedUserId = users[0].id;
+			}
+		} catch (err: any) {
+			console.error('Error loading users:', err);
+		}
+	}
+
 	// Load data on mount
-	onMount(() => {
-		loadTransactions();
+	onMount(async () => {
+		await loadUsers();
+		if (selectedUserId) {
+			loadTransactions();
+		}
 	});
 
 	// Reload when user selection changes
@@ -125,7 +133,7 @@
 					bind:value={selectedUserId}
 					class="px-4 py-2 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
 				>
-					{#each testUsers as user}
+					{#each users as user}
 						<option value={user.id}>{user.name}</option>
 					{/each}
 				</select>
@@ -250,7 +258,7 @@
 											{txn.merchant_name || 'Unknown'}
 										</td>
 										<td class="px-4 py-3 text-sm text-muted-foreground">
-											{formatCategory(txn.category)}
+											{formatCategory(txn.personal_finance_category_primary)}
 										</td>
 										<td
 											class="px-4 py-3 text-sm font-semibold text-right {txn.amount < 0

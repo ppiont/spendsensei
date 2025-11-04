@@ -5,21 +5,13 @@
 	import type { Recommendation } from '$lib/types';
 
 	// Svelte 5 runes for reactive state
-	let selectedUserId = $state('bdd640fb-0667-4ad1-9c80-317fa3b1799d');
+	let users = $state<Array<{ id: string; name: string }>>([]);
+	let selectedUserId = $state('');
 	let recommendations = $state<Recommendation[]>([]);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let selectedWindow = $state(30);
 	let expandedCard = $state<number | null>(null);
-
-	// Available test users
-	const testUsers = [
-		{ id: 'bdd640fb-0667-4ad1-9c80-317fa3b1799d', name: 'Daniel Doyle' },
-		{ id: '97d7a560-adb1-4670-ad9f-b00d4882d73c', name: 'Mr. Andrew Foster' },
-		{ id: '37c86152-beed-4af9-80c5-9f30d1031424', name: 'Amber Cooper' },
-		{ id: 'dc268108-7140-41a1-afc2-ccfc9db7284b', name: 'Steven Taylor' },
-		{ id: 'c7a9f33c-22d8-49d3-b3e4-f986f18cccdc', name: 'Ashley Garcia' }
-	];
 
 	// Get persona from first recommendation
 	const persona = $derived(recommendations.length > 0 ? recommendations[0].persona : null);
@@ -66,9 +58,25 @@
 		}
 	}
 
+	// Fetch all users
+	async function loadUsers() {
+		try {
+			const data = await api.users.getUsers();
+			users = data.map((u) => ({ id: u.id, name: u.name }));
+			if (users.length > 0 && !selectedUserId) {
+				selectedUserId = users[0].id;
+			}
+		} catch (err: any) {
+			console.error('Error loading users:', err);
+		}
+	}
+
 	// Load data on mount
-	onMount(() => {
-		loadInsights();
+	onMount(async () => {
+		await loadUsers();
+		if (selectedUserId) {
+			loadInsights();
+		}
 	});
 
 	// Reload when user or window selection changes
@@ -97,7 +105,7 @@
 						bind:value={selectedUserId}
 						class="px-4 py-2 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
 					>
-						{#each testUsers as user}
+						{#each users as user}
 							<option value={user.id}>{user.name}</option>
 						{/each}
 					</select>

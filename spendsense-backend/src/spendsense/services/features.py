@@ -617,7 +617,7 @@ async def compute_signals(db: AsyncSession, user_id: str, window_days: int) -> B
                 "id": acc.id,
                 "type": acc.type,
                 "subtype": acc.subtype,
-                "balance": acc.balance,
+                "balance": acc.current_balance,
                 "limit": acc.limit,
                 "apr": acc.apr,
                 "is_overdue": acc.is_overdue
@@ -632,7 +632,7 @@ async def compute_signals(db: AsyncSession, user_id: str, window_days: int) -> B
                 "date": txn.date,
                 "amount": txn.amount,
                 "merchant_name": txn.merchant_name,
-                "category": txn.category
+                "category": txn.personal_finance_category_primary
             }
             for txn in transactions
         ]

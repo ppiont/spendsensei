@@ -1,6 +1,7 @@
 """Account model for SpendSense"""
 
-from sqlalchemy import String, Integer, Boolean, Float, ForeignKey, Index
+from datetime import datetime
+from sqlalchemy import String, Integer, Boolean, Float, ForeignKey, Index, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Optional, TYPE_CHECKING
 
@@ -12,7 +13,7 @@ if TYPE_CHECKING:
 
 
 class Account(Base):
-    """Account entity (checking, savings, credit cards)"""
+    """Account entity (checking, savings, credit cards) - Plaid-compliant schema"""
 
     __tablename__ = "accounts"
 
@@ -20,20 +21,34 @@ class Account(Base):
     user_id: Mapped[str] = mapped_column(
         String(50), ForeignKey("users.id"), nullable=False
     )
-    type: Mapped[str] = mapped_column(String(50), nullable=False)  # 'depository', 'credit'
+    type: Mapped[str] = mapped_column(String(50), nullable=False)  # 'depository', 'credit', 'loan'
     subtype: Mapped[str] = mapped_column(
         String(50), nullable=False
-    )  # 'checking', 'savings', 'credit_card'
+    )  # 'checking', 'savings', 'credit_card', 'mortgage', 'student'
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     mask: Mapped[str] = mapped_column(String(4), nullable=False)  # Last 4 digits
-    balance: Mapped[int] = mapped_column(Integer, nullable=False)  # In cents
-    limit: Mapped[Optional[int]] = mapped_column(
-        Integer, nullable=True
-    )  # Credit cards only
+
+    # Plaid balance fields
+    current_balance: Mapped[int] = mapped_column(Integer, nullable=False)  # In cents
+    available_balance: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # In cents
+    limit: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Credit cards only
+
+    # Plaid required fields
     currency: Mapped[str] = mapped_column(String(3), default="USD", nullable=False)
-    apr: Mapped[Optional[float]] = mapped_column(Float, nullable=True)  # Credit cards only
+    holder_category: Mapped[str] = mapped_column(String(20), default="personal", nullable=False)  # 'personal' or 'business'
+
+    # Credit card specific fields
+    apr: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     min_payment: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     is_overdue: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    last_payment_amount: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    last_payment_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    next_payment_due_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    last_statement_balance: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    last_statement_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+    # Loan specific fields (mortgages, student loans)
+    interest_rate: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
 
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="accounts")
