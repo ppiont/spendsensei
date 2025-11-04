@@ -83,512 +83,157 @@
 	}
 </script>
 
-<div class="insights-page">
-	<header class="page-header">
-		<h1>Financial Insights</h1>
+<div class="min-h-screen bg-background">
+	<div class="container mx-auto px-4 py-8 sm:px-6 lg:px-8 max-w-7xl">
+		<!-- Header -->
+		<header class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
+			<h1 class="text-3xl font-bold text-foreground">Financial Insights</h1>
 
-		<div class="controls">
-			<div class="user-selector">
-				<label for="user-select">User:</label>
-				<select id="user-select" bind:value={selectedUserId}>
-					{#each testUsers as user}
-						<option value={user.id}>{user.name}</option>
-					{/each}
-				</select>
+			<div class="flex flex-col sm:flex-row gap-4">
+				<div class="flex items-center gap-2">
+					<label for="user-select" class="text-sm font-medium text-muted-foreground">User:</label>
+					<select
+						id="user-select"
+						bind:value={selectedUserId}
+						class="px-4 py-2 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+					>
+						{#each testUsers as user}
+							<option value={user.id}>{user.name}</option>
+						{/each}
+					</select>
+				</div>
+
+				<div class="flex items-center gap-2">
+					<label for="window-select" class="text-sm font-medium text-muted-foreground">Period:</label>
+					<select
+						id="window-select"
+						bind:value={selectedWindow}
+						class="px-4 py-2 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+					>
+						<option value={30}>Last 30 Days</option>
+						<option value={180}>Last 180 Days</option>
+					</select>
+				</div>
 			</div>
+		</header>
 
-			<div class="window-selector">
-				<label for="window-select">Time Period:</label>
-				<select id="window-select" bind:value={selectedWindow}>
-					<option value={30}>Last 30 Days</option>
-					<option value={180}>Last 180 Days</option>
-				</select>
+		{#if loading}
+			<div class="flex items-center justify-center py-16">
+				<div class="text-center space-y-3">
+					<div
+						class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"
+					></div>
+					<p class="text-muted-foreground">Analyzing your financial patterns...</p>
+				</div>
 			</div>
-		</div>
-	</header>
+		{:else if error}
+			<div class="bg-destructive/10 border border-destructive/30 rounded-lg p-6 text-center">
+				<strong class="text-destructive block mb-2">Error:</strong>
+				<p class="text-destructive/90 mb-4">{error}</p>
+				<button
+					onclick={() => loadInsights()}
+					class="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors"
+				>
+					Retry
+				</button>
+			</div>
+		{:else if recommendations.length === 0}
+			<div class="bg-card rounded-lg border border-border p-12 text-center">
+				<h2 class="text-xl font-semibold text-foreground mb-2">No Insights Available</h2>
+				<p class="text-muted-foreground">
+					We need more transaction data to generate personalized recommendations.
+				</p>
+			</div>
+		{:else}
+			<div class="space-y-8">
+				<!-- Persona Display -->
+				{#if persona}
+					<section class="bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/20 p-8 shadow-sm">
+						<div class="flex items-start justify-between mb-4">
+							<h2 class="text-2xl font-bold text-foreground">Your Financial Persona</h2>
+							<span class="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm font-medium">
+								{Math.round(confidence * 100)}% Confidence
+							</span>
+						</div>
 
-	{#if loading}
-		<div class="loading">
-			<div class="spinner"></div>
-			<p>Analyzing your financial patterns...</p>
-		</div>
-	{:else if error}
-		<div class="error">
-			<strong>Error:</strong>
-			{error}
-			<button onclick={() => loadInsights()}>Retry</button>
-		</div>
-	{:else if recommendations.length === 0}
-		<div class="empty">
-			<h2>No Insights Available</h2>
-			<p>We need more transaction data to generate personalized recommendations.</p>
-		</div>
-	{:else}
-		<div class="content">
-			<!-- Persona Display -->
-			{#if persona}
-				<section class="persona-card">
-					<div class="persona-header">
-						<h2>Your Financial Persona</h2>
-						<span class="confidence-badge">
-							{Math.round(confidence * 100)}% Confidence
-						</span>
-					</div>
-
-					<div class="persona-content">
-						<h3 class="persona-name">{formatPersona(persona)}</h3>
-						<p class="persona-description">{getPersonaDescription(persona)}</p>
+						<h3 class="text-3xl font-bold text-primary mb-3">{formatPersona(persona)}</h3>
+						<p class="text-lg text-foreground/80 mb-6">{getPersonaDescription(persona)}</p>
 
 						{#if recommendations[0].rationale.key_signals.length > 0}
-							<div class="signals">
-								<p class="signals-label">Based on:</p>
-								<ul class="signals-list">
+							<div class="border-t border-primary/20 pt-4 mt-4">
+								<p class="text-sm font-medium text-muted-foreground mb-2">Based on:</p>
+								<ul class="flex flex-wrap gap-2">
 									{#each recommendations[0].rationale.key_signals as signal}
-										<li>{signal.replace(/_/g, ' ')}</li>
+										<li class="px-3 py-1 bg-card border border-border rounded-full text-sm">
+											{signal.replace(/_/g, ' ')}
+										</li>
 									{/each}
 								</ul>
 							</div>
 						{/if}
+					</section>
+				{/if}
+
+				<!-- Recommendations Grid -->
+				<section>
+					<h2 class="text-2xl font-bold text-foreground mb-6">Personalized Recommendations</h2>
+
+					<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+						{#each recommendations as rec, index}
+							<article class="bg-card rounded-lg border border-border shadow-sm overflow-hidden flex flex-col">
+								<div class="p-6 flex-1">
+									<div class="flex items-start justify-between mb-3">
+										<h3 class="text-lg font-semibold text-foreground flex-1 pr-2">{rec.content.title}</h3>
+										<span class="px-2 py-1 bg-primary/10 text-primary rounded text-xs font-medium whitespace-nowrap">
+											{Math.round(rec.content.relevance_score * 100)}% Match
+										</span>
+									</div>
+
+									<p class="text-sm text-muted-foreground mb-4">{rec.content.summary}</p>
+
+									{#if expandedCard === index}
+										<div class="space-y-4">
+											<div class="text-sm text-foreground/90">
+												{rec.content.body}
+											</div>
+
+											<div class="bg-accent/50 rounded-lg p-4">
+												<h4 class="text-sm font-semibold text-foreground mb-2">Why this matters for you:</h4>
+												<p class="text-sm text-foreground/80">{rec.rationale.explanation}</p>
+											</div>
+
+											<div class="border-t border-border pt-4">
+												<strong class="text-sm text-primary">{rec.content.cta}</strong>
+											</div>
+
+											<div class="text-xs text-muted-foreground">
+												Source: {rec.content.source}
+											</div>
+										</div>
+									{/if}
+								</div>
+
+								<button
+									onclick={() => toggleCard(index)}
+									class="w-full px-6 py-3 bg-muted hover:bg-accent text-foreground font-medium transition-colors border-t border-border"
+								>
+									{expandedCard === index ? 'Show Less ↑' : 'Read More ↓'}
+								</button>
+							</article>
+						{/each}
 					</div>
 				</section>
-			{/if}
+			</div>
+		{/if}
 
-			<!-- Recommendations -->
-			<section class="recommendations">
-				<h2>Personalized Recommendations</h2>
-
-				<div class="recommendations-grid">
-					{#each recommendations as rec, index}
-						<article class="recommendation-card" class:expanded={expandedCard === index}>
-							<div class="card-header">
-								<h3>{rec.content.title}</h3>
-								<span class="relevance-badge">
-									{Math.round(rec.content.relevance_score * 100)}% Relevant
-								</span>
-							</div>
-
-							<p class="summary">{rec.content.summary}</p>
-
-							{#if expandedCard === index}
-								<div class="expanded-content">
-									<div class="body">
-										{rec.content.body}
-									</div>
-
-									<div class="rationale">
-										<h4>Why this matters for you:</h4>
-										<p>{rec.rationale.explanation}</p>
-									</div>
-
-									<div class="cta-section">
-										<strong>{rec.content.cta}</strong>
-									</div>
-
-									<div class="source">
-										<small>Source: {rec.content.source}</small>
-									</div>
-								</div>
-							{/if}
-
-							<button class="expand-button" onclick={() => toggleCard(index)}>
-								{expandedCard === index ? 'Show Less' : 'Read More'}
-							</button>
-						</article>
-					{/each}
-				</div>
-			</section>
-
-			<!-- Disclaimer -->
-			<section class="disclaimer">
-				<h3>Important Disclaimer</h3>
-				<p>
-					These insights are educational recommendations based on analysis of your transaction
-					patterns over the selected time period. They are not financial advice. Please consult
-					with a qualified financial advisor for personalized financial planning.
-				</p>
-				<p>
-					Data shown is based on transactions from the past {selectedWindow} days. Results may vary
-					with different time periods.
-				</p>
-			</section>
-		</div>
-	{/if}
-
-	<nav class="back-nav">
-		<a href="/dashboard">← Back to Dashboard</a>
-	</nav>
+		<!-- Back Navigation -->
+		<nav class="mt-8 pt-6 border-t border-border">
+			<a
+				href="/dashboard"
+				class="inline-flex items-center text-primary hover:text-primary/80 font-medium transition-colors"
+			>
+				← Back to Dashboard
+			</a>
+		</nav>
+	</div>
 </div>
-
-<style>
-	.insights-page {
-		max-width: 1200px;
-		margin: 0 auto;
-		padding: 2rem;
-	}
-
-	.page-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 2rem;
-	}
-
-	h1 {
-		font-size: 2rem;
-		color: #333;
-		margin: 0;
-	}
-
-	.controls {
-		display: flex;
-		gap: 1rem;
-	}
-
-	.user-selector,
-	.window-selector {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-
-	select {
-		padding: 0.5rem 1rem;
-		border: 1px solid #ddd;
-		border-radius: 4px;
-		font-size: 1rem;
-	}
-
-	.loading {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 4rem 2rem;
-		text-align: center;
-	}
-
-	.spinner {
-		width: 50px;
-		height: 50px;
-		border: 4px solid #f0f0f0;
-		border-top: 4px solid #2196f3;
-		border-radius: 50%;
-		animation: spin 1s linear infinite;
-		margin-bottom: 1rem;
-	}
-
-	@keyframes spin {
-		0% {
-			transform: rotate(0deg);
-		}
-		100% {
-			transform: rotate(360deg);
-		}
-	}
-
-	.loading p {
-		color: #666;
-		font-size: 1.1rem;
-	}
-
-	.error,
-	.empty {
-		padding: 2rem;
-		text-align: center;
-		border-radius: 8px;
-	}
-
-	.error {
-		background: #fee;
-		color: #c33;
-		border: 1px solid #fcc;
-	}
-
-	.error button {
-		margin-top: 1rem;
-		padding: 0.5rem 1rem;
-		background: #c33;
-		color: white;
-		border: none;
-		border-radius: 4px;
-		cursor: pointer;
-	}
-
-	.empty {
-		background: #f5f5f5;
-		color: #666;
-	}
-
-	.content {
-		display: flex;
-		flex-direction: column;
-		gap: 2rem;
-	}
-
-	.persona-card {
-		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-		color: white;
-		padding: 2rem;
-		border-radius: 12px;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-	}
-
-	.persona-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 1.5rem;
-	}
-
-	.persona-header h2 {
-		font-size: 1.25rem;
-		margin: 0;
-		opacity: 0.9;
-	}
-
-	.confidence-badge {
-		background: rgba(255, 255, 255, 0.2);
-		padding: 0.375rem 0.75rem;
-		border-radius: 20px;
-		font-size: 0.875rem;
-		font-weight: 600;
-	}
-
-	.persona-content h3 {
-		font-size: 2rem;
-		margin: 0 0 1rem 0;
-	}
-
-	.persona-description {
-		font-size: 1.125rem;
-		line-height: 1.6;
-		margin: 0 0 1.5rem 0;
-		opacity: 0.95;
-	}
-
-	.signals {
-		margin-top: 1.5rem;
-		padding-top: 1.5rem;
-		border-top: 1px solid rgba(255, 255, 255, 0.2);
-	}
-
-	.signals-label {
-		font-size: 0.875rem;
-		opacity: 0.8;
-		margin: 0 0 0.5rem 0;
-	}
-
-	.signals-list {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-	}
-
-	.signals-list li {
-		background: rgba(255, 255, 255, 0.2);
-		padding: 0.375rem 0.75rem;
-		border-radius: 16px;
-		font-size: 0.875rem;
-	}
-
-	.recommendations h2 {
-		font-size: 1.5rem;
-		color: #333;
-		margin: 0 0 1.5rem 0;
-	}
-
-	.recommendations-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-		gap: 1.5rem;
-	}
-
-	.recommendation-card {
-		background: white;
-		border: 1px solid #e0e0e0;
-		border-radius: 8px;
-		padding: 1.5rem;
-		transition: box-shadow 0.2s;
-	}
-
-	.recommendation-card:hover {
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-	}
-
-	.recommendation-card.expanded {
-		grid-column: 1 / -1;
-	}
-
-	.card-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-start;
-		gap: 1rem;
-		margin-bottom: 1rem;
-	}
-
-	.card-header h3 {
-		font-size: 1.25rem;
-		color: #333;
-		margin: 0;
-		flex: 1;
-	}
-
-	.relevance-badge {
-		background: #e3f2fd;
-		color: #1976d2;
-		padding: 0.25rem 0.625rem;
-		border-radius: 12px;
-		font-size: 0.75rem;
-		font-weight: 600;
-		white-space: nowrap;
-	}
-
-	.summary {
-		color: #666;
-		line-height: 1.6;
-		margin: 0 0 1rem 0;
-	}
-
-	.expanded-content {
-		margin: 1.5rem 0;
-		padding-top: 1.5rem;
-		border-top: 1px solid #f0f0f0;
-	}
-
-	.body {
-		color: #333;
-		line-height: 1.7;
-		margin-bottom: 1.5rem;
-		white-space: pre-wrap;
-	}
-
-	.rationale {
-		background: #f9f9f9;
-		padding: 1rem;
-		border-radius: 6px;
-		margin-bottom: 1.5rem;
-	}
-
-	.rationale h4 {
-		font-size: 1rem;
-		color: #333;
-		margin: 0 0 0.5rem 0;
-	}
-
-	.rationale p {
-		color: #666;
-		line-height: 1.6;
-		margin: 0;
-	}
-
-	.cta-section {
-		background: #e8f5e9;
-		padding: 1rem;
-		border-radius: 6px;
-		margin-bottom: 1rem;
-	}
-
-	.cta-section strong {
-		color: #2e7d32;
-	}
-
-	.source {
-		text-align: right;
-		color: #999;
-	}
-
-	.expand-button {
-		width: 100%;
-		padding: 0.75rem;
-		background: #2196f3;
-		color: white;
-		border: none;
-		border-radius: 4px;
-		font-size: 1rem;
-		cursor: pointer;
-		transition: background 0.2s;
-	}
-
-	.expand-button:hover {
-		background: #1976d2;
-	}
-
-	.disclaimer {
-		background: #fff8e1;
-		border: 1px solid #ffe082;
-		border-radius: 8px;
-		padding: 1.5rem;
-	}
-
-	.disclaimer h3 {
-		font-size: 1rem;
-		color: #f57c00;
-		margin: 0 0 0.75rem 0;
-	}
-
-	.disclaimer p {
-		color: #666;
-		line-height: 1.6;
-		margin: 0 0 0.75rem 0;
-		font-size: 0.9rem;
-	}
-
-	.disclaimer p:last-child {
-		margin-bottom: 0;
-	}
-
-	.back-nav {
-		margin-top: 2rem;
-		padding-top: 2rem;
-		border-top: 1px solid #e0e0e0;
-	}
-
-	.back-nav a {
-		color: #2196f3;
-		text-decoration: none;
-		font-weight: 500;
-	}
-
-	.back-nav a:hover {
-		text-decoration: underline;
-	}
-
-	/* Responsive design */
-	@media (max-width: 768px) {
-		.insights-page {
-			padding: 1rem;
-		}
-
-		.page-header {
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 1rem;
-		}
-
-		.controls {
-			flex-direction: column;
-			width: 100%;
-		}
-
-		.user-selector,
-		.window-selector {
-			width: 100%;
-		}
-
-		select {
-			width: 100%;
-		}
-
-		.recommendations-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.persona-content h3 {
-			font-size: 1.5rem;
-		}
-	}
-</style>

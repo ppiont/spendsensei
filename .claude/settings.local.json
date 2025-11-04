@@ -31,7 +31,20 @@
       "Bash(fi)",
       "Bash(pip install:*)",
       "SlashCommand(/bmad:bmm:agents:dev)",
-      "Bash(timeout 5 uv run:*)"
+      "Bash(timeout 5 uv run:*)",
+      "Bash(timeout 5 python:*)",
+      "Bash(uv run:*)",
+      "Bash(bun run dev:*)",
+      "SlashCommand(/bmad:bmm:agents:ux-designer)",
+      "mcp__svelte__svelte-autofixer",
+      "Bash(bun remove:*)",
+      "Bash(bun add:*)",
+      "Bash(bunx tailwindcss init:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(bun pm:*)",
+      "Bash(bun run:*)",
+      "mcp__GitKraken__git_status",
+      "mcp__GitKraken__git_add_or_commit"
     ],
     "deny": [],
     "ask": []

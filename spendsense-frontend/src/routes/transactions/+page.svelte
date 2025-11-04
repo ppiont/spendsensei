@@ -112,449 +112,203 @@
 	}
 </script>
 
-<div class="transactions-page">
-	<header class="page-header">
-		<h1>Transaction History</h1>
+<div class="min-h-screen bg-background">
+	<div class="container mx-auto px-4 py-8 sm:px-6 lg:px-8 max-w-7xl">
+		<!-- Header -->
+		<header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+			<h1 class="text-3xl font-bold text-foreground">Transaction History</h1>
 
-		<div class="user-selector">
-			<label for="user-select">User:</label>
-			<select id="user-select" bind:value={selectedUserId}>
-				{#each testUsers as user}
-					<option value={user.id}>{user.name}</option>
-				{/each}
-			</select>
-		</div>
-	</header>
+			<div class="flex items-center gap-2">
+				<label for="user-select" class="text-sm font-medium text-muted-foreground">User:</label>
+				<select
+					id="user-select"
+					bind:value={selectedUserId}
+					class="px-4 py-2 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+				>
+					{#each testUsers as user}
+						<option value={user.id}>{user.name}</option>
+					{/each}
+				</select>
+			</div>
+		</header>
 
-	{#if loading}
-		<div class="loading">Loading transactions...</div>
-	{:else if error}
-		<div class="error">
-			<strong>Error:</strong>
-			{error}
-			<button onclick={() => loadTransactions()}>Retry</button>
-		</div>
-	{:else}
-		<div class="content">
-			<!-- Filters and Search -->
-			<section class="filters">
-				<div class="filter-group">
-					<label for="search">Search Merchant:</label>
-					<input
-						id="search"
-						type="text"
-						placeholder="Search by merchant name..."
-						bind:value={searchQuery}
-					/>
+		{#if loading}
+			<div class="flex items-center justify-center py-16">
+				<div class="text-center space-y-3">
+					<div
+						class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"
+					></div>
+					<p class="text-muted-foreground">Loading transactions...</p>
 				</div>
+			</div>
+		{:else if error}
+			<div class="bg-destructive/10 border border-destructive/30 rounded-lg p-6 text-center">
+				<strong class="text-destructive block mb-2">Error:</strong>
+				<p class="text-destructive/90 mb-4">{error}</p>
+				<button
+					onclick={() => loadTransactions()}
+					class="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors"
+				>
+					Retry
+				</button>
+			</div>
+		{:else}
+			<div class="space-y-6">
+				<!-- Filters and Search -->
+				<section
+					class="bg-card rounded-lg border border-border shadow-sm p-6 flex flex-col lg:flex-row gap-4 items-start lg:items-end"
+				>
+					<div class="flex flex-col gap-2 w-full lg:w-auto lg:min-w-[300px]">
+						<label for="search" class="text-sm font-medium text-muted-foreground"
+							>Search Merchant:</label
+						>
+						<input
+							id="search"
+							type="text"
+							placeholder="Search by merchant name..."
+							bind:value={searchQuery}
+							class="px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+						/>
+					</div>
 
-				<div class="filter-group">
-					<label for="category">Category:</label>
-					<select id="category" bind:value={selectedCategory}>
-						{#each categories as category}
-							<option value={category}>
-								{category === 'all' ? 'All Categories' : category.replace(/_/g, ' ')}
-							</option>
-						{/each}
-					</select>
-				</div>
+					<div class="flex flex-col gap-2 w-full lg:w-auto">
+						<label for="category" class="text-sm font-medium text-muted-foreground">Category:</label>
+						<select
+							id="category"
+							bind:value={selectedCategory}
+							class="px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+						>
+							{#each categories as category}
+								<option value={category}>
+									{category === 'all' ? 'All Categories' : category.replace(/_/g, ' ')}
+								</option>
+							{/each}
+						</select>
+					</div>
 
-				<div class="stats">
-					<p>
-						Showing {paginatedTransactions.length} of {filteredTransactions.length} transactions
-					</p>
-				</div>
-			</section>
-
-			<!-- Category Breakdown -->
-			{#if categoryBreakdown.length > 0}
-				<section class="breakdown">
-					<h2>Spending by Category</h2>
-					<div class="breakdown-bars">
-						{#each categoryBreakdown.slice(0, 5) as { category, amount }}
-							<div class="breakdown-item">
-								<div class="breakdown-label">
-									<span class="category-name">{category.replace(/_/g, ' ')}</span>
-									<span class="category-amount">{formatCurrency(amount)}</span>
-								</div>
-								<div class="breakdown-bar-container">
-									<div
-										class="breakdown-bar"
-										style="width: {(amount / categoryBreakdown[0].amount) * 100}%"
-									></div>
-								</div>
-							</div>
-						{/each}
+					<div class="lg:ml-auto flex items-center">
+						<p class="text-sm text-muted-foreground">
+							Showing {paginatedTransactions.length} of {filteredTransactions.length} transactions
+						</p>
 					</div>
 				</section>
-			{/if}
 
-			<!-- Transactions Table -->
-			<section class="transactions-table">
-				<table>
-					<thead>
-						<tr>
-							<th>Date</th>
-							<th>Merchant</th>
-							<th>Category</th>
-							<th class="amount-col">Amount</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each paginatedTransactions as txn}
-							<tr>
-								<td class="date-col">{new Date(txn.date).toLocaleDateString()}</td>
-								<td class="merchant-col">{txn.merchant_name || 'Unknown'}</td>
-								<td class="category-col">{txn.category.replace(/_/g, ' ')}</td>
-								<td class="amount-col" class:income={txn.amount < 0} class:expense={txn.amount > 0}>
-									{txn.amount < 0 ? '+' : ''}{formatCurrency(Math.abs(txn.amount))}
-								</td>
-							</tr>
-						{/each}
+				<!-- Category Breakdown -->
+				{#if categoryBreakdown.length > 0}
+					<section class="bg-card rounded-lg border border-border shadow-sm p-6">
+						<h2 class="text-xl font-semibold text-foreground mb-4">Spending by Category</h2>
+						<div class="space-y-4">
+							{#each categoryBreakdown.slice(0, 5) as { category, amount }}
+								<div class="space-y-2">
+									<div class="flex justify-between text-sm">
+										<span class="font-medium text-foreground">{category.replace(/_/g, ' ')}</span>
+										<span class="text-muted-foreground">{formatCurrency(amount)}</span>
+									</div>
+									<div class="h-2 bg-muted rounded-full overflow-hidden">
+										<div
+											class="h-full bg-primary rounded-full transition-all duration-300"
+											style="width: {(amount / categoryBreakdown[0].amount) * 100}%"
+										></div>
+									</div>
+								</div>
+							{/each}
+						</div>
+					</section>
+				{/if}
 
-						{#if paginatedTransactions.length === 0}
-							<tr>
-								<td colspan="4" class="empty">No transactions found</td>
-							</tr>
-						{/if}
-					</tbody>
-				</table>
-			</section>
+				<!-- Transactions Table -->
+				<section class="bg-card rounded-lg border border-border shadow-sm overflow-hidden">
+					<div class="overflow-x-auto">
+						<table class="w-full">
+							<thead class="bg-muted">
+								<tr>
+									<th
+										class="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+										>Date</th
+									>
+									<th
+										class="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+										>Merchant</th
+									>
+									<th
+										class="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+										>Category</th
+									>
+									<th
+										class="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+										>Amount</th
+									>
+								</tr>
+							</thead>
+							<tbody class="divide-y divide-border">
+								{#each paginatedTransactions as txn}
+									<tr class="hover:bg-accent/50 transition-colors">
+										<td class="px-4 py-3 text-sm text-muted-foreground">
+											{new Date(txn.date).toLocaleDateString()}
+										</td>
+										<td class="px-4 py-3 text-sm font-medium text-foreground truncate max-w-xs">
+											{txn.merchant_name || 'Unknown'}
+										</td>
+										<td class="px-4 py-3 text-sm text-muted-foreground">
+											{txn.category.replace(/_/g, ' ')}
+										</td>
+										<td
+											class="px-4 py-3 text-sm font-semibold text-right {txn.amount < 0
+												? 'text-chart-2'
+												: 'text-destructive'}"
+										>
+											{txn.amount < 0 ? '+' : ''}{formatCurrency(Math.abs(txn.amount))}
+										</td>
+									</tr>
+								{/each}
 
-			<!-- Pagination -->
-			{#if totalPages > 1}
-				<section class="pagination">
-					<button onclick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>
-						Previous
-					</button>
-
-					<span class="page-info">
-						Page {currentPage} of {totalPages}
-					</span>
-
-					<button onclick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages}>
-						Next
-					</button>
+								{#if paginatedTransactions.length === 0}
+									<tr>
+										<td colspan="4" class="px-4 py-12 text-center text-muted-foreground">
+											No transactions found
+										</td>
+									</tr>
+								{/if}
+							</tbody>
+						</table>
+					</div>
 				</section>
-			{/if}
-		</div>
-	{/if}
 
-	<nav class="back-nav">
-		<a href="/dashboard">← Back to Dashboard</a>
-	</nav>
+				<!-- Pagination -->
+				{#if totalPages > 1}
+					<section class="flex justify-center items-center gap-4 py-4">
+						<button
+							onclick={() => goToPage(currentPage - 1)}
+							disabled={currentPage === 1}
+							class="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed"
+						>
+							Previous
+						</button>
+
+						<span class="text-sm text-muted-foreground">
+							Page {currentPage} of {totalPages}
+						</span>
+
+						<button
+							onclick={() => goToPage(currentPage + 1)}
+							disabled={currentPage === totalPages}
+							class="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed"
+						>
+							Next
+						</button>
+					</section>
+				{/if}
+			</div>
+		{/if}
+
+		<!-- Back Navigation -->
+		<nav class="mt-8 pt-6 border-t border-border">
+			<a
+				href="/dashboard"
+				class="inline-flex items-center text-primary hover:text-primary/80 font-medium transition-colors"
+			>
+				← Back to Dashboard
+			</a>
+		</nav>
+	</div>
 </div>
-
-<style>
-	.transactions-page {
-		max-width: 1200px;
-		margin: 0 auto;
-		padding: 2rem;
-	}
-
-	.page-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 2rem;
-	}
-
-	h1 {
-		font-size: 2rem;
-		color: #333;
-		margin: 0;
-	}
-
-	h2 {
-		font-size: 1.25rem;
-		color: #333;
-		margin: 0 0 1rem 0;
-	}
-
-	.user-selector {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-
-	select,
-	input[type='text'] {
-		padding: 0.5rem 1rem;
-		border: 1px solid #ddd;
-		border-radius: 4px;
-		font-size: 1rem;
-	}
-
-	input[type='text'] {
-		width: 300px;
-	}
-
-	.loading,
-	.error {
-		padding: 2rem;
-		text-align: center;
-		border-radius: 8px;
-	}
-
-	.loading {
-		background: #f5f5f5;
-		color: #666;
-	}
-
-	.error {
-		background: #fee;
-		color: #c33;
-		border: 1px solid #fcc;
-	}
-
-	.error button {
-		margin-top: 1rem;
-		padding: 0.5rem 1rem;
-		background: #c33;
-		color: white;
-		border: none;
-		border-radius: 4px;
-		cursor: pointer;
-	}
-
-	.content {
-		display: flex;
-		flex-direction: column;
-		gap: 2rem;
-	}
-
-	.filters {
-		display: flex;
-		gap: 1rem;
-		align-items: flex-end;
-		padding: 1.5rem;
-		background: white;
-		border: 1px solid #e0e0e0;
-		border-radius: 8px;
-	}
-
-	.filter-group {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-	}
-
-	.filter-group label {
-		font-size: 0.875rem;
-		color: #666;
-	}
-
-	.stats {
-		margin-left: auto;
-		display: flex;
-		align-items: center;
-	}
-
-	.stats p {
-		margin: 0;
-		color: #666;
-		font-size: 0.875rem;
-	}
-
-	.breakdown {
-		padding: 1.5rem;
-		background: white;
-		border: 1px solid #e0e0e0;
-		border-radius: 8px;
-	}
-
-	.breakdown-bars {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-	}
-
-	.breakdown-item {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-	}
-
-	.breakdown-label {
-		display: flex;
-		justify-content: space-between;
-		font-size: 0.875rem;
-	}
-
-	.category-name {
-		color: #333;
-		font-weight: 500;
-	}
-
-	.category-amount {
-		color: #666;
-	}
-
-	.breakdown-bar-container {
-		height: 8px;
-		background: #f0f0f0;
-		border-radius: 4px;
-		overflow: hidden;
-	}
-
-	.breakdown-bar {
-		height: 100%;
-		background: #2196f3;
-		border-radius: 4px;
-		transition: width 0.3s ease;
-	}
-
-	.transactions-table {
-		background: white;
-		border: 1px solid #e0e0e0;
-		border-radius: 8px;
-		overflow: hidden;
-	}
-
-	table {
-		width: 100%;
-		border-collapse: collapse;
-	}
-
-	thead {
-		background: #f5f5f5;
-	}
-
-	th {
-		padding: 1rem;
-		text-align: left;
-		font-weight: 600;
-		color: #666;
-		font-size: 0.875rem;
-		text-transform: uppercase;
-	}
-
-	td {
-		padding: 1rem;
-		border-top: 1px solid #f0f0f0;
-	}
-
-	.date-col {
-		color: #666;
-		font-size: 0.875rem;
-	}
-
-	.merchant-col {
-		color: #333;
-		font-weight: 500;
-	}
-
-	.category-col {
-		color: #666;
-		font-size: 0.875rem;
-	}
-
-	.amount-col {
-		text-align: right;
-		font-weight: 600;
-	}
-
-	.amount-col.income {
-		color: #4caf50;
-	}
-
-	.amount-col.expense {
-		color: #f44336;
-	}
-
-	.empty {
-		text-align: center;
-		color: #999;
-		padding: 3rem;
-	}
-
-	.pagination {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		gap: 1rem;
-		padding: 1rem;
-	}
-
-	.pagination button {
-		padding: 0.5rem 1rem;
-		background: #2196f3;
-		color: white;
-		border: none;
-		border-radius: 4px;
-		cursor: pointer;
-		font-size: 1rem;
-	}
-
-	.pagination button:hover:not(:disabled) {
-		background: #1976d2;
-	}
-
-	.pagination button:disabled {
-		background: #ccc;
-		cursor: not-allowed;
-	}
-
-	.page-info {
-		color: #666;
-		font-size: 0.875rem;
-	}
-
-	.back-nav {
-		margin-top: 2rem;
-		padding-top: 2rem;
-		border-top: 1px solid #e0e0e0;
-	}
-
-	.back-nav a {
-		color: #2196f3;
-		text-decoration: none;
-		font-weight: 500;
-	}
-
-	.back-nav a:hover {
-		text-decoration: underline;
-	}
-
-	/* Responsive design */
-	@media (max-width: 768px) {
-		.transactions-page {
-			padding: 1rem;
-		}
-
-		.page-header {
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 1rem;
-		}
-
-		.filters {
-			flex-direction: column;
-			align-items: stretch;
-		}
-
-		input[type='text'] {
-			width: 100%;
-		}
-
-		.stats {
-			margin-left: 0;
-		}
-
-		table {
-			font-size: 0.875rem;
-		}
-
-		th,
-		td {
-			padding: 0.75rem 0.5rem;
-		}
-
-		.merchant-col {
-			max-width: 150px;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-		}
-	}
-</style>

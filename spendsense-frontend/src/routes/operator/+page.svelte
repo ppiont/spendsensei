@@ -51,457 +51,238 @@
 	});
 </script>
 
-<div class="operator-view">
-	<header class="page-header">
-		<div>
-			<h1>🔧 Operator View</h1>
-			<p class="subtitle">Internal inspection tool for verifying recommendation system</p>
-		</div>
-	</header>
+<div class="min-h-screen bg-background">
+	<div class="container mx-auto px-4 py-8 sm:px-6 lg:px-8 max-w-7xl">
+		<!-- Header -->
+		<header class="mb-8">
+			<div class="flex items-center gap-3 mb-2">
+				<span class="text-4xl">🔧</span>
+				<h1 class="text-3xl font-bold text-foreground">Operator View</h1>
+			</div>
+			<p class="text-muted-foreground">
+				Internal inspection tool for verifying recommendation system traceability
+			</p>
+		</header>
 
-	<section class="controls">
-		<div class="control-group">
-			<label for="user-select">Select User:</label>
-			<select id="user-select" bind:value={selectedUserId}>
-				{#each testUsers as user}
-					<option value={user.id}>{user.name}</option>
-				{/each}
-			</select>
-		</div>
-
-		<div class="control-group">
-			<label for="window-select">Time Window:</label>
-			<select id="window-select" bind:value={selectedWindow}>
-				<option value={30}>30 Days</option>
-				<option value={180}>180 Days</option>
-			</select>
-		</div>
-
-		<button class="inspect-button" onclick={() => inspectUser()} disabled={loading}>
-			{loading ? 'Loading...' : '🔍 Inspect User'}
-		</button>
-	</section>
-
-	{#if loading}
-		<div class="loading">Fetching data...</div>
-	{:else if error}
-		<div class="error">
-			<strong>Error:</strong>
-			{error}
-		</div>
-	{:else if !fullData}
-		<div class="empty">
-			<p>Click "Inspect User" to load data</p>
-		</div>
-	{:else}
-		<div class="inspection-content">
-			<!-- Summary Card -->
-			<section class="summary-card">
-				<h2>📊 Summary</h2>
-				<div class="summary-grid">
-					<div class="summary-item">
-						<span class="label">User ID:</span>
-						<span class="value">{selectedUserId}</span>
-					</div>
-					<div class="summary-item">
-						<span class="label">Persona:</span>
-						<span class="value persona-badge">{fullData.persona}</span>
-					</div>
-					<div class="summary-item">
-						<span class="label">Confidence:</span>
-						<span class="value">{(fullData.confidence * 100).toFixed(1)}%</span>
-					</div>
-					<div class="summary-item">
-						<span class="label">Recommendations:</span>
-						<span class="value">{recommendations.length}</span>
-					</div>
-					<div class="summary-item">
-						<span class="label">Time Window:</span>
-						<span class="value">{selectedWindow} days</span>
-					</div>
-					<div class="summary-item">
-						<span class="label">Key Signals:</span>
-						<span class="value">{fullData.rationale.key_signals.length}</span>
-					</div>
+		<!-- Controls -->
+		<section class="bg-card rounded-lg border border-border shadow-sm p-6 mb-6">
+			<div class="flex flex-col md:flex-row gap-4 items-start md:items-end">
+				<div class="flex flex-col gap-2 flex-1">
+					<label for="user-select" class="text-sm font-medium text-muted-foreground"
+						>Select User:</label
+					>
+					<select
+						id="user-select"
+						bind:value={selectedUserId}
+						class="px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+					>
+						{#each testUsers as user}
+							<option value={user.id}>{user.name}</option>
+						{/each}
+					</select>
 				</div>
-			</section>
 
-			<!-- Behavioral Signals -->
-			<section class="section-card">
-				<h2>🎯 Behavioral Signals</h2>
-				<div class="signals-list">
-					{#each fullData.rationale.key_signals as signal}
-						<div class="signal-badge">{signal}</div>
-					{/each}
+				<div class="flex flex-col gap-2">
+					<label for="window-select" class="text-sm font-medium text-muted-foreground"
+						>Time Window:</label
+					>
+					<select
+						id="window-select"
+						bind:value={selectedWindow}
+						class="px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+					>
+						<option value={30}>30 Days</option>
+						<option value={180}>180 Days</option>
+					</select>
 				</div>
-				<div class="code-block">
-					<pre>{formatJSON({ key_signals: fullData.rationale.key_signals })}</pre>
-				</div>
-			</section>
 
-			<!-- Persona Matching Logic -->
-			<section class="section-card">
-				<h2>🎭 Persona Matching Logic</h2>
-				<div class="matching-info">
-					<div class="info-row">
-						<strong>Assigned Persona:</strong>
-						<span>{fullData.persona}</span>
-					</div>
-					<div class="info-row">
-						<strong>Confidence Score:</strong>
-						<span>{(fullData.confidence * 100).toFixed(2)}%</span>
-					</div>
-					<div class="info-row">
-						<strong>Rationale:</strong>
-						<p>{fullData.rationale.explanation}</p>
-					</div>
-				</div>
-				<div class="code-block">
-					<pre>{formatJSON({
-							persona_type: fullData.rationale.persona_type,
-							confidence: fullData.rationale.confidence,
-							explanation: fullData.rationale.explanation
-						})}</pre>
-				</div>
-			</section>
+				<button
+					onclick={() => inspectUser()}
+					disabled={loading}
+					class="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed font-medium whitespace-nowrap"
+				>
+					{loading ? 'Loading...' : '🔍 Inspect User'}
+				</button>
+			</div>
+		</section>
 
-			<!-- Recommendations Details -->
-			<section class="section-card">
-				<h2>💡 Recommendations Generated</h2>
-				{#each recommendations as rec, index}
-					<div class="recommendation-detail">
-						<h3>Recommendation #{index + 1}</h3>
-						<div class="rec-info">
-							<div class="info-row">
-								<strong>Title:</strong>
-								<span>{rec.content.title}</span>
-							</div>
-							<div class="info-row">
-								<strong>Content ID:</strong>
-								<span>{rec.content.id}</span>
-							</div>
-							<div class="info-row">
-								<strong>Relevance Score:</strong>
-								<span>{(rec.content.relevance_score * 100).toFixed(1)}%</span>
-							</div>
-							<div class="info-row">
-								<strong>Source:</strong>
-								<span>{rec.content.source}</span>
-							</div>
+		{#if loading}
+			<div class="flex items-center justify-center py-16">
+				<div class="text-center space-y-3">
+					<div
+						class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"
+					></div>
+					<p class="text-muted-foreground">Fetching recommendation data...</p>
+				</div>
+			</div>
+		{:else if error}
+			<div class="bg-destructive/10 border border-destructive/30 rounded-lg p-6 text-center">
+				<strong class="text-destructive block mb-2">Error:</strong>
+				<p class="text-destructive/90">{error}</p>
+			</div>
+		{:else if !fullData}
+			<div class="bg-card rounded-lg border border-border p-12 text-center">
+				<p class="text-muted-foreground">Click "Inspect User" to load recommendation data</p>
+			</div>
+		{:else}
+			<div class="space-y-6">
+				<!-- Summary Card -->
+				<section class="bg-card rounded-lg border border-border shadow-sm p-6">
+					<h2 class="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+						<span>📊</span> Summary
+					</h2>
+					<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+						<div class="space-y-1">
+							<p class="text-xs font-medium text-muted-foreground">User ID</p>
+							<p class="text-sm font-mono text-foreground truncate" title={selectedUserId}>
+								{selectedUserId.slice(0, 8)}...
+							</p>
+						</div>
+						<div class="space-y-1">
+							<p class="text-xs font-medium text-muted-foreground">Persona</p>
+							<p
+								class="text-sm font-semibold text-primary px-2 py-1 bg-primary/10 rounded inline-block"
+							>
+								{fullData.persona}
+							</p>
+						</div>
+						<div class="space-y-1">
+							<p class="text-xs font-medium text-muted-foreground">Confidence</p>
+							<p class="text-sm font-semibold text-foreground">
+								{(fullData.confidence * 100).toFixed(1)}%
+							</p>
+						</div>
+						<div class="space-y-1">
+							<p class="text-xs font-medium text-muted-foreground">Recommendations</p>
+							<p class="text-sm font-semibold text-foreground">{recommendations.length}</p>
+						</div>
+						<div class="space-y-1">
+							<p class="text-xs font-medium text-muted-foreground">Time Window</p>
+							<p class="text-sm font-semibold text-foreground">{selectedWindow} days</p>
+						</div>
+						<div class="space-y-1">
+							<p class="text-xs font-medium text-muted-foreground">Key Signals</p>
+							<p class="text-sm font-semibold text-foreground">
+								{fullData.rationale.key_signals.length}
+							</p>
 						</div>
 					</div>
-				{/each}
-			</section>
+				</section>
 
-			<!-- Complete Decision Trace (JSON) -->
-			<section class="section-card">
-				<h2>🔍 Complete Decision Trace (JSON)</h2>
-				<p class="description">
-					Full traceability of the recommendation system's decision-making process
-				</p>
-				<div class="code-block">
-					<pre>{formatJSON(recommendations)}</pre>
-				</div>
-			</section>
-		</div>
-	{/if}
+				<!-- Behavioral Signals -->
+				<section class="bg-card rounded-lg border border-border shadow-sm p-6">
+					<h2 class="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+						<span>🎯</span> Behavioral Signals
+					</h2>
+					<div class="flex flex-wrap gap-2 mb-4">
+						{#each fullData.rationale.key_signals as signal}
+							<span class="px-3 py-1 bg-accent text-foreground rounded-full text-sm font-medium">
+								{signal}
+							</span>
+						{/each}
+					</div>
+					<div class="bg-muted rounded-lg p-4 overflow-x-auto">
+						<pre class="text-xs font-mono text-foreground">{formatJSON({
+								key_signals: fullData.rationale.key_signals
+							})}</pre>
+					</div>
+				</section>
 
-	<nav class="back-nav">
-		<a href="/dashboard">← Back to Dashboard</a>
-	</nav>
+				<!-- Persona Matching Logic -->
+				<section class="bg-card rounded-lg border border-border shadow-sm p-6">
+					<h2 class="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+						<span>🎭</span> Persona Matching Logic
+					</h2>
+					<div class="space-y-3 mb-4">
+						<div class="flex gap-4 py-2 border-b border-border">
+							<span class="text-sm font-medium text-muted-foreground min-w-[140px]"
+								>Assigned Persona:</span
+							>
+							<span class="text-sm text-foreground font-semibold">{fullData.persona}</span>
+						</div>
+						<div class="flex gap-4 py-2 border-b border-border">
+							<span class="text-sm font-medium text-muted-foreground min-w-[140px]"
+								>Confidence Score:</span
+							>
+							<span class="text-sm text-foreground">{(fullData.confidence * 100).toFixed(2)}%</span
+							>
+						</div>
+						<div class="flex gap-4 py-2">
+							<span class="text-sm font-medium text-muted-foreground min-w-[140px]">Rationale:</span
+							>
+							<p class="text-sm text-foreground flex-1">{fullData.rationale.explanation}</p>
+						</div>
+					</div>
+					<div class="bg-muted rounded-lg p-4 overflow-x-auto">
+						<pre class="text-xs font-mono text-foreground">{formatJSON({
+								persona_type: fullData.rationale.persona_type,
+								confidence: fullData.rationale.confidence,
+								explanation: fullData.rationale.explanation
+							})}</pre>
+					</div>
+				</section>
+
+				<!-- Recommendations Details -->
+				<section class="bg-card rounded-lg border border-border shadow-sm p-6">
+					<h2 class="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+						<span>💡</span> Recommendations Generated
+					</h2>
+					<div class="space-y-4">
+						{#each recommendations as rec, index}
+							<div class="bg-accent/50 rounded-lg p-4">
+								<h3 class="text-lg font-semibold text-foreground mb-3">
+									Recommendation #{index + 1}
+								</h3>
+								<div class="space-y-2">
+									<div class="flex gap-4 text-sm">
+										<span class="font-medium text-muted-foreground min-w-[120px]">Title:</span>
+										<span class="text-foreground">{rec.content.title}</span>
+									</div>
+									<div class="flex gap-4 text-sm">
+										<span class="font-medium text-muted-foreground min-w-[120px]">Content ID:</span>
+										<span class="text-foreground font-mono">{rec.content.id}</span>
+									</div>
+									<div class="flex gap-4 text-sm">
+										<span class="font-medium text-muted-foreground min-w-[120px]"
+											>Relevance Score:</span
+										>
+										<span class="text-foreground"
+											>{(rec.content.relevance_score * 100).toFixed(1)}%</span
+										>
+									</div>
+									<div class="flex gap-4 text-sm">
+										<span class="font-medium text-muted-foreground min-w-[120px]">Source:</span>
+										<span class="text-foreground">{rec.content.source}</span>
+									</div>
+								</div>
+							</div>
+						{/each}
+					</div>
+				</section>
+
+				<!-- Complete Decision Trace (JSON) -->
+				<section class="bg-card rounded-lg border border-border shadow-sm p-6">
+					<h2 class="text-xl font-bold text-foreground mb-2 flex items-center gap-2">
+						<span>🔍</span> Complete Decision Trace (JSON)
+					</h2>
+					<p class="text-sm text-muted-foreground mb-4 italic">
+						Full recommendation object showing all decision-making data for auditability and debugging.
+					</p>
+					<div class="bg-muted rounded-lg p-4 overflow-x-auto">
+						<pre class="text-xs font-mono text-foreground">{formatJSON(fullData)}</pre>
+					</div>
+				</section>
+			</div>
+		{/if}
+
+		<!-- Back Navigation -->
+		<nav class="mt-8 pt-6 border-t border-border">
+			<a
+				href="/"
+				class="inline-flex items-center text-primary hover:text-primary/80 font-medium transition-colors"
+			>
+				← Back to Home
+			</a>
+		</nav>
+	</div>
 </div>
-
-<style>
-	.operator-view {
-		max-width: 1400px;
-		margin: 0 auto;
-		padding: 2rem;
-		background: #f5f5f5;
-		min-height: 100vh;
-	}
-
-	.page-header {
-		background: white;
-		padding: 2rem;
-		border-radius: 8px;
-		margin-bottom: 2rem;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	}
-
-	h1 {
-		font-size: 2rem;
-		color: #333;
-		margin: 0 0 0.5rem 0;
-	}
-
-	.subtitle {
-		color: #666;
-		margin: 0;
-		font-size: 0.9rem;
-	}
-
-	.controls {
-		background: white;
-		padding: 1.5rem;
-		border-radius: 8px;
-		margin-bottom: 2rem;
-		display: flex;
-		gap: 1rem;
-		align-items: flex-end;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	}
-
-	.control-group {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-	}
-
-	.control-group label {
-		font-size: 0.875rem;
-		color: #666;
-		font-weight: 500;
-	}
-
-	select {
-		padding: 0.625rem 1rem;
-		border: 1px solid #ddd;
-		border-radius: 4px;
-		font-size: 1rem;
-		min-width: 250px;
-	}
-
-	.inspect-button {
-		padding: 0.625rem 1.5rem;
-		background: #2196f3;
-		color: white;
-		border: none;
-		border-radius: 4px;
-		font-size: 1rem;
-		cursor: pointer;
-		font-weight: 500;
-		transition: background 0.2s;
-	}
-
-	.inspect-button:hover:not(:disabled) {
-		background: #1976d2;
-	}
-
-	.inspect-button:disabled {
-		background: #ccc;
-		cursor: not-allowed;
-	}
-
-	.loading,
-	.error,
-	.empty {
-		background: white;
-		padding: 3rem;
-		text-align: center;
-		border-radius: 8px;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	}
-
-	.loading {
-		color: #666;
-	}
-
-	.error {
-		color: #c33;
-		background: #fee;
-		border: 1px solid #fcc;
-	}
-
-	.empty {
-		color: #999;
-	}
-
-	.inspection-content {
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
-	}
-
-	.summary-card,
-	.section-card {
-		background: white;
-		padding: 1.5rem;
-		border-radius: 8px;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	}
-
-	h2 {
-		font-size: 1.25rem;
-		color: #333;
-		margin: 0 0 1rem 0;
-		padding-bottom: 0.75rem;
-		border-bottom: 2px solid #f0f0f0;
-	}
-
-	h3 {
-		font-size: 1rem;
-		color: #555;
-		margin: 0 0 0.75rem 0;
-	}
-
-	.summary-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-		gap: 1rem;
-	}
-
-	.summary-item {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-	}
-
-	.summary-item .label {
-		font-size: 0.75rem;
-		color: #999;
-		text-transform: uppercase;
-		font-weight: 600;
-	}
-
-	.summary-item .value {
-		font-size: 1.125rem;
-		color: #333;
-		font-weight: 600;
-	}
-
-	.persona-badge {
-		background: #e3f2fd;
-		color: #1976d2;
-		padding: 0.25rem 0.75rem;
-		border-radius: 16px;
-		display: inline-block;
-	}
-
-	.signals-list {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-		margin-bottom: 1rem;
-	}
-
-	.signal-badge {
-		background: #f0f0f0;
-		color: #555;
-		padding: 0.5rem 1rem;
-		border-radius: 20px;
-		font-size: 0.875rem;
-		font-weight: 500;
-	}
-
-	.code-block {
-		background: #1e1e1e;
-		color: #d4d4d4;
-		padding: 1rem;
-		border-radius: 4px;
-		overflow-x: auto;
-		margin-top: 1rem;
-	}
-
-	.code-block pre {
-		margin: 0;
-		font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
-		font-size: 0.875rem;
-		line-height: 1.5;
-	}
-
-	.matching-info,
-	.rec-info {
-		margin-bottom: 1rem;
-	}
-
-	.info-row {
-		display: flex;
-		gap: 1rem;
-		padding: 0.75rem 0;
-		border-bottom: 1px solid #f0f0f0;
-	}
-
-	.info-row:last-child {
-		border-bottom: none;
-	}
-
-	.info-row strong {
-		min-width: 150px;
-		color: #666;
-		font-size: 0.875rem;
-	}
-
-	.info-row span,
-	.info-row p {
-		flex: 1;
-		color: #333;
-		margin: 0;
-	}
-
-	.recommendation-detail {
-		padding: 1rem;
-		background: #f9f9f9;
-		border-radius: 6px;
-		margin-bottom: 1rem;
-	}
-
-	.recommendation-detail:last-child {
-		margin-bottom: 0;
-	}
-
-	.description {
-		color: #666;
-		font-size: 0.875rem;
-		margin: 0 0 1rem 0;
-		font-style: italic;
-	}
-
-	.back-nav {
-		margin-top: 2rem;
-		padding-top: 2rem;
-		border-top: 1px solid #ddd;
-	}
-
-	.back-nav a {
-		color: #2196f3;
-		text-decoration: none;
-		font-weight: 500;
-	}
-
-	.back-nav a:hover {
-		text-decoration: underline;
-	}
-
-	/* Responsive design */
-	@media (max-width: 768px) {
-		.operator-view {
-			padding: 1rem;
-		}
-
-		.controls {
-			flex-direction: column;
-			align-items: stretch;
-		}
-
-		select {
-			width: 100%;
-		}
-
-		.summary-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.info-row {
-			flex-direction: column;
-			gap: 0.25rem;
-		}
-
-		.info-row strong {
-			min-width: auto;
-		}
-
-		.code-block {
-			font-size: 0.75rem;
-		}
-	}
-</style>

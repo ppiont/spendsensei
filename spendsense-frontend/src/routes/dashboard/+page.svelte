@@ -70,326 +70,161 @@
 	});
 </script>
 
-<div class="dashboard">
-	<header class="dashboard-header">
-		<h1>Financial Dashboard</h1>
+<div class="min-h-screen bg-background">
+	<div class="container mx-auto px-4 py-8 sm:px-6 lg:px-8 max-w-7xl">
+		<!-- Header -->
+		<header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+			<h1 class="text-3xl font-bold text-foreground">Financial Dashboard</h1>
 
-		<div class="user-selector">
-			<label for="user-select">User:</label>
-			<select id="user-select" bind:value={selectedUserId}>
-				{#each testUsers as user}
-					<option value={user.id}>{user.name}</option>
-				{/each}
-			</select>
-		</div>
-	</header>
+			<div class="flex items-center gap-2">
+				<label for="user-select" class="text-sm font-medium text-muted-foreground">User:</label>
+				<select
+					id="user-select"
+					bind:value={selectedUserId}
+					class="px-4 py-2 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+				>
+					{#each testUsers as user}
+						<option value={user.id}>{user.name}</option>
+					{/each}
+				</select>
+			</div>
+		</header>
 
-	{#if loading}
-		<div class="loading">Loading financial data...</div>
-	{:else if error}
-		<div class="error">
-			<strong>Error:</strong>
-			{error}
-			<button onclick={() => loadUserData()}>Retry</button>
-		</div>
-	{:else}
-		<!-- Financial Summary -->
-		<section class="summary">
-			<h2>Financial Summary</h2>
-			<div class="summary-cards">
-				<div class="card assets">
-					<h3>Assets</h3>
-					<p class="amount">{formatCurrency(assets)}</p>
-					<p class="detail">{accounts.filter((a) => a.type === 'depository').length} accounts</p>
-				</div>
-
-				<div class="card liabilities">
-					<h3>Liabilities</h3>
-					<p class="amount">{formatCurrency(liabilities)}</p>
-					<p class="detail">{accounts.filter((a) => a.type === 'credit').length} credit cards</p>
-				</div>
-
-				<div class="card net-worth">
-					<h3>Net Worth</h3>
-					<p class="amount" class:negative={netWorth < 0}>{formatCurrency(netWorth)}</p>
-					<p class="detail">Assets - Liabilities</p>
+		{#if loading}
+			<div class="flex items-center justify-center py-16">
+				<div class="text-center space-y-3">
+					<div
+						class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"
+					></div>
+					<p class="text-muted-foreground">Loading financial data...</p>
 				</div>
 			</div>
-		</section>
-
-		<!-- Accounts List -->
-		<section class="accounts">
-			<h2>Accounts</h2>
-			<div class="accounts-list">
-				{#each accounts as account}
-					<div class="account-item" class:credit={account.type === 'credit'}>
-						<div class="account-info">
-							<h3>{account.name}</h3>
-							<p class="account-type">{account.subtype} •••• {account.mask}</p>
-						</div>
-						<div class="account-balance">
-							<p class="balance">{formatCurrency(account.balance)}</p>
-							{#if account.type === 'credit' && account.limit}
-								<p class="limit">Limit: {formatCurrency(account.limit)}</p>
-							{/if}
-						</div>
-					</div>
-				{/each}
-
-				{#if accounts.length === 0}
-					<p class="empty">No accounts found</p>
-				{/if}
+		{:else if error}
+			<div class="bg-destructive/10 border border-destructive/30 rounded-lg p-6 text-center">
+				<strong class="text-destructive block mb-2">Error:</strong>
+				<p class="text-destructive/90 mb-4">{error}</p>
+				<button
+					onclick={() => loadUserData()}
+					class="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors"
+				>
+					Retry
+				</button>
 			</div>
-		</section>
-
-		<!-- Recent Transactions -->
-		<section class="transactions">
-			<h2>Recent Transactions</h2>
-			<div class="transactions-list">
-				{#each transactions as txn}
-					<div class="transaction-item">
-						<div class="transaction-info">
-							<p class="merchant">{txn.merchant_name || 'Unknown'}</p>
-							<p class="category">{txn.category}</p>
-							<p class="date">{new Date(txn.date).toLocaleDateString()}</p>
-						</div>
-						<p class="amount" class:income={txn.amount < 0}>
-							{txn.amount < 0 ? '+' : ''}{formatCurrency(Math.abs(txn.amount))}
+		{:else}
+			<!-- Financial Summary Cards -->
+			<section class="mb-8">
+				<h2 class="text-xl font-semibold text-foreground mb-4">Financial Summary</h2>
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+					<!-- Assets Card -->
+					<div class="bg-card rounded-lg p-6 border-l-4 border-l-chart-2 shadow-sm">
+						<h3 class="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+							Assets
+						</h3>
+						<p class="text-3xl font-bold text-foreground">{formatCurrency(assets)}</p>
+						<p class="text-sm text-muted-foreground mt-2">
+							{accounts.filter((a) => a.type === 'depository').length} accounts
 						</p>
 					</div>
-				{/each}
 
-				{#if transactions.length === 0}
-					<p class="empty">No recent transactions</p>
-				{/if}
-			</div>
-		</section>
-	{/if}
+					<!-- Liabilities Card -->
+					<div class="bg-card rounded-lg p-6 border-l-4 border-l-destructive shadow-sm">
+						<h3 class="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+							Liabilities
+						</h3>
+						<p class="text-3xl font-bold text-foreground">{formatCurrency(liabilities)}</p>
+						<p class="text-sm text-muted-foreground mt-2">
+							{accounts.filter((a) => a.type === 'credit').length} credit cards
+						</p>
+					</div>
+
+					<!-- Net Worth Card -->
+					<div class="bg-card rounded-lg p-6 border-l-4 border-l-primary shadow-sm">
+						<h3 class="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+							Net Worth
+						</h3>
+						<p class="text-3xl font-bold {netWorth < 0 ? 'text-destructive' : 'text-foreground'}">
+							{formatCurrency(netWorth)}
+						</p>
+						<p class="text-sm text-muted-foreground mt-2">Assets - Liabilities</p>
+					</div>
+				</div>
+			</section>
+
+			<!-- Accounts List -->
+			<section class="mb-8">
+				<h2 class="text-xl font-semibold text-foreground mb-4">Accounts</h2>
+				<div class="bg-card rounded-lg border border-border shadow-sm overflow-hidden">
+					{#if accounts.length > 0}
+						{#each accounts as account, i}
+							<div
+								class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 {i !==
+								accounts.length - 1
+									? 'border-b border-border'
+									: ''} {account.type === 'credit'
+									? 'bg-destructive/5'
+									: ''} hover:bg-accent/50 transition-colors"
+							>
+								<div class="mb-3 sm:mb-0">
+									<h3 class="text-base font-medium text-foreground">{account.name}</h3>
+									<p class="text-sm text-muted-foreground">
+										{account.subtype} •••• {account.mask}
+									</p>
+								</div>
+								<div class="text-left sm:text-right">
+									<p class="text-lg font-semibold text-foreground">
+										{formatCurrency(account.balance)}
+									</p>
+									{#if account.type === 'credit' && account.limit}
+										<p class="text-sm text-muted-foreground">
+											Limit: {formatCurrency(account.limit)}
+										</p>
+									{/if}
+								</div>
+							</div>
+						{/each}
+					{:else}
+						<p class="text-center py-8 text-muted-foreground">No accounts found</p>
+					{/if}
+				</div>
+			</section>
+
+			<!-- Recent Transactions -->
+			<section>
+				<h2 class="text-xl font-semibold text-foreground mb-4">Recent Transactions</h2>
+				<div class="bg-card rounded-lg border border-border shadow-sm overflow-hidden">
+					{#if transactions.length > 0}
+						{#each transactions as txn, i}
+							<div
+								class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 {i !==
+								transactions.length - 1
+									? 'border-b border-border'
+									: ''} hover:bg-accent/50 transition-colors"
+							>
+								<div class="flex-1 mb-2 sm:mb-0">
+									<p class="text-base font-medium text-foreground">
+										{txn.merchant_name || 'Unknown'}
+									</p>
+									<p class="text-sm text-muted-foreground">
+										{txn.category}
+									</p>
+									<p class="text-xs text-muted-foreground">
+										{new Date(txn.date).toLocaleDateString()}
+									</p>
+								</div>
+								<p
+									class="text-lg font-semibold {txn.amount < 0
+										? 'text-chart-2'
+										: 'text-foreground'}"
+								>
+									{txn.amount < 0 ? '+' : ''}{formatCurrency(Math.abs(txn.amount))}
+								</p>
+							</div>
+						{/each}
+					{:else}
+						<p class="text-center py-8 text-muted-foreground">No recent transactions</p>
+					{/if}
+				</div>
+			</section>
+		{/if}
+	</div>
 </div>
-
-<style>
-	.dashboard {
-		max-width: 1200px;
-		margin: 0 auto;
-		padding: 2rem;
-	}
-
-	.dashboard-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 2rem;
-	}
-
-	h1 {
-		font-size: 2rem;
-		color: #333;
-		margin: 0;
-	}
-
-	.user-selector {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-
-	select {
-		padding: 0.5rem 1rem;
-		border: 1px solid #ddd;
-		border-radius: 4px;
-		font-size: 1rem;
-	}
-
-	.loading,
-	.error {
-		padding: 2rem;
-		text-align: center;
-		border-radius: 8px;
-	}
-
-	.loading {
-		background: #f5f5f5;
-		color: #666;
-	}
-
-	.error {
-		background: #fee;
-		color: #c33;
-		border: 1px solid #fcc;
-	}
-
-	.error button {
-		margin-top: 1rem;
-		padding: 0.5rem 1rem;
-		background: #c33;
-		color: white;
-		border: none;
-		border-radius: 4px;
-		cursor: pointer;
-	}
-
-	.summary {
-		margin-bottom: 2rem;
-	}
-
-	h2 {
-		font-size: 1.5rem;
-		color: #333;
-		margin-bottom: 1rem;
-	}
-
-	.summary-cards {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-		gap: 1rem;
-	}
-
-	.card {
-		padding: 1.5rem;
-		border-radius: 8px;
-		background: white;
-		border: 1px solid #e0e0e0;
-	}
-
-	.card.assets {
-		border-left: 4px solid #4caf50;
-	}
-
-	.card.liabilities {
-		border-left: 4px solid #f44336;
-	}
-
-	.card.net-worth {
-		border-left: 4px solid #2196f3;
-	}
-
-	.card h3 {
-		font-size: 0.875rem;
-		text-transform: uppercase;
-		color: #666;
-		margin: 0 0 0.5rem 0;
-	}
-
-	.card .amount {
-		font-size: 2rem;
-		font-weight: bold;
-		color: #333;
-		margin: 0;
-	}
-
-	.card .amount.negative {
-		color: #f44336;
-	}
-
-	.card .detail {
-		font-size: 0.875rem;
-		color: #999;
-		margin: 0.5rem 0 0 0;
-	}
-
-	.accounts,
-	.transactions {
-		margin-bottom: 2rem;
-	}
-
-	.accounts-list,
-	.transactions-list {
-		background: white;
-		border: 1px solid #e0e0e0;
-		border-radius: 8px;
-		overflow: hidden;
-	}
-
-	.account-item,
-	.transaction-item {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 1rem;
-		border-bottom: 1px solid #f0f0f0;
-	}
-
-	.account-item:last-child,
-	.transaction-item:last-child {
-		border-bottom: none;
-	}
-
-	.account-item.credit {
-		background: #fff8f8;
-	}
-
-	.account-info h3,
-	.transaction-info .merchant {
-		font-size: 1rem;
-		color: #333;
-		margin: 0 0 0.25rem 0;
-	}
-
-	.account-type,
-	.category,
-	.date {
-		font-size: 0.875rem;
-		color: #999;
-		margin: 0;
-	}
-
-	.account-balance {
-		text-align: right;
-	}
-
-	.balance,
-	.amount {
-		font-size: 1.25rem;
-		font-weight: bold;
-		color: #333;
-		margin: 0;
-	}
-
-	.limit {
-		font-size: 0.875rem;
-		color: #999;
-		margin: 0.25rem 0 0 0;
-	}
-
-	.transaction-info {
-		flex: 1;
-	}
-
-	.amount.income {
-		color: #4caf50;
-	}
-
-	.empty {
-		padding: 2rem;
-		text-align: center;
-		color: #999;
-	}
-
-	/* Responsive design */
-	@media (max-width: 768px) {
-		.dashboard {
-			padding: 1rem;
-		}
-
-		.dashboard-header {
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 1rem;
-		}
-
-		.summary-cards {
-			grid-template-columns: 1fr;
-		}
-
-		.account-item,
-		.transaction-item {
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 0.5rem;
-		}
-
-		.account-balance {
-			text-align: left;
-		}
-	}
-</style>
