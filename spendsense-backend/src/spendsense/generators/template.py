@@ -6,7 +6,6 @@ and relevance scoring. It provides explainable, deterministic content selection
 without requiring AI API calls.
 """
 
-import os
 import yaml
 import logging
 from typing import List, Dict, Any
@@ -409,8 +408,8 @@ class TemplateGenerator(ContentGenerator):
 
         else:  # balanced
             explanation = (
-                f"You've been identified as a Balanced user, which means you're generally maintaining "
-                f"healthy financial habits without critical issues requiring immediate attention. "
+                "You've been identified as a Balanced user, which means you're generally maintaining "
+                "healthy financial habits without critical issues requiring immediate attention. "
             )
 
             # Add specific insights based on available signals

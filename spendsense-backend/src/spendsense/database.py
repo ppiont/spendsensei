@@ -1,6 +1,5 @@
 """Database configuration and session management for SpendSense"""
 
-import os
 from pathlib import Path
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
@@ -41,7 +40,6 @@ async def init_db():
 
     async with engine.begin() as conn:
         # Import all models to ensure they're registered with Base.metadata
-        from spendsense.models import user, account, transaction, persona, content
 
         # Create all tables
         await conn.run_sync(Base.metadata.create_all)
