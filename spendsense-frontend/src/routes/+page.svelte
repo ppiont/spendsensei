@@ -5,6 +5,7 @@
 	<ul>
 		<li><a href="/dashboard">Dashboard</a></li>
 		<li><a href="/transactions">Transactions</a></li>
+		<li><a href="/insights">Insights</a></li>
 	</ul>
 </nav>
 
