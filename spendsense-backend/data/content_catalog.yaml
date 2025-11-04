@@ -1,0 +1,840 @@
+# SpendSense Educational Content Catalog
+#
+# This catalog contains curated financial education content mapped to user personas
+# and behavioral signals. Content is selected based on detected patterns in user
+# transaction and account data.
+#
+# Signal Tags Reference:
+# - high_utilization_80: Credit utilization >= 80%
+# - high_utilization_50: Credit utilization >= 50%
+# - moderate_utilization_30: Credit utilization >= 30%
+# - interest_charges: Monthly credit card interest > 0
+# - overdue: Overdue credit card payments
+# - subscription_heavy: 3+ recurring subscriptions
+# - variable_income: Irregular income patterns
+# - low_emergency_fund: <3 months emergency fund coverage
+# - positive_savings: Positive net savings inflow
+# - stable_income: Regular income patterns
+
+education:
+  # HIGH UTILIZATION PERSONA CONTENT (2+ items)
+  - id: "edu_credit_101"
+    title: "Understanding Credit Utilization: The 30% Rule"
+    summary: "Learn why keeping credit card balances low helps your credit score and reduces interest costs."
+    body: |
+      Credit utilization is the ratio of your credit card balances to your credit limits.
+      It's one of the most important factors in your credit score, accounting for about 30%
+      of the score calculation.
+
+      **Why it matters:**
+      When credit utilization is high, lenders view you as higher risk, which can lower your
+      credit score and make it harder to qualify for loans or get favorable interest rates.
+
+      **The 30% guideline:**
+      Financial experts recommend keeping utilization below 30% on each card and overall.
+      However, for optimal credit scores, aim for under 10% if possible.
+
+      **Quick wins to reduce utilization:**
+      - Pay down high balances first (prioritize cards over 50%)
+      - Make multiple payments per month to keep balances low
+      - Request credit limit increases (only if you won't increase spending)
+      - Set up payment alerts before due dates to avoid missed payments
+      - Consider a balance transfer card with 0% intro APR (check terms carefully)
+
+      **The impact timeline:**
+      Even small reductions in utilization can improve your credit score within 4-6 weeks
+      as your card issuers report updated balances to credit bureaus.
+
+      **Disclaimer:** This is educational content, not financial advice. Consult a licensed
+      financial advisor for personalized guidance on credit management strategies.
+    cta: "Review Your Credit Cards"
+    persona_tags: ["high_utilization"]
+    signal_tags: ["high_utilization_80", "high_utilization_50", "moderate_utilization_30", "interest_charges"]
+    source: "Financial Education Database"
+
+  - id: "edu_interest_savings"
+    title: "Stop Paying Interest: The Real Cost of Credit Card Debt"
+    summary: "Calculate how much you're losing to interest charges and create a payoff plan."
+    body: |
+      Credit card interest charges can add up quickly, costing you hundreds or thousands of
+      dollars per year. Understanding the true cost can motivate action to reduce balances.
+
+      **How credit card interest works:**
+      Most cards charge interest daily based on your average daily balance. If you carry a
+      $5,000 balance at 22% APR, you're paying approximately $91 per month just in interest.
+
+      **The minimum payment trap:**
+      Paying only the minimum keeps you in debt for years. On a $5,000 balance, minimum
+      payments could take 13+ years to pay off and cost over $6,000 in interest.
+
+      **Smart payoff strategies:**
+
+      1. **Avalanche method** - Pay minimums on all cards, put extra toward the highest APR card
+         - Saves the most money in interest
+         - Mathematically optimal approach
+
+      2. **Snowball method** - Pay minimums on all cards, put extra toward the smallest balance
+         - Provides quick psychological wins
+         - Builds momentum with each payoff
+
+      3. **Balance transfer strategy** - Move balances to 0% intro APR card
+         - Typically saves on interest for 12-18 months
+         - Watch for transfer fees (usually 3-5%)
+         - Must have good credit to qualify
+
+      **Action steps:**
+      - Calculate your monthly interest charges across all cards
+      - Choose a payoff strategy that fits your personality
+      - Set up automatic payments above the minimum
+      - Track your progress monthly to stay motivated
+
+      **Disclaimer:** This is educational content, not financial advice. Consider consulting
+      a credit counselor or financial advisor for personalized debt reduction strategies.
+    cta: "Create Your Payoff Plan"
+    persona_tags: ["high_utilization"]
+    signal_tags: ["interest_charges", "high_utilization_50", "high_utilization_80"]
+    source: "Financial Education Database"
+
+  # SUBSCRIPTION-HEAVY PERSONA CONTENT (2+ items)
+  - id: "edu_subscription_audit"
+    title: "Subscription Audit Checklist: Find Hidden Money Drains"
+    summary: "A step-by-step guide to identifying and canceling subscriptions you no longer need."
+    body: |
+      Studies show the average person has 12+ active subscriptions but only uses 5 regularly.
+      Those forgotten subscriptions can drain $200-$400 per month from your budget.
+
+      **Your 3-step subscription audit:**
+
+      **Step 1: List everything**
+      Review 3-6 months of transactions for recurring charges. Look for:
+      - Streaming services (video, music, gaming)
+      - Subscription boxes (food, beauty, clothing)
+      - Software and apps (productivity, fitness, entertainment)
+      - Memberships (gym, clubs, professional organizations)
+      - Free trials that auto-renewed
+
+      **Step 2: Rate by value**
+      For each subscription, honestly assess:
+      - Essential: Use weekly, hard to live without
+      - Nice-to-have: Use monthly, could substitute
+      - Never use: Haven't used in 60+ days
+
+      **Step 3: Cancel the waste**
+      - Immediately cancel "never use" subscriptions
+      - Negotiate or downgrade "nice-to-have" items
+      - Keep only "essential" subscriptions
+
+      **Common culprits to check:**
+      - Streaming services you forgot about
+      - Apps downloaded once and never opened
+      - Gym memberships for gyms you don't visit
+      - Email newsletters with paywalls
+      - Trial periods that auto-converted to paid
+
+      **Pro tips:**
+      - Set calendar reminders 7 days before annual renewals
+      - Use a dedicated credit card for subscriptions to track easier
+      - Check for family plan savings if sharing with others
+      - Look for free alternatives before subscribing to new services
+
+      **Disclaimer:** This is educational content, not financial advice. Review subscription
+      terms carefully before canceling to understand any commitments or penalties.
+    cta: "Start Your Audit"
+    persona_tags: ["subscription_heavy"]
+    signal_tags: ["subscription_heavy"]
+    source: "Financial Education Database"
+
+  - id: "edu_recurring_spending"
+    title: "Optimize Your Recurring Expenses: Keep What Matters"
+    summary: "Smart strategies to reduce subscription costs without sacrificing the services you love."
+    body: |
+      Not all subscriptions are bad. The goal isn't to cancel everything, but to optimize
+      your recurring spending so you keep what brings value and eliminate the rest.
+
+      **Value optimization strategies:**
+
+      **1. Bundle and save**
+      Many services offer discounts when bundled:
+      - Family plans for streaming (split with trusted friends/family)
+      - Annual billing (often 15-20% cheaper than monthly)
+      - Bundle packages (internet + streaming from same provider)
+
+      **2. Rotate subscriptions**
+      You don't need all streaming services at once:
+      - Subscribe to one service, watch your shows, cancel
+      - Move to the next service for a different show library
+      - Saves 50-75% compared to keeping all services year-round
+
+      **3. Negotiate existing subscriptions**
+      Contact customer service and ask for:
+      - Loyalty discounts for long-term customers
+      - Student, senior, or military discounts
+      - Temporary promotional rates
+      - Downgrade to a cheaper tier if available
+
+      **4. Use free alternatives**
+      Consider whether free options meet your needs:
+      - Free tiers of music streaming (with ads)
+      - Library access to books, audiobooks, and movies
+      - Free workout videos instead of app subscriptions
+      - Open-source software instead of paid apps
+
+      **5. Share responsibly**
+      Many services allow account sharing:
+      - Split costs with family or roommates
+      - Ensure sharing complies with service terms
+      - Use separate profiles to maintain recommendations
+
+      **Setting subscription boundaries:**
+      Create a monthly subscription budget and stick to it. If you want to add something new,
+      cancel something else first. This "one in, one out" rule prevents subscription creep.
+
+      **Disclaimer:** This is educational content, not financial advice. Review service terms
+      before sharing accounts or making changes to ensure compliance with provider policies.
+    cta: "Optimize Your Subscriptions"
+    persona_tags: ["subscription_heavy"]
+    signal_tags: ["subscription_heavy"]
+    source: "Financial Education Database"
+
+  # VARIABLE INCOME PERSONA CONTENT (2+ items)
+  - id: "edu_variable_budget"
+    title: "Budgeting with Variable Income: The Percentage Method"
+    summary: "How to manage money when your income changes month-to-month."
+    body: |
+      Traditional budgeting assumes steady paychecks, but if you're freelance, gig-economy,
+      commission-based, or seasonal, you need a flexible approach that adapts to income fluctuations.
+
+      **The Variable Income Budget framework:**
+
+      **Step 1: Calculate your baseline**
+      Look at your income over the past 12 months. What's your lowest monthly income? That's
+      your baseline. Budget your essential expenses to fit within this baseline.
+
+      **Step 2: Prioritize expenses**
+      List expenses in order of importance:
+      1. Housing (rent/mortgage, utilities, insurance)
+      2. Food (groceries, not dining out)
+      3. Transportation (car payment, insurance, gas)
+      4. Minimum debt payments
+      5. Insurance (health, life)
+      6. Everything else
+
+      **Step 3: Use percentages, not fixed amounts**
+      Instead of budgeting "$500 for groceries," budget "10% of income for groceries."
+
+      Example percentage budget:
+      - Essential expenses: 50%
+      - Savings and buffer fund: 20%
+      - Debt payoff: 15%
+      - Flexible spending: 15%
+
+      **Step 4: Build a buffer fund**
+      Before increasing lifestyle, save 1-3 months of essential expenses. This buffer smooths
+      out low-income months and reduces stress.
+
+      **Step 5: Adjust monthly**
+      On high-income months:
+      - Same percentages mean bigger savings
+      - Resist lifestyle inflation
+      - Build your buffer faster
+
+      On low-income months:
+      - Percentages shrink but you stay solvent
+      - Tap buffer fund if needed
+      - Cut flexible spending first
+
+      **Pro tips for variable income:**
+      - Get paid in a "holding account," then pay yourself a fixed "salary" monthly
+      - Keep 6-12 months expenses saved (vs 3-6 for stable income)
+      - Track income trends to anticipate slow seasons
+      - Consider quarterly or annual budgeting, not just monthly
+
+      **Disclaimer:** This is educational content, not financial advice. Consider working with
+      a financial planner who specializes in variable income scenarios for personalized guidance.
+    cta: "Build Your Variable Budget"
+    persona_tags: ["variable_income"]
+    signal_tags: ["variable_income"]
+    source: "Financial Education Database"
+
+  - id: "edu_income_smoothing"
+    title: "Income Smoothing: Creating Your Own Steady Paycheck"
+    summary: "Strategies to reduce financial stress when income varies month-to-month."
+    body: |
+      One of the biggest challenges with variable income is the emotional stress of not knowing
+      how much you'll earn next month. Income smoothing techniques create stability and peace of mind.
+
+      **The Two-Account System:**
+
+      **Account 1: Income Holding Account**
+      - All business/gig income deposits here first
+      - This account fluctuates with your actual earnings
+      - You don't spend directly from this account
+
+      **Account 2: Personal Spending Account**
+      - Pay yourself a fixed monthly "salary" from Account 1
+      - Base the salary on your baseline income (Step 1 in variable budgeting)
+      - This is the account you use for daily spending
+
+      **How it works:**
+      - Good month: Excess stays in Account 1, building your buffer
+      - Bad month: You still pay yourself the same salary, drawing down the buffer
+      - Result: Predictable monthly cash flow even when income varies
+
+      **Alternative: The Quarterly Smoothing Method**
+      If monthly income is too variable to predict:
+      - Calculate your average quarterly income
+      - Divide by 3 to get monthly salary
+      - Review and adjust quarterly based on actual earnings
+
+      **Building your smoothing buffer:**
+      To implement this system, you need 3-6 months of expenses saved first:
+
+      1. Start with a bare-bones budget covering only essentials
+      2. Save every dollar above baseline income
+      3. Once you have 3 months saved, begin income smoothing
+      4. Continue building toward 6-12 months of buffer
+
+      **Tax considerations for variable income:**
+      - Set aside 25-30% of gross income for taxes (adjust based on your bracket)
+      - Make quarterly estimated tax payments to avoid penalties
+      - Keep tax money in a separate account (don't touch it!)
+      - Work with a tax professional to optimize deductions
+
+      **Career diversification strategies:**
+      - Develop multiple income streams to reduce volatility
+      - Balance high-paying seasonal work with steady year-round gigs
+      - Consider retainer clients for predictable base income
+      - Build passive income sources (rental property, investments)
+
+      **Disclaimer:** This is educational content, not financial or tax advice. Consult a
+      financial advisor and tax professional for guidance tailored to your situation.
+    cta: "Set Up Income Smoothing"
+    persona_tags: ["variable_income"]
+    signal_tags: ["variable_income", "low_emergency_fund"]
+    source: "Financial Education Database"
+
+  # SAVINGS BUILDER PERSONA CONTENT (2+ items)
+  - id: "edu_emergency_fund"
+    title: "Emergency Fund 101: Your Financial Safety Net"
+    summary: "Why you need one and how to build it, even on a tight budget."
+    body: |
+      An emergency fund is cash set aside for unexpected expenses like medical bills, car
+      repairs, home maintenance, or job loss. It prevents going into debt when life happens.
+
+      **How much do you need?**
+      - Bare minimum: $1,000 (covers most small emergencies)
+      - Standard target: 3-6 months of expenses
+      - Variable income: 6-12 months of expenses
+      - Single income household: 6-9 months
+      - Dual income household: 3-6 months
+
+      **Calculate your target:**
+      1. List your monthly essential expenses (housing, food, utilities, insurance, minimums)
+      2. Multiply by your target months (3, 6, or 12)
+      3. This is your emergency fund goal
+
+      **Building your fund:**
+
+      **Phase 1: Get to $1,000 fast**
+      - Save every windfall (tax refunds, bonuses, gifts)
+      - Sell items you don't use
+      - Take on a temporary side gig
+      - Cut discretionary spending for 2-3 months
+
+      **Phase 2: Automate to your target**
+      - Set up automatic transfers on payday
+      - Start small: even $25 per paycheck adds up
+      - Increase by 1% every time you get a raise
+      - Add windfalls and bonuses to accelerate progress
+
+      **Phase 3: Maintain and protect**
+      - Replenish immediately after using it
+      - Only use for true emergencies (see below)
+      - Keep in a high-yield savings account for growth
+      - Review annually and adjust target for lifestyle changes
+
+      **Where to keep your emergency fund:**
+      - High-yield savings account (easy access, earns interest)
+      - Money market account (similar to HYSA)
+      - NOT in checking (too tempting to spend)
+      - NOT in investments (too volatile for emergencies)
+      - NOT in CDs (penalties for early withdrawal)
+
+      **What counts as an emergency?**
+      ✅ Valid emergencies:
+      - Unexpected medical expenses
+      - Urgent car repair needed for work
+      - Essential home repair (burst pipe, broken furnace)
+      - Job loss or income reduction
+      - Emergency travel (family illness)
+
+      ❌ Not emergencies:
+      - Predictable expenses (holiday gifts, annual subscriptions)
+      - Wants and nice-to-haves (new TV, vacation)
+      - Sales and discounts ("But it's 50% off!")
+      - Non-urgent purchases
+
+      **Pro tip:** Create separate savings buckets for predictable expenses (car maintenance,
+      holidays, etc.) so you're not tempted to raid your emergency fund for known costs.
+
+      **Disclaimer:** This is educational content, not financial advice. Consult a financial
+      advisor to determine the appropriate emergency fund size for your specific situation.
+    cta: "Start Your Emergency Fund"
+    persona_tags: ["savings_builder", "variable_income", "balanced"]
+    signal_tags: ["low_emergency_fund", "positive_savings"]
+    source: "Financial Education Database"
+
+  - id: "edu_automate_savings"
+    title: "Automate Your Savings: Set It and Forget It Wealth Building"
+    summary: "Make saving effortless by automating transfers and using proven behavioral tricks."
+    body: |
+      The secret to successful saving isn't willpower—it's automation. By setting up systems
+      that save automatically, you remove the temptation to spend and make progress inevitable.
+
+      **The automation hierarchy:**
+
+      **Level 1: Automate employer deductions**
+      - 401(k) or 403(b) contributions (especially if there's a match!)
+      - HSA contributions (triple tax advantage)
+      - Pension contributions if available
+      - These come out before you see the money = easiest to maintain
+
+      **Level 2: Automate bank transfers**
+      Set up automatic transfers on payday:
+      - Emergency fund contribution
+      - Savings goals (vacation, car, home down payment)
+      - Investment account contributions
+      - Extra debt payments
+
+      **Level 3: Automate micro-savings**
+      Use apps that save automatically:
+      - Round-up programs (round purchases to nearest dollar, save difference)
+      - Percentage of every purchase
+      - Save when you hit goals (walked 10k steps today)
+      - Bank bonuses for meeting deposit requirements
+
+      **Optimal timing for automation:**
+      - Schedule transfers 1-2 days after payday
+      - Ensures money is available when transfer runs
+      - Saves before you have a chance to spend
+      - "Pay yourself first" principle in action
+
+      **The 1% strategy:**
+      If you're not saving anything now, start with 1% of your income. You won't notice it's
+      gone, but over a year it adds up. Then increase by 1% every 6 months or with each raise.
+
+      Example: $50,000 salary
+      - Year 1 at 1%: $500 saved
+      - Year 2 at 3%: $1,500 saved
+      - Year 3 at 5%: $2,500 saved
+      - Year 5 at 10%: $5,000 saved
+
+      **Behavioral hacks to boost savings:**
+
+      1. **Split your direct deposit**
+      Have your employer deposit a percentage directly into savings—you'll never see it in checking.
+
+      2. **Save windfalls immediately**
+      Tax refunds, bonuses, gifts—transfer to savings the same day you receive them.
+
+      3. **Use separate savings accounts**
+      Create labeled accounts for different goals (emergency, vacation, car). Seeing progress
+      toward specific goals is more motivating than one big pile.
+
+      4. **Automate increases**
+      Some banks let you automatically increase transfer amounts by $5-10 every month.
+
+      5. **Out of sight, out of mind**
+      Use a different bank for savings than checking. The friction of transferring money back
+      makes you think twice about spending.
+
+      **Tracking without obsessing:**
+      - Review savings progress monthly (not daily)
+      - Celebrate milestones (every $1,000 saved)
+      - Adjust automation if life circumstances change
+      - Don't micromanage—trust the system
+
+      **Common automation mistakes to avoid:**
+      - Setting transfers too high (leads to overdrafts and abandoning the system)
+      - Forgetting to account for irregular income months
+      - Not having a buffer in checking for variable expenses
+      - Setting it up once and never reviewing (life changes, automation should too)
+
+      **Disclaimer:** This is educational content, not financial advice. Review your budget and
+      cash flow before setting up automated transfers to avoid overdraft fees.
+    cta: "Set Up Savings Automation"
+    persona_tags: ["savings_builder", "balanced"]
+    signal_tags: ["positive_savings"]
+    source: "Financial Education Database"
+
+  # BALANCED PERSONA CONTENT (2+ items)
+  - id: "edu_financial_wellness"
+    title: "Financial Wellness Fundamentals: The Complete Checklist"
+    summary: "Essential habits and milestones for long-term financial health and security."
+    body: |
+      Financial wellness isn't about being rich—it's about having control over your money,
+      being prepared for the unexpected, and making progress toward your goals. Use this
+      checklist to assess and improve your financial health.
+
+      **Foundation Level (Start Here):**
+
+      ☐ Spending less than you earn consistently
+      ☐ Tracking where your money goes (at least quarterly)
+      ☐ No overdrafts or late fees in the past 3 months
+      ☐ Paying all bills on time
+      ☐ $1,000 emergency fund established
+
+      **Stability Level (Build Security):**
+
+      ☐ 3-6 months expenses in emergency fund
+      ☐ Credit card balances under 30% of limits
+      ☐ No high-interest debt (payday loans, title loans)
+      ☐ Health insurance coverage
+      ☐ Renter's or homeowner's insurance
+      ☐ Auto insurance (if you own a vehicle)
+      ☐ Budget covers all essential expenses comfortably
+
+      **Growth Level (Build Wealth):**
+
+      ☐ Contributing to retirement accounts (aim for 15% of income)
+      ☐ Taking full advantage of employer 401(k) match
+      ☐ Additional savings for goals (home, car, education)
+      ☐ Credit score above 700
+      ☐ Term life insurance (if you have dependents)
+      ☐ Disability insurance (protecting income)
+      ☐ Will and basic estate planning documents
+
+      **Optimization Level (Maximize Efficiency):**
+
+      ☐ Low-cost diversified investment portfolio
+      ☐ Tax-advantaged accounts fully utilized (401k, IRA, HSA)
+      ☐ Appropriate asset allocation for age and risk tolerance
+      ☐ Annual financial review and rebalancing
+      ☐ College savings plan (if applicable)
+      ☐ Clear plan to pay off mortgage early (optional)
+      ☐ Charitable giving as part of financial plan
+
+      **The 50/30/20 guideline:**
+      A simple framework for balanced spending:
+      - 50% on needs (housing, food, utilities, insurance)
+      - 30% on wants (dining out, entertainment, hobbies)
+      - 20% on savings and debt payoff
+
+      Note: This is a starting point, not a strict rule. Adjust based on your cost of living,
+      income level, and goals.
+
+      **Monthly financial wellness habits:**
+      - Review spending and account balances
+      - Check credit card statements for errors or fraud
+      - Ensure all bills paid on time
+      - Track progress toward savings goals
+      - Adjust budget for upcoming expenses
+
+      **Quarterly wellness habits:**
+      - Review credit report (AnnualCreditReport.com)
+      - Check investment account performance
+      - Reassess savings goals and timelines
+      - Review insurance coverage adequacy
+
+      **Annual wellness habits:**
+      - Complete tax return and assess tax optimization
+      - Review and update beneficiaries
+      - Rebalance investment portfolio
+      - Update will and estate documents if needed
+      - Set new financial goals for the coming year
+
+      **Red flags to address immediately:**
+      - Carrying credit card balances month to month
+      - Using cash advances or payday loans
+      - Avoiding bills or ignoring collection notices
+      - No savings or emergency fund
+      - Not contributing to retirement accounts
+      - No health insurance coverage
+
+      **Disclaimer:** This is educational content, not financial advice. Consider working with
+      a certified financial planner to create a comprehensive financial plan tailored to your
+      unique situation and goals.
+    cta: "Assess Your Financial Wellness"
+    persona_tags: ["balanced", "savings_builder"]
+    signal_tags: ["stable_income", "positive_savings"]
+    source: "Financial Education Database"
+
+  - id: "edu_credit_score"
+    title: "Credit Scores Demystified: What They Mean and How to Improve"
+    summary: "Understanding credit scores and practical strategies to build better credit."
+    body: |
+      Your credit score is a three-digit number (300-850) that represents your creditworthiness
+      to lenders. It affects your ability to borrow money, your interest rates, and sometimes
+      even job prospects and housing applications.
+
+      **What makes up your credit score:**
+
+      1. **Payment history (35%)**
+         - Most important factor
+         - On-time payments help, late/missed payments hurt
+         - Stays on report for 7 years
+
+      2. **Credit utilization (30%)**
+         - Percentage of available credit you're using
+         - Keep under 30%, ideally under 10%
+         - Calculated per card and overall
+
+      3. **Length of credit history (15%)**
+         - Average age of all accounts
+         - Older accounts help your score
+         - Keep old cards open even if not using
+
+      4. **Credit mix (10%)**
+         - Variety of account types (cards, loans, mortgage)
+         - Not critical but helps slightly
+         - Don't open accounts just for mix
+
+      5. **New credit inquiries (10%)**
+         - Hard inquiries from applications hurt temporarily
+         - Multiple inquiries in 14-45 days count as one (rate shopping)
+         - Soft inquiries (checking your own score) don't hurt
+
+      **Credit score ranges:**
+      - 800-850: Exceptional (best rates and terms)
+      - 740-799: Very Good (qualify for most favorable rates)
+      - 670-739: Good (considered acceptable by most lenders)
+      - 580-669: Fair (may have difficulty qualifying or get higher rates)
+      - 300-579: Poor (will struggle to get approved)
+
+      **How to improve your credit score:**
+
+      **Quick wins (30-90 days):**
+      - Pay down credit card balances to reduce utilization
+      - Become an authorized user on someone's good account
+      - Request credit limit increases (if you won't spend more)
+      - Dispute errors on credit reports
+
+      **Medium-term actions (3-6 months):**
+      - Set up autopay for all bills to ensure on-time payments
+      - Pay bills twice per month to keep utilization low
+      - Keep old credit cards open (improves average age)
+      - Limit new credit applications
+
+      **Long-term habits (6+ months):**
+      - Maintain consistent on-time payment history
+      - Gradually increase credit limits as income grows
+      - Diversify credit mix naturally (don't force it)
+      - Monitor credit regularly for identity theft
+
+      **Common credit mistakes to avoid:**
+      - Closing old credit cards (reduces available credit and average age)
+      - Co-signing loans (you're responsible if they don't pay)
+      - Opening multiple accounts rapidly (looks risky)
+      - Maxing out credit cards (even if you pay off monthly)
+      - Ignoring credit reports (miss errors and fraud)
+      - Using credit repair companies (most can't do anything you can't do free)
+
+      **How to check your credit:**
+      - AnnualCreditReport.com: Free official report from each bureau yearly
+      - Credit monitoring services: Many banks offer free FICO scores
+      - Credit Karma: Free VantageScore (slightly different from FICO)
+
+      **What hurts your credit:**
+      - Late payments (30+ days past due)
+      - Collections accounts
+      - Bankruptcies (7-10 years on report)
+      - Foreclosures (7 years)
+      - High credit utilization
+      - Too many hard inquiries
+
+      **Building credit from scratch:**
+      If you have no credit history:
+      1. Secured credit card (deposit = credit limit)
+      2. Credit-builder loan from credit union
+      3. Become authorized user on parent/spouse's card
+      4. Report rent payments (services like RentTrack)
+
+      **Disclaimer:** This is educational content, not financial advice. Credit reporting can
+      be complex and credit needs vary by individual. Consider consulting a non-profit credit
+      counselor for personalized guidance.
+    cta: "Check Your Credit Score"
+    persona_tags: ["balanced", "high_utilization", "savings_builder"]
+    signal_tags: ["moderate_utilization_30", "stable_income"]
+    source: "Financial Education Database"
+
+  # ADDITIONAL CONTENT FOR COVERAGE
+  - id: "edu_debt_payoff"
+    title: "Debt Payoff Strategies: Avalanche vs. Snowball Method"
+    summary: "Choose the right debt reduction strategy for your situation and personality."
+    body: |
+      If you're carrying debt, having a clear payoff strategy makes all the difference between
+      slowly chipping away and making real progress. The two most popular methods are the
+      avalanche and snowball approaches—each has benefits depending on your situation.
+
+      **The Avalanche Method: Math-Optimized**
+
+      **How it works:**
+      1. List all debts by interest rate (highest to lowest)
+      2. Pay minimums on everything
+      3. Put all extra money toward the highest rate debt
+      4. Once paid off, roll that payment to the next highest rate
+
+      **Pros:**
+      - Saves the most money in interest
+      - Mathematically optimal approach
+      - Faster payoff in terms of total time
+
+      **Cons:**
+      - May take longer to see first payoff (if highest rate = biggest balance)
+      - Requires discipline without quick wins
+      - Best for analytical, patient personalities
+
+      **Best for:** People motivated by math, those with large interest rate differences between
+      debts, and borrowers with strong discipline.
+
+      **The Snowball Method: Psychology-Optimized**
+
+      **How it works:**
+      1. List all debts by balance (smallest to largest)
+      2. Pay minimums on everything
+      3. Put all extra money toward the smallest balance
+      4. Once paid off, roll that payment to the next smallest
+
+      **Pros:**
+      - Quick psychological wins keep you motivated
+      - Simplifies finances faster (fewer accounts)
+      - Builds momentum and confidence
+
+      **Cons:**
+      - May pay more in interest over time
+      - Not mathematically optimal
+      - Can be slower if smallest debt takes long to pay
+
+      **Best for:** People motivated by visible progress, those struggling with debt fatigue,
+      borrowers who need quick wins to stay on track.
+
+      **Which method saves more?**
+      The difference in total interest is often smaller than you'd think, especially if:
+      - Interest rates are similar across debts
+      - You're aggressive about payoff regardless of method
+      - The motivation from snowball keeps you consistent
+
+      The best method is the one you'll actually stick with. Consistency beats optimization if
+      the "optimal" plan causes you to give up.
+
+      **Hybrid approach:**
+      Some people combine methods:
+      - Start with snowball to get quick wins and build confidence
+      - Switch to avalanche once motivated and down to larger debts
+      - Avalanche for credit cards, snowball for everything else
+
+      **Accelerating any method:**
+      - Temporarily cut discretionary spending
+      - Apply windfalls (tax refunds, bonuses) to debt
+      - Take on side gig and apply all income to debt
+      - Sell items you don't need
+      - Negotiate lower interest rates with creditors
+
+      **Red flags that you need help:**
+      - Only paying minimums with no plan to pay more
+      - Taking new debt to pay old debt
+      - Missing payments or going into collections
+      - Debt causes significant stress affecting health/relationships
+
+      If you're struggling, consider contacting a non-profit credit counseling agency (like NFCC)
+      for free guidance on debt management plans and negotiation with creditors.
+
+      **Disclaimer:** This is educational content, not financial advice. Debt situations vary
+      significantly—consider consulting a credit counselor or financial advisor for personalized
+      debt reduction strategies.
+    cta: "Choose Your Debt Strategy"
+    persona_tags: ["high_utilization", "balanced"]
+    signal_tags: ["interest_charges", "high_utilization_50", "overdue"]
+    source: "Financial Education Database"
+
+  - id: "edu_spending_awareness"
+    title: "Mindful Spending: Awareness Before Budgets"
+    summary: "Track your spending without judgment to understand your money patterns."
+    body: |
+      Before you can create a budget that works, you need to understand where your money actually
+      goes. Most people dramatically underestimate their spending in categories like dining out,
+      subscriptions, and impulse purchases.
+
+      **The 30-day spending awareness challenge:**
+
+      **Week 1: Observe without judgment**
+      - Track every purchase, no matter how small
+      - Don't try to change behavior yet—just observe
+      - Use an app, spreadsheet, or notebook
+      - Note not just amount but also category and emotion
+
+      **Week 2: Identify patterns**
+      - What categories are higher than you expected?
+      - When do you spend impulsively? (bored, stressed, hungry?)
+      - Which purchases brought lasting value vs. regret?
+      - Are there subscriptions or recurring charges you forgot about?
+
+      **Week 3: Question purchases**
+      - Before buying, pause and ask: "Do I really need this?"
+      - Wait 24 hours before non-essential purchases over $50
+      - Notice how often you talk yourself out of purchases after waiting
+      - Track "avoided purchases" to see how much you saved
+
+      **Week 4: Experiment with changes**
+      - Pick one category to reduce this week
+      - Try substitutes (library instead of bookstore, home coffee vs. cafe)
+      - Notice what you miss vs. what you don't
+      - Celebrate progress, not perfection
+
+      **Common spending leaks to check:**
+
+      1. **The Daily Coffee/Snack**
+         $5 per day = $150/month = $1,825/year
+         Even 2-3 times per week adds up significantly
+
+      2. **Convenience purchases**
+         Last-minute grocery runs buying expensive pre-made food
+         Forgetting lunch and buying out
+         Emergency purchases because you ran out of essentials
+
+      3. **Lifestyle inflation**
+         Small upgrades that become the new normal
+         "I deserve it" purchases after every hard day
+         Gradually increasing what counts as "necessary"
+
+      4. **Emotional spending**
+         Retail therapy when stressed
+         Boredom buying when scrolling online
+         Keeping up with friends' spending
+
+      5. **Unused subscriptions and memberships**
+         Services auto-renewed after free trials
+         Gym memberships for gyms you don't visit
+         Multiple streaming services watched sporadically
+
+      **Values-based spending framework:**
+
+      Instead of rigid budgets, ask: "Does this spending align with my values?"
+
+      - Values spending: Travel, hobbies, education, health (keeps you fulfilled)
+      - Essential spending: Housing, food, transportation (non-negotiable)
+      - Waste spending: Unused subscriptions, impulse purchases, convenience fees (cut here)
+
+      **The 24-hour rule:**
+      For purchases over $50 (or your threshold):
+      - Add to cart but don't buy
+      - Wait 24 hours
+      - If you still want it and it fits your budget, buy it
+      - Often you'll forget about it (revealing it wasn't important)
+
+      **Creating spending awareness without apps:**
+      - Keep receipts in your wallet for a week, review on Sunday
+      - Use cash for discretionary spending (physical limitation)
+      - Check bank account daily at same time
+      - Set up low-balance alerts to stay aware
+
+      **Remember:** Awareness is not shame. You're gathering data to make better decisions,
+      not judging past choices. The goal is to spend intentionally on what matters to you
+      and reduce spending on what doesn't.
+
+      **Disclaimer:** This is educational content, not financial advice. Spending patterns are
+      personal—focus on what works for your situation and values.
+    cta: "Start Tracking Your Spending"
+    persona_tags: ["balanced", "subscription_heavy", "high_utilization"]
+    signal_tags: ["subscription_heavy"]
+    source: "Financial Education Database"
