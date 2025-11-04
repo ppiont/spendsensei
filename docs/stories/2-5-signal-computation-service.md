@@ -1,6 +1,6 @@
 # Story 2.5: Signal Computation Service
 
-Status: drafted
+Status: ready-for-dev
 
 ## Story
 
@@ -159,6 +159,20 @@ async def compute_signals(db: AsyncSession, user_id: str, window_days: int):
 {{agent_model_name_version}}
 
 ### Debug Log References
+
+**Implementation Plan:**
+1. Add async compute_signals() function to features.py
+2. Import AsyncSession from sqlalchemy.ext.asyncio
+3. Import Account and Transaction models
+4. Calculate cutoff_date using datetime.now() - timedelta(days=window_days)
+5. Query accounts for user with await db.execute(select(Account).where(Account.user_id == user_id))
+6. Query transactions with join: select(Transaction).join(Account).where(Account.user_id == user_id, Transaction.date >= cutoff_date)
+7. Convert ORM objects to list of dicts for signal functions
+8. Call all 4 signal functions in sequence
+9. Populate BehaviorSignals object
+10. Add comprehensive error handling for database operations
+11. Test with both 30-day and 180-day windows
+12. Verify performance <200ms per user
 
 ### Completion Notes List
 
