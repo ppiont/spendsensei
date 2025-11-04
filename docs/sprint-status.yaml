@@ -66,12 +66,12 @@ development_status:
   4-4-insights-endpoint: done
   epic-4-retrospective: optional
 
-  epic-5: backlog
+  epic-5: done
   5-1-api-client-type-definitions: done
   5-2-dashboard-page: done
   5-3-transactions-page: done
   5-4-insights-page: done
-  5-5-operator-view: drafted
+  5-5-operator-view: done
   epic-5-retrospective: optional
 
   epic-6: backlog
