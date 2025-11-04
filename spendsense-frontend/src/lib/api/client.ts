@@ -199,7 +199,9 @@ export const insightsAPI = {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/insights/${userId}?${params}`
     );
-    return handleResponse<Recommendation[]>(response);
+    const data = await handleResponse<{recommendations: Recommendation[], disclaimer: string}>(response);
+    // Extract recommendations from wrapper response
+    return data.recommendations;
   }
 };
 
