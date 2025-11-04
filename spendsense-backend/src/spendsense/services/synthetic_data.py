@@ -228,7 +228,7 @@ def generate_dataset(num_users: int = 50) -> dict[str, list[dict[str, Any]]]:
         "transactions": all_transactions,
     }
 
-    print(f"\nGeneration complete:")
+    print("\nGeneration complete:")
     print(f"  - {len(all_users)} users")
     print(f"  - {len(all_accounts)} accounts")
     print(f"  - {len(all_transactions)} transactions")
@@ -319,7 +319,7 @@ async def load_data_from_json(db: AsyncSession, json_path: str = "data/users.jso
 
         await db.commit()
 
-        print(f"\nLoaded into database:")
+        print("\nLoaded into database:")
         print(f"  - {len(users)} users")
         print(f"  - {len(accounts)} accounts")
         print(f"  - {len(transactions)} transactions")

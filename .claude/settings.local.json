@@ -46,7 +46,13 @@
       "mcp__GitKraken__git_status",
       "mcp__GitKraken__git_add_or_commit",
       "Bash(git push:*)",
-      "SlashCommand(/bmad:bmm:workflows:story-context)"
+      "SlashCommand(/bmad:bmm:workflows:story-context)",
+      "Bash(for story in 7-1 7-2 7-3 7-4 7-5)",
+      "Bash(do)",
+      "Bash(done)",
+      "mcp__GitKraken__git_log_or_diff",
+      "Bash(timeout 3 uv run:*)",
+      "Read(//Users/ppiont/repos/gauntlet/**)"
     ],
     "deny": [],
     "ask": []

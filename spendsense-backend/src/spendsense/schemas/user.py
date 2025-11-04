@@ -1,6 +1,5 @@
 """User schemas for API requests and responses"""
 
-from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field
 
 
