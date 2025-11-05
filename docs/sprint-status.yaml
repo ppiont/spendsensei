@@ -80,10 +80,10 @@ development_status:
   6-3-documentation-polish: review
   epic-6-retrospective: optional
 
-  epic-7: backlog
+  epic-7: done
   7-1-design-system-foundation: review
   7-2-dashboard-page-redesign: review
   7-3-insights-page-redesign: review
   7-4-transactions-page-redesign: review
-  7-5-responsive-accessibility-polish: ready-for-dev
+  7-5-responsive-accessibility-polish: review
   epic-7-retrospective: optional
