@@ -43,31 +43,31 @@
 				whatItMeans:
 					'You consistently set aside money each month and maintain low credit utilization. Your financial habits show discipline and long-term thinking.',
 				whyItMatters:
-					'This persona means you're on track to build wealth over time. We'll focus your education on optimizing savings strategies, investment opportunities, and accelerating your financial goals.'
+					'This persona means you\'re on track to build wealth over time. We\'ll focus your education on optimizing savings strategies, investment opportunities, and accelerating your financial goals.'
 			},
 			high_utilization: {
 				whatItMeans:
 					'Your credit cards are carrying high balances relative to your credit limits. This can impact your credit score and lead to significant interest charges.',
 				whyItMatters:
-					'High utilization is costing you money in interest and may be limiting your credit options. We'll help you understand strategies to pay down balances and improve your credit health.'
+					'High utilization is costing you money in interest and may be limiting your credit options. We\'ll help you understand strategies to pay down balances and improve your credit health.'
 			},
 			variable_income: {
 				whatItMeans:
 					'Your income fluctuates from month to month, which can make budgeting and planning more challenging than with a steady paycheck.',
 				whyItMatters:
-					'Variable income requires different financial strategies than traditional employment. We'll focus on building cash reserves, smoothing expenses, and planning for irregular income patterns.'
+					'Variable income requires different financial strategies than traditional employment. We\'ll focus on building cash reserves, smoothing expenses, and planning for irregular income patterns.'
 			},
 			subscription_heavy: {
 				whatItMeans:
 					'You have multiple recurring subscriptions and services that automatically charge your accounts each month.',
 				whyItMatters:
-					'Subscriptions can quietly drain your budget. Even small recurring charges add up to significant annual costs. We'll help you audit and optimize your subscriptions to free up money for your priorities.'
+					'Subscriptions can quietly drain your budget. Even small recurring charges add up to significant annual costs. We\'ll help you audit and optimize your subscriptions to free up money for your priorities.'
 			},
 			balanced: {
 				whatItMeans:
 					'Your finances show healthy patterns across multiple areas: manageable credit usage, consistent income, and reasonable spending.',
 				whyItMatters:
-					'You have a solid financial foundation. We'll focus on fine-tuning your approach, identifying optimization opportunities, and helping you maintain these good habits long-term.'
+					'You have a solid financial foundation. We\'ll focus on fine-tuning your approach, identifying optimization opportunities, and helping you maintain these good habits long-term.'
 			}
 		};
 		return (
