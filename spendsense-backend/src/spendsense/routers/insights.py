@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from spendsense.database import get_db
 from spendsense.models.user import User
+from spendsense.models.operator_override import OperatorOverride
 from spendsense.schemas.insight import (
     RecommendationResponse,
     OfferRecommendationResponse,
@@ -95,15 +96,43 @@ async def get_user_insights(
             f"education={len(result.education_recommendations)}, offers={len(result.offer_recommendations)}"
         )
 
+        # Get operator overrides for this user to filter flagged recommendations
+        overrides_result = await db.execute(
+            select(OperatorOverride)
+            .where(OperatorOverride.user_id == user_id)
+            .where(OperatorOverride.action == "flag")
+        )
+        overrides = overrides_result.scalars().all()
+
+        # Create set of flagged recommendation IDs for efficient lookup
+        flagged_ids = {override.recommendation_id for override in overrides}
+
+        logger.info(f"Found {len(flagged_ids)} flagged recommendations for user {user_id}")
+
+        # Filter out flagged recommendations
+        filtered_education = [
+            rec for rec in result.education_recommendations
+            if rec.content.id not in flagged_ids
+        ]
+
+        filtered_offers = [
+            rec for rec in result.offer_recommendations
+            if rec.offer.id not in flagged_ids
+        ]
+
+        logger.info(
+            f"After filtering: education={len(filtered_education)}, offers={len(filtered_offers)}"
+        )
+
         # Convert to API response schemas
         education_responses = [
             _convert_education_recommendation(rec)
-            for rec in result.education_recommendations
+            for rec in filtered_education
         ]
 
         offer_responses = [
             _convert_offer_recommendation(rec)
-            for rec in result.offer_recommendations
+            for rec in filtered_offers
         ]
 
         return InsightsResponse(
