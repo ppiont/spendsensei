@@ -32,7 +32,8 @@ SWAPPING INSTRUCTIONS:
 """
 
 from typing import List, Dict, Any, Literal
-from spendsense.generators.base import ContentGenerator, EducationItem, Rationale
+from spendsense.generators.base import ContentGenerator, EducationItem, Rationale, PartnerOffer
+from spendsense.services.features import BehaviorSignals
 
 
 # ==============================================================================
@@ -153,24 +154,22 @@ class LLMGenerator(ContentGenerator):
         
         raise NotImplementedError("LLM generator not yet implemented")
     
-    def generate_education(
+    async def generate_education(
         self,
-        persona: str,
-        active_signals: List[str],
-        signal_data: Dict[str, Any],
+        persona_type: str,
+        signals: BehaviorSignals,
         limit: int = 3
     ) -> List[EducationItem]:
         """Generate educational content using LLM (stub).
-        
+
         Args:
-            persona: User's assigned persona (e.g., "paycheck_to_paycheck")
-            active_signals: List of triggered signal names
-            signal_data: Dictionary of signal values and metadata
+            persona_type: User's assigned persona (e.g., "high_utilization")
+            signals: BehaviorSignals object with computed user data
             limit: Maximum number of items to return
-            
+
         Returns:
             List of EducationItem objects, sorted by relevance
-            
+
         Raises:
             NotImplementedError: Always raised - LLM integration not yet implemented
             
@@ -215,22 +214,45 @@ class LLMGenerator(ContentGenerator):
         """
         raise NotImplementedError("LLM generator not yet implemented")
     
-    def generate_rationale(
+    async def generate_offers(
         self,
-        recommendation_type: str,
-        persona: str,
-        signal_data: Dict[str, Any]
+        persona_type: str,
+        signals: BehaviorSignals,
+        accounts: List,
+        limit: int = 3
+    ) -> List[PartnerOffer]:
+        """Generate partner offers using LLM (stub).
+
+        Args:
+            persona_type: User's assigned persona (e.g., "high_utilization")
+            signals: BehaviorSignals object with computed user data
+            accounts: List of user's Account objects for eligibility checking
+            limit: Maximum number of offers to return
+
+        Returns:
+            List of PartnerOffer objects, sorted by relevance
+
+        Raises:
+            NotImplementedError: Always raised - LLM integration not yet implemented
+        """
+        raise NotImplementedError("LLM generator not yet implemented")
+
+    async def generate_rationale(
+        self,
+        persona_type: str,
+        confidence: float,
+        signals: BehaviorSignals
     ) -> Rationale:
         """Generate recommendation rationale using LLM (stub).
-        
+
         Args:
-            recommendation_type: Type of recommendation being made
-            persona: User's assigned persona
-            signal_data: Dictionary of signal values that triggered the recommendation
-            
+            persona_type: User's assigned persona
+            confidence: Confidence score for the assignment (0.0-1.0)
+            signals: BehaviorSignals object with computed user data
+
         Returns:
-            Rationale object with summary, reasoning, and confidence
-            
+            Rationale object with explanation and key signals
+
         Raises:
             NotImplementedError: Always raised - LLM integration not yet implemented
             

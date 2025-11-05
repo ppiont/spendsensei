@@ -1,6 +1,6 @@
 """Insight schemas for API responses (recommendations, persona, etc.)"""
 
-from typing import List
+from typing import List, Dict, Any
 from pydantic import BaseModel, Field
 from spendsense.utils.guardrails import DISCLAIMER
 
@@ -16,6 +16,22 @@ class EducationItemResponse(BaseModel):
     relevance_score: float = Field(..., description="Relevance score (0.0-1.0)", ge=0.0, le=1.0)
 
 
+class PartnerOfferResponse(BaseModel):
+    """Partner product offer"""
+    id: str = Field(..., description="Offer ID")
+    title: str = Field(..., description="Offer title")
+    provider: str = Field(..., description="Partner/provider name")
+    offer_type: str = Field(..., description="Type of offer (balance_transfer_card, high_yield_savings, etc.)")
+    summary: str = Field(..., description="Brief offer summary")
+    benefits: List[str] = Field(..., description="List of key benefits")
+    eligibility_explanation: str = Field(..., description="Plain-language eligibility explanation")
+    cta: str = Field(..., description="Call-to-action text")
+    cta_url: str = Field(..., description="URL for the offer")
+    disclaimer: str = Field(..., description="Legal disclaimer")
+    relevance_score: float = Field(..., description="Relevance score (0.0-1.0)", ge=0.0, le=1.0)
+    eligibility_met: bool = Field(..., description="Whether user meets eligibility criteria")
+
+
 class RationaleResponse(BaseModel):
     """Rationale explaining why content was recommended"""
     persona_type: str = Field(..., description="Assigned persona type")
@@ -27,6 +43,14 @@ class RationaleResponse(BaseModel):
 class RecommendationResponse(BaseModel):
     """Complete recommendation with content and rationale"""
     content: EducationItemResponse = Field(..., description="Educational content item")
+    rationale: RationaleResponse = Field(..., description="Explainable rationale")
+    persona: str = Field(..., description="Assigned persona type")
+    confidence: float = Field(..., description="Persona confidence score (0.0-1.0)", ge=0.0, le=1.0)
+
+
+class OfferRecommendationResponse(BaseModel):
+    """Partner offer recommendation with rationale"""
+    offer: PartnerOfferResponse = Field(..., description="Partner offer details")
     rationale: RationaleResponse = Field(..., description="Explainable rationale")
     persona: str = Field(..., description="Assigned persona type")
     confidence: float = Field(..., description="Persona confidence score (0.0-1.0)", ge=0.0, le=1.0)
@@ -82,9 +106,13 @@ class RecommendationResponse(BaseModel):
 
 
 class InsightsResponse(BaseModel):
-    """Insights response with recommendations and disclaimer"""
-    recommendations: List[RecommendationResponse] = Field(..., description="List of personalized recommendations")
-    disclaimer: str = Field(default=DISCLAIMER, description="Legal disclaimer for educational content")
+    """Insights response with education, offers, persona, and disclaimer"""
+    persona_type: str = Field(..., description="Assigned persona type")
+    confidence: float = Field(..., description="Persona assignment confidence (0.0-1.0)", ge=0.0, le=1.0)
+    education_recommendations: List[RecommendationResponse] = Field(..., description="Educational content recommendations (typically 3)")
+    offer_recommendations: List[OfferRecommendationResponse] = Field(default_factory=list, description="Partner offer recommendations (0-3 eligible offers)")
+    signals_summary: Dict[str, Any] = Field(default_factory=dict, description="Summary of detected behavioral signals")
+    disclaimer: str = Field(default=DISCLAIMER, description="Legal disclaimer for educational content and offers")
 
     model_config = {
         "json_schema_extra": {

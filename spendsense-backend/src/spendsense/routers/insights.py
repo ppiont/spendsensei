@@ -7,17 +7,24 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from spendsense.database import get_db
 from spendsense.models.user import User
-from spendsense.schemas.insight import RecommendationResponse, InsightsResponse
-from spendsense.services.recommendations import generate_recommendations
-from spendsense.generators.template import TemplateGenerator
+from spendsense.schemas.insight import (
+    RecommendationResponse,
+    OfferRecommendationResponse,
+    InsightsResponse,
+    EducationItemResponse,
+    PartnerOfferResponse,
+    RationaleResponse
+)
+from spendsense.services.recommendation_engine import StandardRecommendationEngine
 from spendsense.utils.guardrails import check_consent
 
 # Set up logging
 logger = logging.getLogger(__name__)
 
-# Initialize TemplateGenerator as module-level singleton
+# Initialize StandardRecommendationEngine as module-level singleton
 # This is created once when the module loads, avoiding repeated initialization
-generator = TemplateGenerator()
+# To swap to AI engine: engine = AIRecommendationEngine(ai_provider="anthropic")
+engine = StandardRecommendationEngine()
 
 router = APIRouter(prefix="/insights", tags=["insights"])
 
@@ -33,8 +40,12 @@ async def get_user_insights(
 
     This endpoint orchestrates the complete recommendation pipeline:
     1. Assigns a persona based on behavioral signals
-    2. Generates relevant educational content
-    3. Creates explainable rationales
+    2. Generates relevant educational content (3 items)
+    3. Generates relevant partner offers (0-3 eligible items)
+    4. Creates explainable rationales for each recommendation
+
+    The response includes both educational content and partner product offers
+    that match the user's financial persona and eligibility criteria.
 
     Args:
         user_id: User ID to generate insights for
@@ -42,9 +53,10 @@ async def get_user_insights(
         db: Database session
 
     Returns:
-        InsightsResponse: Personalized recommendations with disclaimer
+        InsightsResponse: Personalized recommendations (education + offers) with disclaimer
 
     Raises:
+        HTTPException: 403 if user has not provided consent
         HTTPException: 404 if user not found
         HTTPException: 500 if recommendation generation fails
     """
@@ -71,26 +83,36 @@ async def get_user_insights(
 
         logger.info(f"Generating insights for user {user_id} with {window}-day window")
 
-        # Generate recommendations using the complete pipeline
-        recommendations = await generate_recommendations(
+        # Generate recommendations using the recommendation engine (adapter pattern)
+        result = await engine.generate_recommendations(
             db=db,
             user_id=user_id,
-            generator=generator,
             window_days=window
         )
 
         logger.info(
-            f"Generated {len(recommendations)} recommendations for user {user_id} "
-            f"(persona: {recommendations[0].persona if recommendations else 'none'})"
+            f"Generated insights for user {user_id}: persona={result.persona_type}, "
+            f"education={len(result.education_recommendations)}, offers={len(result.offer_recommendations)}"
         )
 
-        # Convert to API response schemas with disclaimer
-        recommendation_responses = [
-            RecommendationResponse.from_recommendation(rec)
-            for rec in recommendations
+        # Convert to API response schemas
+        education_responses = [
+            _convert_education_recommendation(rec)
+            for rec in result.education_recommendations
         ]
 
-        return InsightsResponse(recommendations=recommendation_responses)
+        offer_responses = [
+            _convert_offer_recommendation(rec)
+            for rec in result.offer_recommendations
+        ]
+
+        return InsightsResponse(
+            persona_type=result.persona_type,
+            confidence=result.confidence,
+            education_recommendations=education_responses,
+            offer_recommendations=offer_responses,
+            signals_summary=result.signals_summary
+        )
 
     except HTTPException:
         raise
@@ -103,3 +125,54 @@ async def get_user_insights(
             status_code=500,
             detail=f"Failed to generate insights: {str(e)}"
         )
+
+
+def _convert_education_recommendation(rec) -> RecommendationResponse:
+    """Convert Recommendation to RecommendationResponse schema."""
+    return RecommendationResponse(
+        content=EducationItemResponse(
+            id=rec.content.id,
+            title=rec.content.title,
+            summary=rec.content.summary,
+            body=rec.content.body,
+            cta=rec.content.cta,
+            source=rec.content.source,
+            relevance_score=rec.content.relevance_score
+        ),
+        rationale=RationaleResponse(
+            persona_type=rec.rationale.persona_type,
+            confidence=rec.rationale.confidence,
+            explanation=rec.rationale.explanation,
+            key_signals=rec.rationale.key_signals
+        ),
+        persona=rec.persona,
+        confidence=rec.confidence
+    )
+
+
+def _convert_offer_recommendation(rec) -> OfferRecommendationResponse:
+    """Convert OfferRecommendation to OfferRecommendationResponse schema."""
+    return OfferRecommendationResponse(
+        offer=PartnerOfferResponse(
+            id=rec.offer.id,
+            title=rec.offer.title,
+            provider=rec.offer.provider,
+            offer_type=rec.offer.offer_type,
+            summary=rec.offer.summary,
+            benefits=rec.offer.benefits,
+            eligibility_explanation=rec.offer.eligibility_explanation,
+            cta=rec.offer.cta,
+            cta_url=rec.offer.cta_url,
+            disclaimer=rec.offer.disclaimer,
+            relevance_score=rec.offer.relevance_score,
+            eligibility_met=rec.offer.eligibility_met
+        ),
+        rationale=RationaleResponse(
+            persona_type=rec.rationale.persona_type,
+            confidence=rec.rationale.confidence,
+            explanation=rec.rationale.explanation,
+            key_signals=rec.rationale.key_signals
+        ),
+        persona=rec.persona,
+        confidence=rec.confidence
+    )

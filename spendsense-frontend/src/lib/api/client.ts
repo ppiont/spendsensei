@@ -11,6 +11,7 @@ import type {
   Account,
   Transaction,
   Recommendation,
+  InsightsResponse,
   APIError
 } from '$lib/types';
 
@@ -189,9 +190,11 @@ export const transactionAPI = {
  */
 export const insightsAPI = {
   /**
-   * Get personalized insights and recommendations for a user
+   * Get personalized insights and recommendations for a user.
+   *
+   * Returns education content, partner offers, persona info, and signals summary.
    */
-  async getUserInsights(userId: string, window = 30): Promise<Recommendation[]> {
+  async getUserInsights(userId: string, window = 30): Promise<InsightsResponse> {
     const params = new URLSearchParams({
       window: window.toString()
     });
@@ -199,9 +202,7 @@ export const insightsAPI = {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/insights/${userId}?${params}`
     );
-    const data = await handleResponse<{recommendations: Recommendation[], disclaimer: string}>(response);
-    // Extract recommendations from wrapper response
-    return data.recommendations;
+    return handleResponse<InsightsResponse>(response);
   }
 };
 

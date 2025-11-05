@@ -11,15 +11,16 @@ import logging
 from typing import List, Dict, Any
 from pathlib import Path
 
-from spendsense.generators.base import ContentGenerator, EducationItem, Rationale
+from spendsense.generators.base import ContentGenerator, EducationItem, Rationale, PartnerOffer, EligibilityRules
 from spendsense.services.features import BehaviorSignals
 from spendsense.utils.guardrails import check_tone
 
 # Set up logging
 logger = logging.getLogger(__name__)
 
-# Default path to content catalog (relative to project root)
+# Default paths to catalogs (relative to project root)
 DEFAULT_CATALOG_PATH = "data/content_catalog.yaml"
+DEFAULT_OFFERS_CATALOG_PATH = "data/partner_offers_catalog.yaml"
 
 
 class TemplateGenerator(ContentGenerator):
@@ -30,22 +31,28 @@ class TemplateGenerator(ContentGenerator):
     and generates explainable rationales using template strings.
     """
 
-    def __init__(self, catalog_path: str = None):
+    def __init__(self, catalog_path: str = None, offers_catalog_path: str = None):
         """
-        Initialize TemplateGenerator with content catalog.
+        Initialize TemplateGenerator with content and partner offers catalogs.
 
         Args:
             catalog_path: Path to content_catalog.yaml file. If None, uses default path
                          relative to the spendsense-backend directory.
+            offers_catalog_path: Path to partner_offers_catalog.yaml file. If None, uses default path.
         """
+        backend_root = Path(__file__).parent.parent.parent.parent
+
         if catalog_path is None:
-            # Default to data/content_catalog.yaml relative to spendsense-backend root
-            backend_root = Path(__file__).parent.parent.parent.parent
             catalog_path = backend_root / DEFAULT_CATALOG_PATH
 
+        if offers_catalog_path is None:
+            offers_catalog_path = backend_root / DEFAULT_OFFERS_CATALOG_PATH
+
         self.catalog_path = Path(catalog_path)
+        self.offers_catalog_path = Path(offers_catalog_path)
         self._catalog_cache = None
-        logger.info(f"Initialized TemplateGenerator with catalog: {self.catalog_path}")
+        self._offers_catalog_cache = None
+        logger.info(f"Initialized TemplateGenerator with catalog: {self.catalog_path}, offers: {self.offers_catalog_path}")
 
     def _load_catalog(self) -> Dict[str, Any]:
         """
@@ -439,3 +446,250 @@ class TemplateGenerator(ContentGenerator):
             )
 
         return explanation
+
+    def _load_offers_catalog(self) -> Dict[str, Any]:
+        """
+        Load partner offers catalog from YAML file.
+
+        Uses caching to avoid reloading on every call.
+
+        Returns:
+            Dictionary containing 'partner_offers' list with offer items
+
+        Raises:
+            FileNotFoundError: If offers catalog file doesn't exist
+            yaml.YAMLError: If catalog file is invalid YAML
+        """
+        if self._offers_catalog_cache is not None:
+            return self._offers_catalog_cache
+
+        if not self.offers_catalog_path.exists():
+            raise FileNotFoundError(f"Partner offers catalog not found: {self.offers_catalog_path}")
+
+        logger.info(f"Loading partner offers catalog from {self.offers_catalog_path}")
+
+        with open(self.offers_catalog_path, 'r') as f:
+            catalog = yaml.safe_load(f)
+
+        self._offers_catalog_cache = catalog
+        logger.info(f"Loaded {len(catalog.get('partner_offers', []))} partner offers from catalog")
+
+        return catalog
+
+    def _estimate_credit_score(self, utilization: float) -> int:
+        """
+        Estimate credit score based on credit utilization percentage.
+
+        This is a simplified estimation for eligibility checking purposes.
+        In a real system, you would use actual credit scores from credit bureaus.
+
+        Credit utilization accounts for ~30% of FICO score. This method provides
+        a rough estimate based on typical score ranges:
+        - 0-10% utilization: 740-850 (Excellent)
+        - 10-30% utilization: 670-739 (Good)
+        - 30-50% utilization: 580-669 (Fair)
+        - 50-75% utilization: 500-579 (Poor)
+        - 75%+ utilization: 300-499 (Very Poor)
+
+        Args:
+            utilization: Credit utilization percentage (0.0-100.0)
+
+        Returns:
+            Estimated credit score (300-850)
+        """
+        if utilization <= 10.0:
+            # Excellent: 740-850
+            return int(850 - (utilization * 11))  # 850 at 0%, 740 at 10%
+        elif utilization <= 30.0:
+            # Good: 670-739
+            return int(739 - ((utilization - 10.0) * 3.45))  # 739 at 10%, 670 at 30%
+        elif utilization <= 50.0:
+            # Fair: 580-669
+            return int(669 - ((utilization - 30.0) * 4.45))  # 669 at 30%, 580 at 50%
+        elif utilization <= 75.0:
+            # Poor: 500-579
+            return int(579 - ((utilization - 50.0) * 3.16))  # 579 at 50%, 500 at 75%
+        else:
+            # Very Poor: 300-499
+            return int(max(300, 500 - ((utilization - 75.0) * 8)))  # 500 at 75%, 300 at 100%
+
+    def _check_eligibility(
+        self,
+        offer_data: Dict[str, Any],
+        signals: BehaviorSignals,
+        accounts: List,
+        signal_tags: List[str]
+    ) -> bool:
+        """
+        Check if user meets eligibility requirements for an offer.
+
+        All eligibility rules are combined with AND logic - user must meet
+        ALL specified criteria to be eligible.
+
+        Args:
+            offer_data: Dictionary containing offer data from catalog
+            signals: BehaviorSignals object with computed user data
+            accounts: List of user's Account objects
+            signal_tags: List of active signal tags
+
+        Returns:
+            True if user meets all eligibility criteria, False otherwise
+        """
+        rules = offer_data.get("eligibility_rules", {})
+
+        # Check credit utilization requirements
+        if signals.credit:
+            utilization = signals.credit.get("overall_utilization", 0.0)
+
+            if "min_credit_utilization" in rules:
+                if utilization < rules["min_credit_utilization"]:
+                    return False
+
+            if "max_credit_utilization" in rules:
+                if utilization > rules["max_credit_utilization"]:
+                    return False
+
+            # Check credit score estimate
+            estimated_score = self._estimate_credit_score(utilization)
+
+            if "min_credit_score_estimate" in rules:
+                if estimated_score < rules["min_credit_score_estimate"]:
+                    return False
+
+            if "max_credit_score_estimate" in rules:
+                if estimated_score > rules["max_credit_score_estimate"]:
+                    return False
+
+        # Check income requirements
+        if "min_monthly_income" in rules and signals.income:
+            avg_income = signals.income.get("average_income", 0)  # Already in cents
+            # Estimate monthly income from average (assume biweekly or monthly frequency)
+            monthly_income = avg_income * 2  # Conservative estimate (assume biweekly)
+            if monthly_income < rules["min_monthly_income"]:
+                return False
+
+        # Check account type requirements
+        if "required_account_types" in rules and rules["required_account_types"]:
+            account_types = {acc.type for acc in accounts}
+            for required_type in rules["required_account_types"]:
+                if required_type not in account_types:
+                    return False
+
+        # Check excluded account subtypes
+        if "excluded_account_subtypes" in rules and rules["excluded_account_subtypes"]:
+            account_subtypes = {acc.subtype for acc in accounts}
+            for excluded_subtype in rules["excluded_account_subtypes"]:
+                if excluded_subtype in account_subtypes:
+                    return False
+
+        # Check required signals (AND logic - all must be present)
+        if "required_signals" in rules and rules["required_signals"]:
+            for required_signal in rules["required_signals"]:
+                if required_signal not in signal_tags:
+                    return False
+
+        # Check excluded signals (any match disqualifies)
+        if "excluded_signals" in rules and rules["excluded_signals"]:
+            for excluded_signal in rules["excluded_signals"]:
+                if excluded_signal in signal_tags:
+                    return False
+
+        # Check emergency fund requirements
+        if signals.savings:
+            emergency_months = signals.savings.get("emergency_fund_months", 0.0)
+
+            if "min_emergency_fund_months" in rules:
+                if emergency_months < rules["min_emergency_fund_months"]:
+                    return False
+
+            if "max_emergency_fund_months" in rules:
+                if emergency_months > rules["max_emergency_fund_months"]:
+                    return False
+
+        # All checks passed
+        return True
+
+    async def generate_offers(
+        self,
+        persona_type: str,
+        signals: BehaviorSignals,
+        accounts: List,
+        limit: int = 3
+    ) -> List[PartnerOffer]:
+        """
+        Generate personalized partner offers with eligibility checking.
+
+        Filters offers by persona relevance, checks eligibility requirements,
+        scores by relevance, and returns top N eligible offers.
+
+        Args:
+            persona_type: User's assigned persona (e.g., 'high_utilization')
+            signals: BehaviorSignals object with computed user data
+            accounts: List of user's Account objects for eligibility checking
+            limit: Maximum number of offers to return (default: 3)
+
+        Returns:
+            List of PartnerOffer objects with eligibility_met=True,
+            sorted by relevance (highest first)
+
+        Raises:
+            ValueError: If persona_type is invalid or required data missing
+        """
+        logger.info(f"Generating up to {limit} partner offers for persona: {persona_type}")
+
+        # Load partner offers catalog
+        catalog = self._load_offers_catalog()
+        all_offers = catalog.get("partner_offers", [])
+
+        if not all_offers:
+            logger.warning("No partner offers found in catalog")
+            return []
+
+        # Extract signal tags for eligibility checking
+        signal_tags = self._extract_signal_tags(signals)
+
+        # Filter and score offers
+        scored_offers = []
+
+        for offer_data in all_offers:
+            # Check if offer is relevant to persona
+            persona_tags = offer_data.get("persona_tags", [])
+            if persona_type not in persona_tags:
+                continue
+
+            # Check eligibility
+            is_eligible = self._check_eligibility(offer_data, signals, accounts, signal_tags)
+            if not is_eligible:
+                logger.debug(f"Offer {offer_data['id']} not eligible for user")
+                continue
+
+            # Calculate relevance score (similar to education content)
+            relevance_score = self._calculate_relevance(offer_data, signal_tags)
+
+            # Create PartnerOffer object
+            partner_offer = PartnerOffer(
+                id=offer_data["id"],
+                title=offer_data["title"],
+                provider=offer_data["provider"],
+                offer_type=offer_data["offer_type"],
+                summary=offer_data["summary"],
+                benefits=offer_data["benefits"],
+                eligibility_explanation=offer_data["eligibility_explanation"],
+                cta=offer_data["cta"],
+                cta_url=offer_data["cta_url"],
+                disclaimer=offer_data["disclaimer"],
+                relevance_score=relevance_score,
+                eligibility_met=True
+            )
+
+            scored_offers.append((relevance_score, partner_offer))
+
+        # Sort by relevance score (highest first)
+        scored_offers.sort(reverse=True, key=lambda x: x[0])
+
+        # Return top N offers
+        top_offers = [offer for score, offer in scored_offers[:limit]]
+
+        logger.info(f"Generated {len(top_offers)} eligible partner offers from {len(all_offers)} total offers")
+
+        return top_offers

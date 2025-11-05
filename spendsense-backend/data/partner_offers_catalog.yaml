@@ -1,0 +1,246 @@
+# SpendSense Partner Offers Catalog
+#
+# This catalog contains curated partner product offers mapped to user personas
+# and behavioral signals. Offers are only shown to users who meet eligibility
+# requirements based on their financial profile.
+#
+# Offer Types:
+# - balance_transfer_card: Credit cards with 0% APR balance transfer offers
+# - high_yield_savings: High-yield savings accounts
+# - budgeting_app: Budgeting and expense tracking applications
+# - subscription_manager: Subscription tracking and cancellation tools
+# - credit_builder: Credit-building products for those building/rebuilding credit
+# - debt_consolidation: Debt consolidation loans
+# - cd_account: Certificate of deposit accounts
+# - financial_planning: Financial planning and advisory tools
+# - cashback_card: Cashback rewards credit cards
+# - emergency_fund_builder: Automated savings tools for emergency funds
+
+partner_offers:
+  # HIGH UTILIZATION PERSONA OFFERS
+
+  - id: "offer_balance_transfer_01"
+    title: "0% APR Balance Transfer Card"
+    provider: "Example Financial"
+    offer_type: "balance_transfer_card"
+    summary: "Transfer high-interest balances and pay 0% APR for 18 months."
+    benefits:
+      - "0% intro APR on balance transfers for 18 months"
+      - "No annual fee"
+      - "Save hundreds on interest charges"
+      - "3% balance transfer fee (waived for first 60 days)"
+    eligibility_explanation: "Available to users with credit utilization above 50% and estimated credit score of 650+. Requires at least one active credit card account."
+    eligibility_rules:
+      min_credit_utilization: 50.0
+      max_credit_utilization: 95.0
+      min_credit_score_estimate: 650
+      required_account_types: ["credit"]
+      required_signals: ["high_utilization_50"]
+    cta: "Check Eligibility"
+    cta_url: "https://example.com/offers/balance-transfer"
+    disclaimer: "This offer is provided by a SpendSense partner. Terms and conditions apply. Subject to credit approval."
+    persona_tags: ["high_utilization"]
+    signal_tags: ["high_utilization_50", "high_utilization_80", "interest_charges"]
+
+  - id: "offer_debt_consolidation_01"
+    title: "Personal Debt Consolidation Loan"
+    provider: "LendWell"
+    offer_type: "debt_consolidation"
+    summary: "Consolidate multiple high-interest debts into one lower fixed-rate payment."
+    benefits:
+      - "Fixed APR as low as 7.99% (with autopay discount)"
+      - "Consolidate multiple credit cards into one payment"
+      - "No prepayment penalties"
+      - "Loan amounts up to $50,000"
+    eligibility_explanation: "For users with multiple high-utilization credit cards and monthly income of $3,000+. Estimated credit score 640+."
+    eligibility_rules:
+      min_credit_utilization: 60.0
+      min_monthly_income: 300000  # $3,000 in cents
+      min_credit_score_estimate: 640
+      required_account_types: ["credit"]
+      required_signals: ["high_utilization_50", "interest_charges"]
+    cta: "Get Pre-Qualified"
+    cta_url: "https://example.com/offers/debt-consolidation"
+    disclaimer: "This offer is provided by a SpendSense partner. APR varies by creditworthiness. Terms and conditions apply."
+    persona_tags: ["high_utilization"]
+    signal_tags: ["high_utilization_80", "interest_charges", "overdue"]
+
+  # SAVINGS BUILDER PERSONA OFFERS
+
+  - id: "offer_hysa_01"
+    title: "High-Yield Savings Account - 4.50% APY"
+    provider: "OnlineBank Plus"
+    offer_type: "high_yield_savings"
+    summary: "Earn 4.50% APY on your savings with no monthly fees or minimum balance."
+    benefits:
+      - "4.50% Annual Percentage Yield (APY)"
+      - "No monthly maintenance fees"
+      - "No minimum balance requirement"
+      - "FDIC insured up to $250,000"
+      - "Free mobile app with automatic transfers"
+    eligibility_explanation: "Open to all users actively building savings. Best for those with positive savings growth and credit utilization below 50%."
+    eligibility_rules:
+      max_credit_utilization: 50.0
+      excluded_account_subtypes: ["savings"]  # Don't show if they already have savings
+      required_signals: ["positive_savings"]
+      max_emergency_fund_months: 6.0  # Target those building emergency fund
+    cta: "Open Account"
+    cta_url: "https://example.com/offers/high-yield-savings"
+    disclaimer: "This offer is provided by a SpendSense partner. APY subject to change. Terms and conditions apply."
+    persona_tags: ["savings_builder", "balanced"]
+    signal_tags: ["positive_savings", "low_emergency_fund"]
+
+  - id: "offer_cd_account_01"
+    title: "12-Month Certificate of Deposit - 5.00% APY"
+    provider: "SecureBank"
+    offer_type: "cd_account"
+    summary: "Lock in a guaranteed 5.00% APY for 12 months with our premium CD."
+    benefits:
+      - "5.00% APY guaranteed for 12 months"
+      - "Minimum deposit: $1,000"
+      - "FDIC insured up to $250,000"
+      - "Automatic renewal at maturity"
+    eligibility_explanation: "Best for savers with $1,000+ in emergency funds who want guaranteed returns."
+    eligibility_rules:
+      min_emergency_fund_months: 3.0
+      max_credit_utilization: 30.0
+      required_signals: ["positive_savings"]
+    cta: "Learn More"
+    cta_url: "https://example.com/offers/cd-account"
+    disclaimer: "This offer is provided by a SpendSense partner. Early withdrawal penalties apply. Terms and conditions apply."
+    persona_tags: ["savings_builder", "balanced"]
+    signal_tags: ["positive_savings"]
+
+  - id: "offer_emergency_fund_app_01"
+    title: "Emergency Fund Builder by SaveSmart"
+    provider: "SaveSmart"
+    offer_type: "emergency_fund_builder"
+    summary: "Automated savings app that builds your emergency fund with round-ups and smart rules."
+    benefits:
+      - "Automatic round-ups on purchases"
+      - "Set and track emergency fund goals"
+      - "Earn 3.75% APY on saved funds"
+      - "Free for first 3 months"
+    eligibility_explanation: "Perfect for users with less than 3 months emergency fund coverage."
+    eligibility_rules:
+      max_emergency_fund_months: 3.0
+      max_credit_utilization: 80.0
+      required_signals: ["low_emergency_fund"]
+    cta: "Start Building"
+    cta_url: "https://example.com/offers/emergency-fund-builder"
+    disclaimer: "This offer is provided by a SpendSense partner. $2.99/month after trial. Terms apply."
+    persona_tags: ["savings_builder", "balanced", "variable_income"]
+    signal_tags: ["low_emergency_fund"]
+
+  # VARIABLE INCOME PERSONA OFFERS
+
+  - id: "offer_budgeting_app_01"
+    title: "FlexBudget - Budgeting for Irregular Income"
+    provider: "FlexBudget"
+    offer_type: "budgeting_app"
+    summary: "Smart budgeting designed specifically for freelancers and gig workers with variable income."
+    benefits:
+      - "Income forecasting and smoothing"
+      - "Bill payment scheduling based on cash flow"
+      - "Automatic expense categorization"
+      - "30-day free trial, then $9.99/month"
+    eligibility_explanation: "Designed for users with variable or irregular income patterns."
+    eligibility_rules:
+      required_signals: ["variable_income"]
+    cta: "Try Free for 30 Days"
+    cta_url: "https://example.com/offers/flexbudget"
+    disclaimer: "This offer is provided by a SpendSense partner. $9.99/month after trial. Cancel anytime."
+    persona_tags: ["variable_income"]
+    signal_tags: ["variable_income"]
+
+  # SUBSCRIPTION HEAVY PERSONA OFFERS
+
+  - id: "offer_subscription_manager_01"
+    title: "SubscriptionGuard - Track & Cancel Subscriptions"
+    provider: "SubscriptionGuard"
+    offer_type: "subscription_manager"
+    summary: "Automatically detect all your subscriptions and cancel unwanted ones with one click."
+    benefits:
+      - "Finds hidden recurring charges"
+      - "One-click cancellation for 100+ services"
+      - "Spending insights by subscription category"
+      - "Negotiates lower rates on your behalf"
+      - "Free tier available"
+    eligibility_explanation: "Recommended for users with 3 or more recurring subscriptions."
+    eligibility_rules:
+      required_signals: ["subscription_heavy"]
+    cta: "Scan My Subscriptions"
+    cta_url: "https://example.com/offers/subscription-guard"
+    disclaimer: "This offer is provided by a SpendSense partner. Premium features available for $4.99/month."
+    persona_tags: ["subscription_heavy"]
+    signal_tags: ["subscription_heavy"]
+
+  # CREDIT BUILDER / LOW CREDIT OFFERS
+
+  - id: "offer_credit_builder_01"
+    title: "Secured Credit Builder Card"
+    provider: "BuildCredit Financial"
+    offer_type: "credit_builder"
+    summary: "Build or rebuild your credit with a secured card that reports to all three bureaus."
+    benefits:
+      - "Reports to all 3 credit bureaus"
+      - "Low $200 minimum security deposit"
+      - "Automatic credit line increases with responsible use"
+      - "No annual fee"
+      - "Graduate to unsecured card in 12 months"
+    eligibility_explanation: "Designed for users building or rebuilding credit. Accepts applicants with limited or impaired credit history."
+    eligibility_rules:
+      max_credit_score_estimate: 650
+      max_credit_utilization: 30.0
+    cta: "Apply Now"
+    cta_url: "https://example.com/offers/credit-builder"
+    disclaimer: "This offer is provided by a SpendSense partner. Subject to approval. Security deposit required. Terms apply."
+    persona_tags: ["balanced", "savings_builder"]
+    signal_tags: []
+
+  # BALANCED PERSONA / GENERAL OFFERS
+
+  - id: "offer_financial_planning_01"
+    title: "SmartWealth Financial Planning App"
+    provider: "SmartWealth"
+    offer_type: "financial_planning"
+    summary: "Personalized financial planning with AI-powered insights and goal tracking."
+    benefits:
+      - "Automated investment recommendations"
+      - "Retirement planning calculator"
+      - "Tax optimization strategies"
+      - "Goal tracking for multiple objectives"
+      - "Free basic plan, Premium from $12/month"
+    eligibility_explanation: "Suitable for users with stable finances looking to optimize and grow wealth."
+    eligibility_rules:
+      max_credit_utilization: 30.0
+      min_emergency_fund_months: 2.0
+      required_signals: ["stable_income"]
+    cta: "Start Planning"
+    cta_url: "https://example.com/offers/smartwealth"
+    disclaimer: "This offer is provided by a SpendSense partner. Investment advice subject to risk. Not FDIC insured."
+    persona_tags: ["balanced", "savings_builder"]
+    signal_tags: ["stable_income", "positive_savings"]
+
+  - id: "offer_cashback_card_01"
+    title: "Ultimate Cashback Rewards Card"
+    provider: "RewardsPlus Bank"
+    offer_type: "cashback_card"
+    summary: "Earn 2% cashback on all purchases with no annual fee and no spending limits."
+    benefits:
+      - "2% cashback on everything, unlimited"
+      - "5% cashback on rotating categories"
+      - "$200 bonus after spending $1,000 in first 3 months"
+      - "No annual fee"
+      - "No foreign transaction fees"
+    eligibility_explanation: "Best for users with excellent credit and low utilization who pay balances in full."
+    eligibility_rules:
+      max_credit_utilization: 30.0
+      min_credit_score_estimate: 720
+      min_monthly_income: 400000  # $4,000 in cents
+      required_signals: ["stable_income"]
+    cta: "Apply for Card"
+    cta_url: "https://example.com/offers/cashback-rewards"
+    disclaimer: "This offer is provided by a SpendSense partner. Subject to credit approval. Terms and conditions apply."
+    persona_tags: ["balanced", "savings_builder"]
+    signal_tags: ["stable_income", "low_utilization"]

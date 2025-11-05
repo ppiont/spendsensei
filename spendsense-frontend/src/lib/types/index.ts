@@ -67,6 +67,21 @@ export interface EducationItem {
   relevance_score: number;
 }
 
+export interface PartnerOffer {
+  id: string;
+  title: string;
+  provider: string;
+  offer_type: string;
+  summary: string;
+  benefits: string[];
+  eligibility_explanation: string;
+  cta: string;
+  cta_url: string;
+  disclaimer: string;
+  relevance_score: number;
+  eligibility_met: boolean;
+}
+
 export interface Rationale {
   persona_type: string;
   confidence: number;
@@ -79,6 +94,22 @@ export interface Recommendation {
   rationale: Rationale;
   persona: string;
   confidence: number;
+}
+
+export interface OfferRecommendation {
+  offer: PartnerOffer;
+  rationale: Rationale;
+  persona: string;
+  confidence: number;
+}
+
+export interface InsightsResponse {
+  persona_type: string;
+  confidence: number;
+  education_recommendations: Recommendation[];
+  offer_recommendations: OfferRecommendation[];
+  signals_summary: Record<string, any>;
+  disclaimer: string;
 }
 
 // API Error type
