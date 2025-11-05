@@ -145,7 +145,7 @@
 
 			accounts = accountsData;
 			transactions = transactionsData;
-			recommendations = insightsData.slice(0, 3);
+			recommendations = insightsData.education_recommendations.slice(0, 3);
 		} catch (err: any) {
 			error = err.detail || err.message || 'Failed to load data';
 			console.error('Dashboard error:', err);

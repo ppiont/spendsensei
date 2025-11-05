@@ -30,7 +30,7 @@ export async function testGetUserAccounts(userId: string) {
     if (accounts.length > 0) {
       const account = accounts[0];
       logTest('Account has required fields',
-        !!(account.id && account.type && account.balance !== undefined),
+        !!(account.id && account.type && account.current_balance !== undefined),
         `Sample: ${account.name} (${account.type}/${account.subtype})`
       );
     }
@@ -81,10 +81,12 @@ export async function testGetUserInsights(userId: string) {
   console.log('\n=== Testing getUserInsights ===');
   try {
     const insights = await api.insights.getUserInsights(userId, 30);
-    logTest('Fetch user insights', true, `Found ${insights.length} recommendations`);
+    logTest('Fetch user insights', true,
+      `Persona: ${insights.persona_type}, ${insights.education_recommendations.length} education, ${insights.offer_recommendations.length} offers`
+    );
 
-    if (insights.length > 0) {
-      const rec = insights[0];
+    if (insights.education_recommendations.length > 0) {
+      const rec = insights.education_recommendations[0];
       logTest('Recommendation has required fields',
         !!(rec.persona && rec.content && rec.rationale),
         `Persona: ${rec.persona} (confidence: ${rec.confidence})`

@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { api } from '$lib/api/client';
-	import type { Recommendation, User } from '$lib/types';
+	import type { InsightsResponse, User } from '$lib/types';
 
 	// Svelte 5 runes for reactive state
 	let selectedUserId = $state('');
-	let recommendations = $state<Recommendation[]>([]);
+	let insightsData = $state<InsightsResponse | null>(null);
 	let loading = $state(false);
 	let error = $state<string | null>(null);
 	let selectedWindow = $state(30);
@@ -14,7 +14,12 @@
 	let usersError = $state<string | null>(null);
 
 	// Get full data from first recommendation
-	const fullData = $derived(recommendations.length > 0 ? recommendations[0] : null);
+	const fullData = $derived(
+		insightsData?.education_recommendations && insightsData.education_recommendations.length > 0
+			? insightsData.education_recommendations[0]
+			: null
+	);
+	const recommendations = $derived(insightsData?.education_recommendations || []);
 
 	// Format JSON for display
 	function formatJSON(obj: any): string {
@@ -50,7 +55,7 @@
 
 		try {
 			const data = await api.insights.getUserInsights(selectedUserId, selectedWindow);
-			recommendations = data;
+			insightsData = data;
 		} catch (err: any) {
 			error = err.detail || err.message || 'Failed to load data';
 			console.error('Operator view error:', err);
