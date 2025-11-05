@@ -12,6 +12,7 @@ import type {
   Transaction,
   Recommendation,
   InsightsResponse,
+  InspectUserResponse,
   APIError
 } from '$lib/types';
 
@@ -207,13 +208,37 @@ export const insightsAPI = {
 };
 
 /**
+ * Operator API
+ */
+export const operatorAPI = {
+  /**
+   * Inspect user data for operator debugging (no consent checks).
+   *
+   * This endpoint provides comprehensive user data for internal review
+   * and debugging purposes. Unlike the insights endpoint, this does NOT
+   * check consent and returns all available data.
+   */
+  async inspectUser(userId: string, window = 30): Promise<InspectUserResponse> {
+    const params = new URLSearchParams({
+      window: window.toString()
+    });
+
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/operator/inspect/${userId}?${params}`
+    );
+    return handleResponse<InspectUserResponse>(response);
+  }
+};
+
+/**
  * Combined API client
  */
 export const api = {
   users: userAPI,
   accounts: accountAPI,
   transactions: transactionAPI,
-  insights: insightsAPI
+  insights: insightsAPI,
+  operator: operatorAPI
 };
 
 export default api;

@@ -102,3 +102,19 @@ class OperatorOverrideResponse(BaseModel):
             operator_id=override.operator_id,
             created_at=override.created_at.isoformat() + "Z"
         )
+
+
+class InspectUserResponse(BaseModel):
+    """Comprehensive user inspection data for operator debugging (no consent checks)"""
+    user_id: str = Field(..., description="User ID")
+    user_name: str = Field(..., description="User name")
+    user_email: str = Field(..., description="User email")
+    consent_status: bool = Field(..., description="Whether user has provided consent")
+    persona_type: Optional[str] = Field(None, description="Assigned persona (if consented)")
+    confidence: Optional[float] = Field(None, description="Persona confidence (if consented)")
+    signals_summary: Dict[str, Any] = Field(default_factory=dict, description="Detected behavioral signals")
+    education_recommendations: List[Any] = Field(default_factory=list, description="Education recommendations (if consented)")
+    offer_recommendations: List[Any] = Field(default_factory=list, description="Offer recommendations (if consented)")
+    account_count: int = Field(..., description="Number of connected accounts")
+    transaction_count: int = Field(..., description="Number of transactions in analysis window")
+    window_days: int = Field(..., description="Analysis window in days")

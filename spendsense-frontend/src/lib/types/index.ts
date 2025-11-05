@@ -109,7 +109,23 @@ export interface InsightsResponse {
   education_recommendations: Recommendation[];
   offer_recommendations: OfferRecommendation[];
   signals_summary: Record<string, any>;
+  consent_required: boolean;
   disclaimer: string;
+}
+
+export interface InspectUserResponse {
+  user_id: string;
+  user_name: string;
+  user_email: string;
+  consent_status: boolean;
+  persona_type: string | null;
+  confidence: number | null;
+  signals_summary: Record<string, any>;
+  education_recommendations: any[];
+  offer_recommendations: any[];
+  account_count: number;
+  transaction_count: number;
+  window_days: number;
 }
 
 // API Error type

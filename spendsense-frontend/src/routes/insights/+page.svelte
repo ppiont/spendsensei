@@ -5,12 +5,17 @@
 	import type { InsightsResponse, Recommendation, OfferRecommendation } from '$lib/types';
 	import PersonaBadge from '$lib/components/custom/PersonaBadge.svelte';
 	import RecommendationCard from '$lib/components/custom/RecommendationCard.svelte';
+	import ConsentCTA from '$lib/components/ConsentCTA.svelte';
 	import { ChevronDown, ChevronUp, Info, ExternalLink, CheckCircle } from '@lucide/svelte';
 
-	// Dev mode user switching (only in development)
-	const isDev = import.meta.env.DEV;
-	let users = $state<Array<{ id: string; name: string }>>([]);
-	let selectedUserId = $state('');
+	// User selection from global store
+	import { selectedUserId } from '$lib/stores/userStore';
+	let currentUserId = $state('');
+
+	// Subscribe to user store
+	selectedUserId.subscribe(value => {
+		currentUserId = value;
+	});
 
 	// State
 	let insightsData = $state<InsightsResponse | null>(null);
@@ -108,13 +113,13 @@
 
 	// Fetch insights for selected user
 	async function loadInsights() {
-		if (!selectedUserId) return;
+		if (!currentUserId) return;
 
 		loading = true;
 		error = null;
 
 		try {
-			const data = await api.insights.getUserInsights(selectedUserId, selectedWindow);
+			const data = await api.insights.getUserInsights(currentUserId, selectedWindow);
 			insightsData = data;
 		} catch (err: any) {
 			error = err.detail || err.message || 'Failed to load insights';
@@ -124,30 +129,16 @@
 		}
 	}
 
-	// Fetch all users
-	async function loadUsers() {
-		try {
-			const data = await api.users.getUsers();
-			users = data.map((u) => ({ id: u.id, name: u.name }));
-			if (users.length > 0 && !selectedUserId) {
-				selectedUserId = users[0].id;
-			}
-		} catch (err: any) {
-			console.error('Error loading users:', err);
-		}
-	}
-
 	// Load data on mount
-	onMount(async () => {
-		await loadUsers();
-		if (selectedUserId) {
+	onMount(() => {
+		if (currentUserId) {
 			loadInsights();
 		}
 	});
 
 	// Reload when user or window selection changes
 	$effect(() => {
-		if (selectedUserId) {
+		if (currentUserId) {
 			loadInsights();
 		}
 	});
@@ -199,6 +190,9 @@
 					Retry
 				</button>
 			</div>
+		{:else if insightsData?.consent_required}
+			<!-- Consent Required State -->
+			<ConsentCTA userId={currentUserId} />
 		{:else if !insightsData || recommendations.length === 0}
 			<div class="bg-white rounded-lg p-12 text-center shadow-card">
 				<h2 class="text-xl font-semibold text-gray-800 mb-2">No Insights Available</h2>
@@ -422,22 +416,6 @@
 				</div>
 			</div>
 
-			<!-- Dev-only user switcher (bottom of page) -->
-			{#if isDev && users.length > 0}
-				<div class="mt-8 p-4 bg-gray-800 text-white rounded-lg">
-					<div class="flex items-center justify-between">
-						<span class="text-xs uppercase tracking-wider font-semibold opacity-75">Dev Mode: Switch User</span>
-						<select
-							bind:value={selectedUserId}
-							class="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-						>
-							{#each users as user}
-								<option value={user.id}>{user.name}</option>
-							{/each}
-						</select>
-					</div>
-				</div>
-			{/if}
 		{/if}
 	</div>
 </div>

@@ -74,12 +74,16 @@ async def get_user_insights(
                 detail=f"User {user_id} not found"
             )
 
-        # Check user consent before generating recommendations
+        # Check user consent - if not consented, return empty response instead of 403
         if not check_consent(user.consent):
-            logger.warning(f"User {user_id} has not provided consent for recommendations")
-            raise HTTPException(
-                status_code=403,
-                detail="User consent required. Please accept terms before accessing insights."
+            logger.warning(f"User {user_id} has not provided consent - returning empty insights")
+            return InsightsResponse(
+                persona_type="consent_required",
+                confidence=0.0,
+                education_recommendations=[],
+                offer_recommendations=[],
+                signals_summary={},
+                consent_required=True
             )
 
         logger.info(f"Generating insights for user {user_id} with {window}-day window")
@@ -140,7 +144,8 @@ async def get_user_insights(
             confidence=result.confidence,
             education_recommendations=education_responses,
             offer_recommendations=offer_responses,
-            signals_summary=result.signals_summary
+            signals_summary=result.signals_summary,
+            consent_required=False
         )
 
     except HTTPException:

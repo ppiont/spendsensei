@@ -14,10 +14,14 @@
 	} from '$lib/components/ui/table';
 	import { Search, X } from '@lucide/svelte';
 
-	// Dev mode user switching
-	const isDev = import.meta.env.DEV;
-	let users = $state<Array<{ id: string; name: string }>>([]);
-	let selectedUserId = $state('');
+	// User selection from global store
+	import { selectedUserId } from '$lib/stores/userStore';
+	let currentUserId = $state('');
+
+	// Subscribe to user store
+	selectedUserId.subscribe(value => {
+		currentUserId = value;
+	});
 
 	// State
 	let allTransactions = $state<Transaction[]>([]);
@@ -112,7 +116,7 @@
 
 	// Fetch transactions for selected user
 	async function loadTransactions() {
-		if (!selectedUserId) return;
+		if (!currentUserId) return;
 
 		loading = true;
 		error = null;
@@ -120,26 +124,13 @@
 
 		try {
 			// Fetch up to 500 transactions
-			const data = await api.transactions.getUserTransactions(selectedUserId, 500, 0);
+			const data = await api.transactions.getUserTransactions(currentUserId, 500, 0);
 			allTransactions = data;
 		} catch (err: any) {
 			error = err.detail || err.message || 'Failed to load transactions';
 			console.error('Transactions error:', err);
 		} finally {
 			loading = false;
-		}
-	}
-
-	// Fetch all users
-	async function loadUsers() {
-		try {
-			const data = await api.users.getUsers();
-			users = data.map((u) => ({ id: u.id, name: u.name }));
-			if (users.length > 0 && !selectedUserId) {
-				selectedUserId = users[0].id;
-			}
-		} catch (err: any) {
-			console.error('Error loading users:', err);
 		}
 	}
 
@@ -153,16 +144,15 @@
 	}
 
 	// Load data on mount
-	onMount(async () => {
-		await loadUsers();
-		if (selectedUserId) {
+	onMount(() => {
+		if (currentUserId) {
 			loadTransactions();
 		}
 	});
 
 	// Reload when user selection changes
 	$effect(() => {
-		if (selectedUserId) {
+		if (currentUserId) {
 			loadTransactions();
 		}
 	});
@@ -468,22 +458,6 @@
 				{/if}
 			</div>
 
-			<!-- Dev-only user switcher (bottom of page) -->
-			{#if isDev && users.length > 0}
-				<div class="mt-8 p-4 bg-gray-800 text-white rounded-lg">
-					<div class="flex items-center justify-between">
-						<span class="text-xs uppercase tracking-wider font-semibold opacity-75">Dev Mode: Switch User</span>
-						<select
-							bind:value={selectedUserId}
-							class="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-						>
-							{#each users as user}
-								<option value={user.id}>{user.name}</option>
-							{/each}
-						</select>
-					</div>
-				</div>
-			{/if}
 		{/if}
 	</div>
 </div>

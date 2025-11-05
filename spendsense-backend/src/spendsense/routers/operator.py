@@ -14,7 +14,8 @@ from spendsense.schemas.operator import (
     UserRecommendationSummary,
     ApprovalRequest,
     ApprovalResponse,
-    OperatorOverrideResponse
+    OperatorOverrideResponse,
+    InspectUserResponse
 )
 from spendsense.services.recommendation_engine import StandardRecommendationEngine
 
@@ -255,4 +256,124 @@ async def flag_recommendation(
         raise HTTPException(
             status_code=500,
             detail=f"Failed to create flag: {str(e)}"
+        )
+
+
+@router.get("/inspect/{user_id}", response_model=InspectUserResponse)
+async def inspect_user(
+    user_id: str,
+    window: int = 30,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Inspect user data for operator debugging (no consent checks).
+
+    This endpoint provides comprehensive user data for internal review
+    and debugging purposes. Unlike the /insights endpoint, this endpoint
+    does NOT check consent and returns all available data.
+
+    Args:
+        user_id: User ID to inspect
+        window: Analysis window in days (default 30)
+        db: Database session
+
+    Returns:
+        InspectUserResponse: Comprehensive user data including signals and recommendations
+
+    Raises:
+        HTTPException: 404 if user not found
+        HTTPException: 500 if error occurs
+    """
+    from spendsense.models.account import Account
+    from spendsense.models.transaction import Transaction
+
+    try:
+        # Get user (no consent check)
+        result = await db.execute(
+            select(User).where(User.id == user_id)
+        )
+        user = result.scalar_one_or_none()
+
+        if not user:
+            raise HTTPException(
+                status_code=404,
+                detail=f"User {user_id} not found"
+            )
+
+        # Get account count
+        accounts_result = await db.execute(
+            select(Account).where(Account.user_id == user_id)
+        )
+        accounts = accounts_result.scalars().all()
+        account_count = len(accounts)
+
+        # Get transaction count
+        transactions_result = await db.execute(
+            select(Transaction).where(Transaction.account_id.in_([a.id for a in accounts]))
+        )
+        transactions = transactions_result.scalars().all()
+        transaction_count = len(transactions)
+
+        # If user has consented, generate recommendations
+        persona_type = None
+        confidence = None
+        signals_summary = {}
+        education_recommendations = []
+        offer_recommendations = []
+
+        if user.consent:
+            try:
+                # Generate recommendations using engine
+                rec_result = await engine.generate_recommendations(
+                    db=db,
+                    user_id=user_id,
+                    window_days=window
+                )
+
+                persona_type = rec_result.persona_type
+                confidence = rec_result.confidence
+                signals_summary = rec_result.signals_summary
+                education_recommendations = [
+                    {
+                        "id": rec.content.id,
+                        "title": rec.content.title,
+                        "summary": rec.content.summary,
+                        "relevance_score": rec.content.relevance_score
+                    }
+                    for rec in rec_result.education_recommendations
+                ]
+                offer_recommendations = [
+                    {
+                        "id": rec.offer.id,
+                        "title": rec.offer.title,
+                        "provider": rec.offer.provider,
+                        "eligibility_met": rec.offer.eligibility_met
+                    }
+                    for rec in rec_result.offer_recommendations
+                ]
+            except Exception as e:
+                # Log error but continue
+                signals_summary = {"error": str(e)}
+
+        return InspectUserResponse(
+            user_id=user.id,
+            user_name=user.name,
+            user_email=user.email,
+            consent_status=user.consent,
+            persona_type=persona_type,
+            confidence=confidence,
+            signals_summary=signals_summary,
+            education_recommendations=education_recommendations,
+            offer_recommendations=offer_recommendations,
+            account_count=account_count,
+            transaction_count=transaction_count,
+            window_days=window
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to inspect user: {str(e)}"
         )

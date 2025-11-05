@@ -6,6 +6,8 @@
 	import KpiCard from '$lib/components/custom/KpiCard.svelte';
 	import RecommendationCard from '$lib/components/custom/RecommendationCard.svelte';
 	import PersonaBadge from '$lib/components/custom/PersonaBadge.svelte';
+	import ConsentCTA from '$lib/components/ConsentCTA.svelte';
+	import { ChevronDown, ChevronUp, Info } from '@lucide/svelte';
 
 	// Svelte 5 runes for reactive state
 	let accounts = $state<Account[]>([]);
@@ -14,10 +16,17 @@
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 
-	// Dev mode user switching (only in development)
-	const isDev = import.meta.env.DEV;
-	let users = $state<Array<{ id: string; name: string }>>([]);
-	let selectedUserId = $state('');
+	// User selection from global store
+	import { selectedUserId } from '$lib/stores/userStore';
+	let currentUserId = $state('');
+
+	// Subscribe to user store
+	selectedUserId.subscribe(value => {
+		currentUserId = value;
+	});
+
+	// Expandable consent prompt state
+	let showConsentDetails = $state(false);
 
 	// === KPI CALCULATIONS ===
 
@@ -131,21 +140,33 @@
 	// === DATA FETCHING ===
 
 	async function loadUserData() {
-		if (!selectedUserId) return;
+		if (!currentUserId) return;
 
 		loading = true;
 		error = null;
 
 		try {
-			const [accountsData, transactionsData, insightsData] = await Promise.all([
-				api.accounts.getUserAccounts(selectedUserId),
-				api.transactions.getUserTransactions(selectedUserId, 100, 0),
-				api.insights.getUserInsights(selectedUserId, 30)
+			// Load accounts and transactions (always available)
+			const [accountsData, transactionsData] = await Promise.all([
+				api.accounts.getUserAccounts(currentUserId),
+				api.transactions.getUserTransactions(currentUserId, 100, 0)
 			]);
 
 			accounts = accountsData;
 			transactions = transactionsData;
-			recommendations = insightsData.education_recommendations.slice(0, 3);
+
+			// Try to fetch insights, but don't fail if consent required
+			try {
+				const insightsData = await api.insights.getUserInsights(currentUserId, 30);
+				if (!insightsData.consent_required) {
+					recommendations = insightsData.education_recommendations.slice(0, 3);
+				} else {
+					recommendations = [];
+				}
+			} catch (err) {
+				console.log('Insights not available:', err);
+				recommendations = [];
+			}
 		} catch (err: any) {
 			error = err.detail || err.message || 'Failed to load data';
 			console.error('Dashboard error:', err);
@@ -154,28 +175,15 @@
 		}
 	}
 
-	async function loadUsers() {
-		try {
-			const data = await api.users.getUsers();
-			users = data.map((u) => ({ id: u.id, name: u.name }));
-			if (users.length > 0 && !selectedUserId) {
-				selectedUserId = users[0].id;
-			}
-		} catch (err: any) {
-			console.error('Error loading users:', err);
-		}
-	}
-
-	onMount(async () => {
-		await loadUsers();
-		if (selectedUserId) {
+	onMount(() => {
+		if (currentUserId) {
 			loadUserData();
 		}
 	});
 
-	// Reload data when user changes (dev mode only)
+	// Reload data when user changes
 	$effect(() => {
-		if (selectedUserId) {
+		if (currentUserId) {
 			loadUserData();
 		}
 	});
@@ -206,8 +214,8 @@
 		{:else}
 			<!-- Direction 6 Layout: Clean Top Bar + Metrics Grid + Recommendations -->
 
-			<!-- Top Bar: Persona Badge (left) + View All Insights button (right) -->
-			{#if personaData}
+			<!-- Top Bar: Persona Badge (only if have recommendations) -->
+			{#if personaData && recommendations.length > 0}
 				<div class="bg-white rounded-xl p-6 mb-6 shadow-card flex items-center justify-between">
 					<PersonaBadge personaName={personaData.name} personaType={personaData.type} />
 					<a href="/insights" class="btn-brand px-5 py-2 rounded-lg text-sm font-medium text-white transition-all hover:shadow-soft">
@@ -241,7 +249,7 @@
 				</div>
 			</section>
 
-			<!-- Recommendations Section: 3-column grid -->
+			<!-- Recommendations Section: 3-column grid OR consent prompt -->
 			<section class="bg-white rounded-xl p-8 shadow-card">
 				<h2 class="text-2xl font-semibold text-gray-800 mb-6">Personalized Recommendations</h2>
 
@@ -257,6 +265,98 @@
 							/>
 						{/each}
 					</div>
+				{:else if currentUserId}
+					<!-- Inline Consent Prompt -->
+					<div class="bg-gradient-to-br from-brand-blue/5 to-brand-green/5 border-2 border-brand-blue/20 rounded-xl p-8 text-center max-w-3xl mx-auto">
+						<div class="w-16 h-16 bg-brand-blue/10 rounded-full flex items-center justify-center mx-auto mb-4">
+							<span class="text-3xl">🔓</span>
+						</div>
+						<h3 class="text-xl font-bold text-gray-800 mb-2">Unlock AI-Powered Insights</h3>
+						<p class="text-gray-600 mb-6">
+							Enable insights to receive personalized financial recommendations based on your spending patterns
+						</p>
+
+						<!-- Quick Benefits -->
+						<div class="flex flex-wrap gap-4 justify-center mb-6 text-sm text-gray-700">
+							<div class="flex items-center gap-2">
+								<span class="text-brand-green">✓</span>
+								<span>Your Financial Personality</span>
+							</div>
+							<div class="flex items-center gap-2">
+								<span class="text-brand-green">✓</span>
+								<span>3 Tailored Recommendations</span>
+							</div>
+							<div class="flex items-center gap-2">
+								<span class="text-brand-green">✓</span>
+								<span>Partner Offers</span>
+							</div>
+						</div>
+
+						<!-- Expandable Details -->
+						<button
+							onclick={() => (showConsentDetails = !showConsentDetails)}
+							class="flex items-center gap-2 mx-auto mb-6 text-brand-blue font-medium hover:text-blue-dark transition-colors"
+						>
+							{showConsentDetails ? 'Show less' : 'Learn more about insights'}
+							{#if showConsentDetails}
+								<ChevronUp class="w-4 h-4" />
+							{:else}
+								<ChevronDown class="w-4 h-4" />
+							{/if}
+						</button>
+
+						{#if showConsentDetails}
+							<div class="bg-white rounded-lg p-6 mb-6 text-left">
+								<h4 class="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+									<Info class="w-5 h-5 text-brand-blue" />
+									What you'll get:
+								</h4>
+								<ul class="space-y-3 mb-6">
+									<li class="flex items-start gap-3">
+										<span class="text-brand-green mt-1">✓</span>
+										<span class="text-sm text-gray-700">
+											<strong>Your Financial Personality</strong> - Discover your unique spending and saving patterns
+										</span>
+									</li>
+									<li class="flex items-start gap-3">
+										<span class="text-brand-green mt-1">✓</span>
+										<span class="text-sm text-gray-700">
+											<strong>3 Personalized Recommendations</strong> - Education tailored to your financial situation
+										</span>
+									</li>
+									<li class="flex items-start gap-3">
+										<span class="text-brand-green mt-1">✓</span>
+										<span class="text-sm text-gray-700">
+											<strong>Partner Offers You Qualify For</strong> - Vetted products that match your needs
+										</span>
+									</li>
+									<li class="flex items-start gap-3">
+										<span class="text-brand-green mt-1">✓</span>
+										<span class="text-sm text-gray-700">
+											<strong>Plain-Language Explanations</strong> - Clear rationales for every recommendation
+										</span>
+									</li>
+								</ul>
+
+								<div class="p-4 bg-blue-50 border-l-4 border-brand-blue rounded mb-4">
+									<p class="text-xs text-gray-600 leading-relaxed">
+										<strong>How it works:</strong> We'll analyze your transaction patterns to identify your financial personality
+										and provide relevant educational content. You can revoke consent anytime in account settings.
+										This is educational content only - not financial advice.
+									</p>
+								</div>
+
+								<p class="text-xs text-gray-500 text-center italic">
+									Note: This is a demo application. All data is synthetic and consent is simulated.
+								</p>
+							</div>
+						{/if}
+
+						<a href="/insights" class="inline-block px-6 py-3 bg-brand-blue text-white rounded-lg font-semibold hover:bg-blue-dark transition-colors">
+							Enable Insights
+						</a>
+						<p class="text-xs text-gray-500 mt-4">This is educational content only - not financial advice</p>
+					</div>
 				{:else}
 					<div class="text-center py-8 text-gray-600">
 						<p>No recommendations available at this time.</p>
@@ -264,22 +364,6 @@
 				{/if}
 			</section>
 
-			<!-- Dev-only user switcher (bottom of page) -->
-			{#if isDev && users.length > 0}
-				<div class="mt-8 p-4 bg-gray-800 text-white rounded-lg">
-					<div class="flex items-center justify-between">
-						<span class="text-xs uppercase tracking-wider font-semibold opacity-75">Dev Mode: Switch User</span>
-						<select
-							bind:value={selectedUserId}
-							class="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-						>
-							{#each users as user}
-								<option value={user.id}>{user.name}</option>
-							{/each}
-						</select>
-					</div>
-				</div>
-			{/if}
 		{/if}
 	</div>
 </div>

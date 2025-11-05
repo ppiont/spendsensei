@@ -1,61 +1,44 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { api } from '$lib/api/client';
-	import type { InsightsResponse, User } from '$lib/types';
+	import type { InspectUserResponse } from '$lib/types';
+
+	// User selection from global store
+	import { selectedUserId } from '$lib/stores/userStore';
+	let currentUserId = $state('');
+
+	// Subscribe to user store
+	selectedUserId.subscribe(value => {
+		currentUserId = value;
+	});
 
 	// Svelte 5 runes for reactive state
-	let selectedUserId = $state('');
-	let insightsData = $state<InsightsResponse | null>(null);
+	let inspectData = $state<InspectUserResponse | null>(null);
 	let loading = $state(false);
 	let error = $state<string | null>(null);
 	let selectedWindow = $state(30);
-	let users = $state<User[]>([]);
-	let usersLoading = $state(true);
-	let usersError = $state<string | null>(null);
 
-	// Get full data from first recommendation
-	const fullData = $derived(
-		insightsData?.education_recommendations && insightsData.education_recommendations.length > 0
-			? insightsData.education_recommendations[0]
-			: null
-	);
-	const recommendations = $derived(insightsData?.education_recommendations || []);
+	// Get derived data
+	const hasConsent = $derived(inspectData?.consent_status || false);
+	const hasPersona = $derived(inspectData?.persona_type !== null && inspectData?.persona_type !== undefined);
+	const recommendations = $derived(inspectData?.education_recommendations || []);
+	const offers = $derived(inspectData?.offer_recommendations || []);
 
 	// Format JSON for display
 	function formatJSON(obj: any): string {
 		return JSON.stringify(obj, null, 2);
 	}
 
-	// Fetch all users
-	async function fetchUsers() {
-		usersLoading = true;
-		usersError = null;
-
-		try {
-			const data = await api.users.getUsers();
-			users = data;
-			// Set first user as selected by default
-			if (data.length > 0 && !selectedUserId) {
-				selectedUserId = data[0].id;
-			}
-		} catch (err: any) {
-			usersError = err.detail || err.message || 'Failed to load users';
-			console.error('Failed to fetch users:', err);
-		} finally {
-			usersLoading = false;
-		}
-	}
-
-	// Fetch insights for inspection
+	// Fetch user data for inspection
 	async function inspectUser() {
-		if (!selectedUserId) return;
+		if (!currentUserId) return;
 
 		loading = true;
 		error = null;
 
 		try {
-			const data = await api.insights.getUserInsights(selectedUserId, selectedWindow);
-			insightsData = data;
+			const data = await api.operator.inspectUser(currentUserId, selectedWindow);
+			inspectData = data;
 		} catch (err: any) {
 			error = err.detail || err.message || 'Failed to load data';
 			console.error('Operator view error:', err);
@@ -65,10 +48,16 @@
 	}
 
 	// Load data on mount
-	onMount(async () => {
-		await fetchUsers();
-		if (selectedUserId) {
-			await inspectUser();
+	onMount(() => {
+		if (currentUserId) {
+			inspectUser();
+		}
+	});
+
+	// Reload when user or window changes
+	$effect(() => {
+		if (currentUserId) {
+			inspectUser();
 		}
 	});
 </script>
@@ -88,35 +77,7 @@
 
 		<!-- Controls -->
 		<section class="bg-card rounded-lg border border-border shadow-sm p-6 mb-6">
-			{#if usersError}
-				<div class="bg-destructive/10 border border-destructive/30 rounded-lg p-4 mb-4">
-					<strong class="text-destructive block mb-2">Error loading users:</strong>
-					<p class="text-destructive/90">{usersError}</p>
-				</div>
-			{/if}
-
 			<div class="flex flex-col md:flex-row gap-4 items-start md:items-end">
-				<div class="flex flex-col gap-2 flex-1">
-					<label for="user-select" class="text-sm font-medium text-muted-foreground"
-						>Select User ({users.length} total):</label
-					>
-					<select
-						id="user-select"
-						bind:value={selectedUserId}
-						disabled={usersLoading || users.length === 0}
-						class="px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed"
-					>
-						{#if usersLoading}
-							<option>Loading users...</option>
-						{:else if users.length === 0}
-							<option>No users found</option>
-						{:else}
-							{#each users as user}
-								<option value={user.id}>{user.name}</option>
-							{/each}
-						{/if}
-					</select>
-				</div>
 
 				<div class="flex flex-col gap-2">
 					<label for="window-select" class="text-sm font-medium text-muted-foreground"
@@ -156,9 +117,9 @@
 				<strong class="text-destructive block mb-2">Error:</strong>
 				<p class="text-destructive/90">{error}</p>
 			</div>
-		{:else if !fullData}
+		{:else if !inspectData}
 			<div class="bg-card rounded-lg border border-border p-12 text-center">
-				<p class="text-muted-foreground">Click "Inspect User" to load recommendation data</p>
+				<p class="text-muted-foreground">Select a user from the top bar to inspect their data</p>
 			</div>
 		{:else}
 			<div class="space-y-6">
@@ -169,38 +130,40 @@
 					</h2>
 					<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
 						<div class="space-y-1">
-							<p class="text-xs font-medium text-muted-foreground">User ID</p>
-							<p class="text-sm font-mono text-foreground truncate" title={selectedUserId}>
-								{selectedUserId.slice(0, 8)}...
+							<p class="text-xs font-medium text-muted-foreground">User Name</p>
+							<p class="text-sm font-semibold text-foreground">
+								{inspectData.user_name}
+							</p>
+						</div>
+						<div class="space-y-1">
+							<p class="text-xs font-medium text-muted-foreground">Consent Status</p>
+							<p class={`text-sm font-semibold px-2 py-1 rounded inline-block ${
+								hasConsent ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+							}`}>
+								{hasConsent ? 'Granted' : 'Not Granted'}
 							</p>
 						</div>
 						<div class="space-y-1">
 							<p class="text-xs font-medium text-muted-foreground">Persona</p>
-							<p
-								class="text-sm font-semibold text-primary px-2 py-1 bg-primary/10 rounded inline-block"
-							>
-								{fullData.persona}
-							</p>
+							{#if hasPersona}
+								<p class="text-sm font-semibold text-primary px-2 py-1 bg-primary/10 rounded inline-block">
+									{inspectData.persona_type}
+								</p>
+							{:else}
+								<p class="text-sm text-muted-foreground">Not assigned</p>
+							{/if}
 						</div>
 						<div class="space-y-1">
-							<p class="text-xs font-medium text-muted-foreground">Confidence</p>
-							<p class="text-sm font-semibold text-foreground">
-								{(fullData.confidence * 100).toFixed(1)}%
-							</p>
+							<p class="text-xs font-medium text-muted-foreground">Accounts</p>
+							<p class="text-sm font-semibold text-foreground">{inspectData.account_count}</p>
 						</div>
 						<div class="space-y-1">
-							<p class="text-xs font-medium text-muted-foreground">Recommendations</p>
-							<p class="text-sm font-semibold text-foreground">{recommendations.length}</p>
+							<p class="text-xs font-medium text-muted-foreground">Transactions</p>
+							<p class="text-sm font-semibold text-foreground">{inspectData.transaction_count}</p>
 						</div>
 						<div class="space-y-1">
 							<p class="text-xs font-medium text-muted-foreground">Time Window</p>
 							<p class="text-sm font-semibold text-foreground">{selectedWindow} days</p>
-						</div>
-						<div class="space-y-1">
-							<p class="text-xs font-medium text-muted-foreground">Key Signals</p>
-							<p class="text-sm font-semibold text-foreground">
-								{fullData.rationale.key_signals.length}
-							</p>
 						</div>
 					</div>
 				</section>
@@ -210,102 +173,117 @@
 					<h2 class="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
 						<span>🎯</span> Behavioral Signals
 					</h2>
-					<div class="flex flex-wrap gap-2 mb-4">
-						{#each fullData.rationale.key_signals as signal}
-							<span class="px-3 py-1 bg-accent text-foreground rounded-full text-sm font-medium">
-								{signal}
-							</span>
-						{/each}
-					</div>
 					<div class="bg-muted rounded-lg p-4 overflow-x-auto">
-						<pre class="text-xs font-mono text-foreground">{formatJSON({
-								key_signals: fullData.rationale.key_signals
-							})}</pre>
+						<pre class="text-xs font-mono text-foreground">{formatJSON(inspectData.signals_summary)}</pre>
 					</div>
 				</section>
 
-				<!-- Persona Matching Logic -->
+				<!-- Persona Assignment -->
 				<section class="bg-card rounded-lg border border-border shadow-sm p-6">
 					<h2 class="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-						<span>🎭</span> Persona Matching Logic
+						<span>🎭</span> Persona Assignment
 					</h2>
-					<div class="space-y-3 mb-4">
-						<div class="flex gap-4 py-2 border-b border-border">
-							<span class="text-sm font-medium text-muted-foreground min-w-[140px]"
-								>Assigned Persona:</span
-							>
-							<span class="text-sm text-foreground font-semibold">{fullData.persona}</span>
+					{#if hasConsent && hasPersona}
+						<div class="space-y-3">
+							<div class="flex gap-4 py-2 border-b border-border">
+								<span class="text-sm font-medium text-muted-foreground min-w-[140px]">Assigned Persona:</span>
+								<span class="text-sm text-foreground font-semibold">{inspectData.persona_type}</span>
+							</div>
+							<div class="flex gap-4 py-2">
+								<span class="text-sm font-medium text-muted-foreground min-w-[140px]">Confidence Score:</span>
+								<span class="text-sm text-foreground">{((inspectData.confidence || 0) * 100).toFixed(2)}%</span>
+							</div>
 						</div>
-						<div class="flex gap-4 py-2 border-b border-border">
-							<span class="text-sm font-medium text-muted-foreground min-w-[140px]"
-								>Confidence Score:</span
-							>
-							<span class="text-sm text-foreground">{(fullData.confidence * 100).toFixed(2)}%</span
-							>
+					{:else if !hasConsent}
+						<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+							<p class="text-sm text-yellow-800">
+								<strong>User has not consented to data analysis.</strong><br />
+								Persona assignment requires explicit consent.
+							</p>
 						</div>
-						<div class="flex gap-4 py-2">
-							<span class="text-sm font-medium text-muted-foreground min-w-[140px]">Rationale:</span
-							>
-							<p class="text-sm text-foreground flex-1">{fullData.rationale.explanation}</p>
+					{:else}
+						<div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
+							<p class="text-sm text-gray-600">
+								No persona assigned (insufficient data or error during analysis).
+							</p>
 						</div>
-					</div>
-					<div class="bg-muted rounded-lg p-4 overflow-x-auto">
-						<pre class="text-xs font-mono text-foreground">{formatJSON({
-								persona_type: fullData.rationale.persona_type,
-								confidence: fullData.rationale.confidence,
-								explanation: fullData.rationale.explanation
-							})}</pre>
-					</div>
+					{/if}
 				</section>
 
 				<!-- Recommendations Details -->
-				<section class="bg-card rounded-lg border border-border shadow-sm p-6">
-					<h2 class="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-						<span>💡</span> Recommendations Generated
-					</h2>
-					<div class="space-y-4">
-						{#each recommendations as rec, index}
-							<div class="bg-accent/50 rounded-lg p-4">
-								<h3 class="text-lg font-semibold text-foreground mb-3">
-									Recommendation #{index + 1}
-								</h3>
-								<div class="space-y-2">
-									<div class="flex gap-4 text-sm">
-										<span class="font-medium text-muted-foreground min-w-[120px]">Title:</span>
-										<span class="text-foreground">{rec.content.title}</span>
-									</div>
-									<div class="flex gap-4 text-sm">
-										<span class="font-medium text-muted-foreground min-w-[120px]">Content ID:</span>
-										<span class="text-foreground font-mono">{rec.content.id}</span>
-									</div>
-									<div class="flex gap-4 text-sm">
-										<span class="font-medium text-muted-foreground min-w-[120px]"
-											>Relevance Score:</span
-										>
-										<span class="text-foreground"
-											>{(rec.content.relevance_score * 100).toFixed(1)}%</span
-										>
-									</div>
-									<div class="flex gap-4 text-sm">
-										<span class="font-medium text-muted-foreground min-w-[120px]">Source:</span>
-										<span class="text-foreground">{rec.content.source}</span>
+				{#if recommendations.length > 0}
+					<section class="bg-card rounded-lg border border-border shadow-sm p-6">
+						<h2 class="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+							<span>💡</span> Education Recommendations ({recommendations.length})
+						</h2>
+						<div class="space-y-4">
+							{#each recommendations as rec, index}
+								<div class="bg-accent/50 rounded-lg p-4">
+									<h3 class="text-lg font-semibold text-foreground mb-3">
+										#{index + 1}: {rec.title}
+									</h3>
+									<div class="space-y-2">
+										<div class="flex gap-4 text-sm">
+											<span class="font-medium text-muted-foreground min-w-[120px]">ID:</span>
+											<span class="text-foreground font-mono">{rec.id}</span>
+										</div>
+										<div class="flex gap-4 text-sm">
+											<span class="font-medium text-muted-foreground min-w-[120px]">Summary:</span>
+											<span class="text-foreground">{rec.summary}</span>
+										</div>
+										<div class="flex gap-4 text-sm">
+											<span class="font-medium text-muted-foreground min-w-[120px]">Relevance:</span>
+											<span class="text-foreground">{(rec.relevance_score * 100).toFixed(1)}%</span>
+										</div>
 									</div>
 								</div>
-							</div>
-						{/each}
-					</div>
-				</section>
+							{/each}
+						</div>
+					</section>
+				{/if}
 
-				<!-- Complete Decision Trace (JSON) -->
+				<!-- Partner Offers -->
+				{#if offers.length > 0}
+					<section class="bg-card rounded-lg border border-border shadow-sm p-6">
+						<h2 class="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+							<span>🎁</span> Partner Offers ({offers.length})
+						</h2>
+						<div class="space-y-4">
+							{#each offers as offer, index}
+								<div class="bg-accent/50 rounded-lg p-4">
+									<h3 class="text-lg font-semibold text-foreground mb-3">
+										#{index + 1}: {offer.title}
+									</h3>
+									<div class="space-y-2">
+										<div class="flex gap-4 text-sm">
+											<span class="font-medium text-muted-foreground min-w-[120px]">Provider:</span>
+											<span class="text-foreground">{offer.provider}</span>
+										</div>
+										<div class="flex gap-4 text-sm">
+											<span class="font-medium text-muted-foreground min-w-[120px]">Eligible:</span>
+											<span class={`text-foreground font-semibold ${
+												offer.eligibility_met ? 'text-green-600' : 'text-red-600'
+											}`}>
+												{offer.eligibility_met ? 'Yes' : 'No'}
+											</span>
+										</div>
+									</div>
+								</div>
+							{/each}
+						</div>
+					</section>
+				{/if}
+
+				<!-- Complete Data Dump (JSON) -->
 				<section class="bg-card rounded-lg border border-border shadow-sm p-6">
 					<h2 class="text-xl font-bold text-foreground mb-2 flex items-center gap-2">
-						<span>🔍</span> Complete Decision Trace (JSON)
+						<span>🔍</span> Complete Data Dump (JSON)
 					</h2>
 					<p class="text-sm text-muted-foreground mb-4 italic">
-						Full recommendation object showing all decision-making data for auditability and debugging.
+						Full inspection data showing all fields returned by the operator inspect endpoint.
 					</p>
 					<div class="bg-muted rounded-lg p-4 overflow-x-auto">
-						<pre class="text-xs font-mono text-foreground">{formatJSON(fullData)}</pre>
+						<pre class="text-xs font-mono text-foreground">{formatJSON(inspectData)}</pre>
 					</div>
 				</section>
 			</div>
