@@ -2,10 +2,10 @@
 	import { onMount } from 'svelte';
 	import { api } from '$lib/api/client';
 	import { formatCurrency } from '$lib/types';
-	import type { Recommendation } from '$lib/types';
+	import type { InsightsResponse, Recommendation, OfferRecommendation } from '$lib/types';
 	import PersonaBadge from '$lib/components/custom/PersonaBadge.svelte';
 	import RecommendationCard from '$lib/components/custom/RecommendationCard.svelte';
-	import { ChevronDown, ChevronUp, Info } from '@lucide/svelte';
+	import { ChevronDown, ChevronUp, Info, ExternalLink, CheckCircle } from '@lucide/svelte';
 
 	// Dev mode user switching (only in development)
 	const isDev = import.meta.env.DEV;
@@ -13,25 +13,30 @@
 	let selectedUserId = $state('');
 
 	// State
-	let recommendations = $state<Recommendation[]>([]);
+	let insightsData = $state<InsightsResponse | null>(null);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let selectedWindow = $state(30);
 	let expandedIds = $state<Set<string>>(new Set());
+	let expandedOfferIds = $state<Set<string>>(new Set());
 	let showPersonaDetails = $state(false);
+
+	// Derived data
+	const recommendations = $derived(insightsData?.education_recommendations || []);
+	const offers = $derived(insightsData?.offer_recommendations || []);
 
 	// Derived persona data
 	const personaData = $derived(
-		recommendations.length > 0
+		insightsData
 			? {
-					name: recommendations[0].rationale.persona_type
+					name: insightsData.persona_type
 						.split('_')
 						.map((w) => w.charAt(0).toUpperCase() + w.slice(1))
 						.join(' '),
-					type: recommendations[0].rationale.persona_type,
-					explanation: recommendations[0].rationale.explanation,
-					confidence: recommendations[0].rationale.confidence,
-					keySignals: recommendations[0].rationale.key_signals
+					type: insightsData.persona_type,
+					explanation: recommendations[0]?.rationale.explanation || '',
+					confidence: insightsData.confidence,
+					keySignals: recommendations[0]?.rationale.key_signals || []
 				}
 			: null
 	);
@@ -90,6 +95,17 @@
 		}
 	}
 
+	// Toggle expanded offer
+	function toggleOfferExpanded(id: string) {
+		if (expandedOfferIds.has(id)) {
+			expandedOfferIds.delete(id);
+			expandedOfferIds = expandedOfferIds; // Trigger reactivity
+		} else {
+			expandedOfferIds.add(id);
+			expandedOfferIds = expandedOfferIds; // Trigger reactivity
+		}
+	}
+
 	// Fetch insights for selected user
 	async function loadInsights() {
 		if (!selectedUserId) return;
@@ -99,7 +115,7 @@
 
 		try {
 			const data = await api.insights.getUserInsights(selectedUserId, selectedWindow);
-			recommendations = data;
+			insightsData = data;
 		} catch (err: any) {
 			error = err.detail || err.message || 'Failed to load insights';
 			console.error('Insights error:', err);
@@ -183,7 +199,7 @@
 					Retry
 				</button>
 			</div>
-		{:else if recommendations.length === 0}
+		{:else if !insightsData || recommendations.length === 0}
 			<div class="bg-white rounded-lg p-12 text-center shadow-card">
 				<h2 class="text-xl font-semibold text-gray-800 mb-2">No Insights Available</h2>
 				<p class="text-gray-600">
@@ -277,9 +293,9 @@
 				</section>
 			{/if}
 
-			<!-- Recommendations Section -->
+			<!-- Education Recommendations Section -->
 			<section class="mb-12">
-				<h2 class="text-2xl font-semibold text-gray-800 mb-6">Personalized Recommendations</h2>
+				<h2 class="text-2xl font-semibold text-gray-800 mb-6">Personalized Education</h2>
 
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 					{#each recommendations as rec}
@@ -289,21 +305,121 @@
 							body={rec.content.summary}
 							rationale={rec.rationale.explanation}
 							cta="Learn More"
-							expanded={expandedIds.has(rec.recommendation_id)}
-							onclick={() => toggleExpanded(rec.recommendation_id)}
+							expanded={expandedIds.has(rec.content.id)}
+							onclick={() => toggleExpanded(rec.content.id)}
 						/>
 					{/each}
 				</div>
 			</section>
 
+			<!-- Partner Offers Section -->
+			{#if offers.length > 0}
+				<section class="mb-12">
+					<div class="flex items-center gap-3 mb-6">
+						<h2 class="text-2xl font-semibold text-gray-800">Partner Offers You Qualify For</h2>
+						<span class="px-3 py-1 bg-brand-green/10 text-brand-green text-sm font-medium rounded-full">
+							{offers.length} {offers.length === 1 ? 'Offer' : 'Offers'}
+						</span>
+					</div>
+
+					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+						{#each offers as offerRec}
+							{@const offer = offerRec.offer}
+							{@const isExpanded = expandedOfferIds.has(offer.id)}
+							<div
+								class="bg-white rounded-lg shadow-card overflow-hidden border-2 border-brand-green/20 hover:border-brand-green/40 transition-colors"
+							>
+								<!-- Offer Header -->
+								<div class="p-6 bg-gradient-to-br from-brand-green/5 to-transparent">
+									<div class="flex items-start justify-between mb-3">
+										<div class="flex-1">
+											<h3 class="text-lg font-semibold text-gray-800 mb-1">
+												{offer.title}
+											</h3>
+											<p class="text-sm text-gray-600">{offer.provider}</p>
+										</div>
+										<CheckCircle class="w-5 h-5 text-brand-green flex-shrink-0" />
+									</div>
+									<p class="text-sm text-gray-700 leading-relaxed">{offer.summary}</p>
+								</div>
+
+								<!-- Offer Body -->
+								<div class="p-6">
+									<!-- Benefits -->
+									<div class="mb-4">
+										<h4 class="text-sm font-semibold text-gray-800 mb-2">Key Benefits:</h4>
+										<ul class="space-y-1">
+											{#each offer.benefits as benefit}
+												<li class="text-sm text-gray-700 flex items-start gap-2">
+													<span class="text-brand-green mt-1">✓</span>
+													<span>{benefit}</span>
+												</li>
+											{/each}
+										</ul>
+									</div>
+
+									<!-- Eligibility -->
+									<button
+										onclick={() => toggleOfferExpanded(offer.id)}
+										class="w-full text-left mb-4"
+									>
+										<div
+											class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+										>
+											<span class="text-sm font-medium text-gray-700">Eligibility</span>
+											{#if isExpanded}
+												<ChevronUp class="w-4 h-4 text-gray-500" />
+											{:else}
+												<ChevronDown class="w-4 h-4 text-gray-500" />
+											{/if}
+										</div>
+									</button>
+
+									{#if isExpanded}
+										<div class="mb-4 p-3 bg-blue-50 rounded-lg">
+											<p class="text-sm text-gray-700 leading-relaxed">
+												{offer.eligibility_explanation}
+											</p>
+										</div>
+									{/if}
+
+									<!-- CTA Button -->
+									<a
+										href={offer.cta_url}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="flex items-center justify-center gap-2 w-full px-4 py-3 bg-brand-green text-white rounded-lg hover:bg-green-dark transition-colors font-medium"
+									>
+										{offer.cta}
+										<ExternalLink class="w-4 h-4" />
+									</a>
+
+									<!-- Offer Disclaimer -->
+									<p class="text-xs text-gray-500 mt-3 leading-relaxed">{offer.disclaimer}</p>
+								</div>
+							</div>
+						{/each}
+					</div>
+				</section>
+			{/if}
+
 			<!-- Educational Disclaimer -->
 			<div class="bg-blue-50 border-l-4 border-brand-blue rounded-lg p-6 flex items-start gap-3">
 				<Info class="w-5 h-5 text-brand-blue flex-shrink-0 mt-0.5" />
-				<p class="text-sm text-gray-700">
-					<strong class="font-semibold">Educational Content:</strong> This is educational content, not
-					financial advice. Please consult with a qualified financial professional before making
-					financial decisions.
-				</p>
+				<div class="text-sm text-gray-700">
+					<p class="mb-2">
+						<strong class="font-semibold">Educational Content:</strong> This is educational content, not
+						financial advice. Please consult with a qualified financial professional before making
+						financial decisions.
+					</p>
+					{#if offers.length > 0}
+						<p>
+							<strong class="font-semibold">Partner Offers:</strong> Offers are provided by SpendSense
+							partners and are subject to their terms and conditions. Eligibility determinations are
+							estimates based on your financial profile.
+						</p>
+					{/if}
+				</div>
 			</div>
 
 			<!-- Dev-only user switcher (bottom of page) -->
