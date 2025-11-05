@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-@import "tw-animate-css";
-
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
@@ -71,11 +69,45 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+@theme {
+  /* SpendSense Custom Colors - Tailwind v4 @theme format */
+  --color-blue-primary: #2C5282;
+  --color-blue-dark: #1A365D;
+  --color-blue-50: #EBF8FF;
+
+  --color-green-primary: #38A169;
+  --color-green-light: #48BB78;
+
+  --color-coral: #F56565;
+  --color-coral-light: #FC8181;
+
+  --color-yellow: #ECC94B;
+  --color-yellow-light: #F6E05E;
+
+  /* Extended neutrals */
+  --color-gray-50: #F9FAFB;
+  --color-gray-100: #F3F4F6;
+  --color-gray-200: #E5E7EB;
+  --color-gray-600: #4B5563;
+  --color-gray-800: #1F2937;
+
+  /* Custom shadows using --shadow-* namespace */
+  --shadow-subtle: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-soft: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+
+  /* Border radius values */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+}
+
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  /* Font families */
+  --font-sans: Inter, system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Original shadcn theme tokens */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -115,5 +147,187 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  /* ====================
+     SpendSense Brand Colors
+     ==================== */
+
+  /* Background Colors */
+  .bg-brand-blue {
+    background-color: var(--color-blue-primary);
+  }
+
+  .bg-brand-blue-light {
+    background-color: var(--color-blue-50);
+  }
+
+  .bg-brand-blue-dark {
+    background-color: var(--color-blue-dark);
+  }
+
+  .bg-brand-green {
+    background-color: var(--color-green-primary);
+  }
+
+  .bg-brand-coral {
+    background-color: var(--color-coral);
+  }
+
+  /* Text Colors */
+  .text-brand-blue {
+    color: var(--color-blue-primary);
+  }
+
+  .text-brand-green {
+    color: var(--color-green-primary);
+  }
+
+  .text-brand-coral {
+    color: var(--color-coral);
+  }
+
+  /* Border Colors */
+  .border-brand-blue {
+    border-color: var(--color-blue-primary);
+  }
+
+  .border-brand-coral {
+    border-color: var(--color-coral);
+  }
+
+  .border-brand-green {
+    border-color: var(--color-green-primary);
+  }
+
+  /* ====================
+     Shadow System
+     ==================== */
+
+  .shadow-card {
+    box-shadow: var(--shadow-subtle);
+  }
+
+  .shadow-card-hover {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .hover\:shadow-card-hover:hover {
+    box-shadow: var(--shadow-soft);
+  }
+
+  /* ====================
+     Component Classes
+     ==================== */
+
+  /* Avatar Gradient */
+  .avatar-gradient {
+    background: linear-gradient(135deg, var(--color-blue-primary), var(--color-green-primary));
+  }
+
+  /* Card Variants */
+  .card-base {
+    border-radius: 0.75rem;
+    padding: 2rem;
+    border-width: 1px;
+    transition: all 0.15s ease;
+  }
+
+  .card-standard {
+    background-color: white;
+    border-color: var(--color-gray-100);
+    box-shadow: var(--shadow-subtle);
+  }
+
+  .card-standard:hover {
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-2px);
+  }
+
+  .card-featured {
+    background: linear-gradient(135deg, var(--color-blue-50) 0%, white 100%);
+    border-color: var(--color-gray-100);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .card-featured:hover {
+    transform: translateY(-2px);
+  }
+
+  .card-alert {
+    background-color: white;
+    border: 1px solid var(--color-gray-100);
+    border-left: 4px solid var(--color-coral);
+    box-shadow: var(--shadow-subtle);
+  }
+
+  .card-alert:hover {
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-2px);
+  }
+
+  .card-success {
+    background-color: white;
+    border: 1px solid var(--color-gray-100);
+    border-left: 4px solid var(--color-green-primary);
+    box-shadow: var(--shadow-subtle);
+  }
+
+  .card-success:hover {
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-2px);
+  }
+
+  /* Recommendation Card */
+  .card-recommendation {
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    border-width: 1px;
+    background-color: white;
+    transition: all 0.2s ease;
+  }
+
+  .card-recommendation:not(.active) {
+    border-color: var(--color-gray-100);
+    box-shadow: var(--shadow-subtle);
+  }
+
+  .card-recommendation.active,
+  .card-recommendation:hover {
+    border-color: var(--color-blue-primary);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-2px);
+  }
+
+  /* Icon Circle */
+  .icon-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    background-color: var(--color-blue-50);
+    color: var(--color-blue-primary);
+  }
+
+  /* Badge */
+  .badge-education {
+    background-color: var(--color-blue-50);
+    color: var(--color-blue-primary);
+    border-color: transparent;
+  }
+
+  /* Button */
+  .btn-brand {
+    background-color: var(--color-blue-primary);
+    color: white;
+  }
+
+  .btn-brand:hover {
+    background-color: var(--color-blue-dark);
   }
 }

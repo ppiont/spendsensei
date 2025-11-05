@@ -81,8 +81,8 @@ development_status:
   epic-6-retrospective: optional
 
   epic-7: backlog
-  7-1-design-system-foundation: in-progress
-  7-2-dashboard-page-redesign: ready-for-dev
+  7-1-design-system-foundation: review
+  7-2-dashboard-page-redesign: review
   7-3-insights-page-redesign: ready-for-dev
   7-4-transactions-page-redesign: ready-for-dev
   7-5-responsive-accessibility-polish: ready-for-dev
