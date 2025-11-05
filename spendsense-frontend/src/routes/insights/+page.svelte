@@ -3,47 +3,97 @@
 	import { api } from '$lib/api/client';
 	import { formatCurrency } from '$lib/types';
 	import type { Recommendation } from '$lib/types';
+	import PersonaBadge from '$lib/components/custom/PersonaBadge.svelte';
+	import RecommendationCard from '$lib/components/custom/RecommendationCard.svelte';
+	import { ChevronDown, ChevronUp, Info } from '@lucide/svelte';
 
-	// Svelte 5 runes for reactive state
+	// Dev mode user switching (only in development)
+	const isDev = import.meta.env.DEV;
 	let users = $state<Array<{ id: string; name: string }>>([]);
 	let selectedUserId = $state('');
+
+	// State
 	let recommendations = $state<Recommendation[]>([]);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let selectedWindow = $state(30);
-	let expandedCard = $state<number | null>(null);
+	let expandedIds = $state<Set<string>>(new Set());
+	let showPersonaDetails = $state(false);
 
-	// Get persona from first recommendation
-	const persona = $derived(recommendations.length > 0 ? recommendations[0].persona : null);
-	const confidence = $derived(recommendations.length > 0 ? recommendations[0].confidence : 0);
+	// Derived persona data
+	const personaData = $derived(
+		recommendations.length > 0
+			? {
+					name: recommendations[0].rationale.persona_type
+						.split('_')
+						.map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+						.join(' '),
+					type: recommendations[0].rationale.persona_type,
+					explanation: recommendations[0].rationale.explanation,
+					confidence: recommendations[0].rationale.confidence,
+					keySignals: recommendations[0].rationale.key_signals
+				}
+			: null
+	);
 
-	// Format persona name for display
-	function formatPersona(persona: string): string {
-		return persona
-			.split('_')
-			.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-			.join(' ');
+	// Get detailed persona description
+	function getPersonaDetails(type: string): { whatItMeans: string; whyItMatters: string } {
+		const details: Record<string, { whatItMeans: string; whyItMatters: string }> = {
+			savings_builder: {
+				whatItMeans:
+					'You consistently set aside money each month and maintain low credit utilization. Your financial habits show discipline and long-term thinking.',
+				whyItMatters:
+					'This persona means you're on track to build wealth over time. We'll focus your education on optimizing savings strategies, investment opportunities, and accelerating your financial goals.'
+			},
+			high_utilization: {
+				whatItMeans:
+					'Your credit cards are carrying high balances relative to your credit limits. This can impact your credit score and lead to significant interest charges.',
+				whyItMatters:
+					'High utilization is costing you money in interest and may be limiting your credit options. We'll help you understand strategies to pay down balances and improve your credit health.'
+			},
+			variable_income: {
+				whatItMeans:
+					'Your income fluctuates from month to month, which can make budgeting and planning more challenging than with a steady paycheck.',
+				whyItMatters:
+					'Variable income requires different financial strategies than traditional employment. We'll focus on building cash reserves, smoothing expenses, and planning for irregular income patterns.'
+			},
+			subscription_heavy: {
+				whatItMeans:
+					'You have multiple recurring subscriptions and services that automatically charge your accounts each month.',
+				whyItMatters:
+					'Subscriptions can quietly drain your budget. Even small recurring charges add up to significant annual costs. We'll help you audit and optimize your subscriptions to free up money for your priorities.'
+			},
+			balanced: {
+				whatItMeans:
+					'Your finances show healthy patterns across multiple areas: manageable credit usage, consistent income, and reasonable spending.',
+				whyItMatters:
+					'You have a solid financial foundation. We'll focus on fine-tuning your approach, identifying optimization opportunities, and helping you maintain these good habits long-term.'
+			}
+		};
+		return (
+			details[type] || {
+				whatItMeans: 'Your financial profile is based on analysis of your transaction patterns.',
+				whyItMatters:
+					'We use behavioral signals to provide relevant financial education tailored to your situation.'
+			}
+		);
 	}
 
-	// Get persona description
-	function getPersonaDescription(persona: string): string {
-		const descriptions: Record<string, string> = {
-			high_utilization:
-				'You have high credit card utilization. This affects your credit score and can lead to high interest charges.',
-			variable_income:
-				'You have variable or irregular income patterns. Building an emergency fund can help smooth out cash flow.',
-			subscription_heavy:
-				'You have multiple recurring subscriptions. Reviewing and canceling unused subscriptions can save money.',
-			savings_builder:
-				'You are actively building savings. Keep up the good work and consider optimizing your savings strategy.',
-			balanced:
-				'Your finances appear balanced. Focus on maintaining good habits and optimizing where possible.'
-		};
-		return descriptions[persona] || 'Financial profile analysis based on your transaction patterns.';
+	// Toggle expanded card
+	function toggleExpanded(id: string) {
+		if (expandedIds.has(id)) {
+			expandedIds.delete(id);
+			expandedIds = expandedIds; // Trigger reactivity
+		} else {
+			expandedIds.add(id);
+			expandedIds = expandedIds; // Trigger reactivity
+		}
 	}
 
 	// Fetch insights for selected user
 	async function loadInsights() {
+		if (!selectedUserId) return;
+
 		loading = true;
 		error = null;
 
@@ -81,167 +131,197 @@
 
 	// Reload when user or window selection changes
 	$effect(() => {
-		if (selectedUserId || selectedWindow) {
+		if (selectedUserId) {
 			loadInsights();
 		}
 	});
-
-	function toggleCard(index: number) {
-		expandedCard = expandedCard === index ? null : index;
-	}
 </script>
 
-<div class="min-h-screen bg-background">
-	<div class="container mx-auto px-4 py-8 sm:px-6 lg:px-8 max-w-7xl">
-		<!-- Header -->
-		<header class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
-			<h1 class="text-3xl font-bold text-foreground">Financial Insights</h1>
-
-			<div class="flex flex-col sm:flex-row gap-4">
-				<div class="flex items-center gap-2">
-					<label for="user-select" class="text-sm font-medium text-muted-foreground">User:</label>
-					<select
-						id="user-select"
-						bind:value={selectedUserId}
-						class="px-4 py-2 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-					>
-						{#each users as user}
-							<option value={user.id}>{user.name}</option>
-						{/each}
-					</select>
-				</div>
-
-				<div class="flex items-center gap-2">
-					<label for="window-select" class="text-sm font-medium text-muted-foreground">Period:</label>
-					<select
-						id="window-select"
-						bind:value={selectedWindow}
-						class="px-4 py-2 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-					>
-						<option value={30}>Last 30 Days</option>
-						<option value={180}>Last 180 Days</option>
-					</select>
-				</div>
-			</div>
-		</header>
-
+<div class="min-h-screen bg-gray-50">
+	<div class="container mx-auto px-6 py-6 sm:px-8 lg:px-10 max-w-7xl">
 		{#if loading}
-			<div class="flex items-center justify-center py-16">
-				<div class="text-center space-y-3">
-					<div
-						class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"
-					></div>
-					<p class="text-muted-foreground">Analyzing your financial patterns...</p>
+			<!-- Loading Skeletons -->
+			<div class="space-y-8 animate-pulse">
+				<!-- Persona skeleton -->
+				<div class="bg-white rounded-xl p-12 shadow-card">
+					<div class="flex items-center gap-4 mb-6">
+						<div class="w-18 h-18 rounded-full bg-gray-200"></div>
+						<div class="flex-1">
+							<div class="h-8 bg-gray-200 rounded w-1/3 mb-2"></div>
+							<div class="h-4 bg-gray-200 rounded w-1/2"></div>
+						</div>
+					</div>
+					<div class="space-y-2">
+						<div class="h-4 bg-gray-200 rounded w-full"></div>
+						<div class="h-4 bg-gray-200 rounded w-5/6"></div>
+					</div>
+				</div>
+
+				<!-- Recommendation card skeletons -->
+				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+					{#each [1, 2, 3] as _}
+						<div class="bg-white rounded-lg p-8 shadow-card">
+							<div class="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
+							<div class="space-y-2 mb-4">
+								<div class="h-4 bg-gray-200 rounded w-full"></div>
+								<div class="h-4 bg-gray-200 rounded w-full"></div>
+								<div class="h-4 bg-gray-200 rounded w-2/3"></div>
+							</div>
+							<div class="h-16 bg-gray-100 rounded"></div>
+						</div>
+					{/each}
 				</div>
 			</div>
 		{:else if error}
-			<div class="bg-destructive/10 border border-destructive/30 rounded-lg p-6 text-center">
-				<strong class="text-destructive block mb-2">Error:</strong>
-				<p class="text-destructive/90 mb-4">{error}</p>
+			<div class="bg-brand-coral/10 border border-brand-coral/30 rounded-lg p-6 text-center">
+				<strong class="text-brand-coral block mb-2">Error:</strong>
+				<p class="text-brand-coral/90 mb-4">{error}</p>
 				<button
 					onclick={() => loadInsights()}
-					class="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors"
+					class="px-4 py-2 bg-brand-coral text-white rounded-lg hover:opacity-90 transition-opacity"
 				>
 					Retry
 				</button>
 			</div>
 		{:else if recommendations.length === 0}
-			<div class="bg-card rounded-lg border border-border p-12 text-center">
-				<h2 class="text-xl font-semibold text-foreground mb-2">No Insights Available</h2>
-				<p class="text-muted-foreground">
+			<div class="bg-white rounded-lg p-12 text-center shadow-card">
+				<h2 class="text-xl font-semibold text-gray-800 mb-2">No Insights Available</h2>
+				<p class="text-gray-600">
 					We need more transaction data to generate personalized recommendations.
 				</p>
 			</div>
 		{:else}
-			<div class="space-y-8">
-				<!-- Persona Display -->
-				{#if persona}
-					<section class="bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/20 p-8 shadow-sm">
-						<div class="flex items-start justify-between mb-4">
-							<h2 class="text-2xl font-bold text-foreground">Your Financial Persona</h2>
-							<span class="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm font-medium">
-								{Math.round(confidence * 100)}% Confidence
-							</span>
+			<!-- Direction 6 Layout: Hero Persona Section + Recommendations -->
+
+			<!-- Hero Persona Section -->
+			{#if personaData}
+				<section class="bg-white rounded-xl p-12 mb-12 shadow-card">
+					<!-- Top row: PersonaBadge (left) + Window selector tabs (right) -->
+					<div class="flex items-start justify-between mb-8">
+						<div class="flex-1">
+							<PersonaBadge personaName={personaData.name} personaType={personaData.type} />
 						</div>
 
-						<h3 class="text-3xl font-bold text-primary mb-3">{formatPersona(persona)}</h3>
-						<p class="text-lg text-foreground/80 mb-6">{getPersonaDescription(persona)}</p>
-
-						{#if recommendations[0].rationale.key_signals.length > 0}
-							<div class="border-t border-primary/20 pt-4 mt-4">
-								<p class="text-sm font-medium text-muted-foreground mb-2">Based on:</p>
-								<ul class="flex flex-wrap gap-2">
-									{#each recommendations[0].rationale.key_signals as signal}
-										<li class="px-3 py-1 bg-card border border-border rounded-full text-sm">
-											{signal.replace(/_/g, ' ')}
-										</li>
-									{/each}
-								</ul>
-							</div>
-						{/if}
-					</section>
-				{/if}
-
-				<!-- Recommendations Grid -->
-				<section>
-					<h2 class="text-2xl font-bold text-foreground mb-6">Personalized Recommendations</h2>
-
-					<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-						{#each recommendations as rec, index}
-							<article class="bg-card rounded-lg border border-border shadow-sm overflow-hidden flex flex-col">
-								<div class="p-6 flex-1">
-									<div class="flex items-start justify-between mb-3">
-										<h3 class="text-lg font-semibold text-foreground flex-1 pr-2">{rec.content.title}</h3>
-										<span class="px-2 py-1 bg-primary/10 text-primary rounded text-xs font-medium whitespace-nowrap">
-											{Math.round(rec.content.relevance_score * 100)}% Match
-										</span>
-									</div>
-
-									<p class="text-sm text-muted-foreground mb-4">{rec.content.summary}</p>
-
-									{#if expandedCard === index}
-										<div class="space-y-4">
-											<div class="text-sm text-foreground/90">
-												{rec.content.body}
-											</div>
-
-											<div class="bg-accent/50 rounded-lg p-4">
-												<h4 class="text-sm font-semibold text-foreground mb-2">Why this matters for you:</h4>
-												<p class="text-sm text-foreground/80">{rec.rationale.explanation}</p>
-											</div>
-
-											<div class="border-t border-border pt-4">
-												<strong class="text-sm text-primary">{rec.content.cta}</strong>
-											</div>
-
-											<div class="text-xs text-muted-foreground">
-												Source: {rec.content.source}
-											</div>
-										</div>
-									{/if}
-								</div>
-
-								<button
-									onclick={() => toggleCard(index)}
-									class="w-full px-6 py-3 bg-muted hover:bg-accent text-foreground font-medium transition-colors border-t border-border"
-								>
-									{expandedCard === index ? 'Show Less ↑' : 'Read More ↓'}
-								</button>
-							</article>
-						{/each}
+						<!-- Window selector tabs -->
+						<div class="flex bg-gray-100 rounded-lg p-1">
+							<button
+								onclick={() => (selectedWindow = 30)}
+								class={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+									selectedWindow === 30
+										? 'bg-brand-blue text-white shadow-sm'
+										: 'text-gray-600 hover:text-gray-800'
+								}`}
+							>
+								30 Days
+							</button>
+							<button
+								onclick={() => (selectedWindow = 180)}
+								class={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+									selectedWindow === 180
+										? 'bg-brand-blue text-white shadow-sm'
+										: 'text-gray-600 hover:text-gray-800'
+								}`}
+							>
+								180 Days
+							</button>
+						</div>
 					</div>
-				</section>
-			</div>
-		{/if}
 
-		<!-- Back Navigation -->
-		<nav class="mt-8 pt-6 border-t border-border">
-			<a
-				href="/dashboard"
-				class="inline-flex items-center text-primary hover:text-primary/80 font-medium transition-colors"
-			>
-				← Back to Dashboard
-			</a>
-		</nav>
+					<!-- Persona description -->
+					<p class="text-base text-gray-600 leading-relaxed mb-6 max-w-3xl">
+						{personaData.explanation}
+					</p>
+
+					<!-- "What this means" expandable accordion -->
+					<button
+						onclick={() => (showPersonaDetails = !showPersonaDetails)}
+						class="flex items-center gap-2 text-brand-blue font-medium hover:text-blue-dark transition-colors"
+					>
+						{showPersonaDetails ? 'Hide details' : 'What this means for you'}
+						{#if showPersonaDetails}
+							<ChevronUp class="w-4 h-4" />
+						{:else}
+							<ChevronDown class="w-4 h-4" />
+						{/if}
+					</button>
+
+					{#if showPersonaDetails}
+						<div class="mt-6 p-6 bg-gray-50 rounded-lg space-y-4">
+							<div>
+								<h4 class="font-semibold text-gray-800 mb-2">What it means:</h4>
+								<p class="text-gray-600 leading-relaxed">
+									{getPersonaDetails(personaData.type).whatItMeans}
+								</p>
+							</div>
+							<div>
+								<h4 class="font-semibold text-gray-800 mb-2">Why it matters:</h4>
+								<p class="text-gray-600 leading-relaxed">
+									{getPersonaDetails(personaData.type).whyItMatters}
+								</p>
+							</div>
+
+							{#if personaData.keySignals && personaData.keySignals.length > 0}
+								<div>
+									<h4 class="font-semibold text-gray-800 mb-2">Based on these signals:</h4>
+									<ul class="flex flex-wrap gap-2">
+										{#each personaData.keySignals as signal}
+											<li class="px-3 py-1 bg-white border border-gray-200 rounded-full text-sm text-gray-700">
+												{signal.replace(/_/g, ' ')}
+											</li>
+										{/each}
+									</ul>
+								</div>
+							{/if}
+						</div>
+					{/if}
+				</section>
+			{/if}
+
+			<!-- Recommendations Section -->
+			<section class="mb-12">
+				<h2 class="text-2xl font-semibold text-gray-800 mb-6">Personalized Recommendations</h2>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+					{#each recommendations as rec}
+						<RecommendationCard
+							icon="💡"
+							title={rec.content.title}
+							body={rec.content.summary}
+							rationale={rec.rationale.explanation}
+							cta="Learn More"
+							expanded={expandedIds.has(rec.recommendation_id)}
+							onclick={() => toggleExpanded(rec.recommendation_id)}
+						/>
+					{/each}
+				</div>
+			</section>
+
+			<!-- Educational Disclaimer -->
+			<div class="bg-blue-50 border-l-4 border-brand-blue rounded-lg p-6 flex items-start gap-3">
+				<Info class="w-5 h-5 text-brand-blue flex-shrink-0 mt-0.5" />
+				<p class="text-sm text-gray-700">
+					<strong class="font-semibold">Educational Content:</strong> This is educational content, not
+					financial advice. Please consult with a qualified financial professional before making
+					financial decisions.
+				</p>
+			</div>
+
+			<!-- Dev-only user switcher (bottom of page) -->
+			{#if isDev && users.length > 0}
+				<div class="mt-8 p-4 bg-gray-800 text-white rounded-lg">
+					<div class="flex items-center justify-between">
+						<span class="text-xs uppercase tracking-wider font-semibold opacity-75">Dev Mode: Switch User</span>
+						<select
+							bind:value={selectedUserId}
+							class="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+						>
+							{#each users as user}
+								<option value={user.id}>{user.name}</option>
+							{/each}
+						</select>
+					</div>
+				</div>
+			{/if}
+		{/if}
 	</div>
 </div>

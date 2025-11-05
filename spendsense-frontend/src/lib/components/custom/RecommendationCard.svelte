@@ -2,6 +2,7 @@
 	import { cn } from '$lib/utils';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
+	import { ChevronDown, ChevronUp } from '@lucide/svelte';
 
 	interface Props {
 		icon: string;
@@ -10,18 +11,25 @@
 		rationale: string;
 		cta?: string;
 		expanded?: boolean;
+		onclick?: () => void;
 	}
 
-	let { icon, title, body, rationale, cta, expanded = false }: Props = $props();
+	let { icon, title, body, rationale, cta, expanded = false, onclick }: Props = $props();
 
 	let isHovered = $state(false);
 </script>
 
-<div
-	class={cn('card-recommendation', (isHovered || expanded) && 'active')}
+<button
+	class={cn(
+		'card-recommendation text-left w-full',
+		(isHovered || expanded) && 'active',
+		'cursor-pointer'
+	)}
 	onmouseenter={() => (isHovered = true)}
 	onmouseleave={() => (isHovered = false)}
+	onclick={onclick}
 	role="article"
+	aria-expanded={expanded}
 >
 	<!-- Header with icon and badge -->
 	<div class="flex items-start gap-3 mb-4">
@@ -39,8 +47,10 @@
 	<!-- Title -->
 	<h3 class="text-base font-semibold text-gray-800 mb-2">{title}</h3>
 
-	<!-- Body -->
-	<p class="text-sm leading-relaxed text-gray-600 mb-4 line-clamp-3">{body}</p>
+	<!-- Body - with line-clamp when not expanded -->
+	<p class={cn('text-sm leading-relaxed text-gray-600 mb-4', !expanded && 'line-clamp-3')}>
+		{body}
+	</p>
 
 	<!-- Rationale box -->
 	<div class="bg-gray-50 rounded-lg p-3 mb-4">
@@ -50,17 +60,23 @@
 		</p>
 	</div>
 
-	<!-- CTA button (optional) -->
-	{#if cta}
-		<Button class="w-full btn-brand">
-			{cta}
-		</Button>
-	{/if}
-
-	<!-- Placeholder for expanded state (Story 7.3) -->
-	{#if expanded}
+	<!-- CTA button (only visible when expanded) -->
+	{#if expanded && cta}
 		<div class="mt-4 pt-4 border-t border-gray-200">
-			<p class="text-xs text-gray-500 italic">Expanded content will be added in Story 7.3</p>
+			<span class="text-brand-blue font-semibold text-sm hover:text-blue-dark transition-colors">
+				{cta} →
+			</span>
 		</div>
 	{/if}
-</div>
+
+	<!-- Expand/Collapse indicator -->
+	<div class="flex items-center justify-center gap-2 mt-4 pt-4 border-t border-gray-200 text-gray-600 text-sm">
+		{#if expanded}
+			<ChevronUp class="w-4 h-4" />
+			<span>Show less</span>
+		{:else}
+			<ChevronDown class="w-4 h-4" />
+			<span>Read more</span>
+		{/if}
+	</div>
+</button>
