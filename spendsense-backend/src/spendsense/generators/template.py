@@ -664,7 +664,7 @@ class TemplateGenerator(ContentGenerator):
                 continue
 
             # Calculate relevance score (similar to education content)
-            relevance_score = self._calculate_relevance(offer_data, signal_tags)
+            relevance_score = self._calculate_relevance(offer_data, persona_type, signal_tags)
 
             # Create PartnerOffer object
             partner_offer = PartnerOffer(
