@@ -240,6 +240,75 @@
 					<KpiCard label="EMERGENCY FUND" value={emergencyFundMonths} />
 					<KpiCard label="SUBSCRIPTIONS" value={subscriptionCount().toString()} />
 				</div>
+
+				<!-- Accounts Grid -->
+				{#if accounts.length > 0}
+					<div class="accounts-section">
+						<h3 class="accounts-title">
+							Connected Accounts
+							<span class="accounts-count">{accounts.length}</span>
+						</h3>
+						<div class="accounts-grid">
+							{#each accounts as account}
+								{@const isCredit = account.type === 'credit'}
+								{@const utilization = isCredit && account.limit ? (account.current_balance / account.limit) * 100 : 0}
+								{@const utilizationVariant = utilization > 80 ? 'alert' : utilization > 50 ? 'warning' : 'good'}
+
+								<div class="account-card {isCredit ? 'credit-card' : 'depository-card'}">
+									<div class="account-header">
+										<div class="account-icon">
+											{#if isCredit}
+												💳
+											{:else if account.subtype === 'savings'}
+												🏦
+											{:else}
+												💰
+											{/if}
+										</div>
+										<div class="account-info">
+											<div class="account-name" title={account.name}>
+												{account.name}
+											</div>
+											<div class="account-subtype">
+												{account.subtype === 'checking' ? 'Checking' : account.subtype === 'savings' ? 'Savings' : 'Credit Card'}
+												{#if account.mask}
+													<span class="account-mask">••{account.mask}</span>
+												{/if}
+											</div>
+										</div>
+									</div>
+
+									{#if isCredit}
+										<!-- Credit Card Display -->
+										<div class="account-balance">
+											<div class="balance-label">Balance / Limit</div>
+											<div class="balance-value">
+												{formatCurrency(account.current_balance)} / {formatCurrency(account.limit || 0)}
+											</div>
+										</div>
+										<div class="utilization-bar-container">
+											<div class="utilization-bar {utilizationVariant}">
+												<div class="utilization-fill" style="width: {Math.min(utilization, 100)}%"></div>
+											</div>
+											<div class="utilization-label">{utilization.toFixed(0)}% used</div>
+										</div>
+										{#if account.is_overdue}
+											<div class="overdue-warning">⚠️ Payment overdue</div>
+										{/if}
+									{:else}
+										<!-- Depository Account Display -->
+										<div class="account-balance">
+											<div class="balance-label">Available Balance</div>
+											<div class="balance-value">
+												{formatCurrency(account.available_balance || account.current_balance)}
+											</div>
+										</div>
+									{/if}
+								</div>
+							{/each}
+						</div>
+					</div>
+				{/if}
 			</section>
 
 			<!-- SECTION 2: SPENDING INSIGHTS -->
@@ -470,6 +539,164 @@
 		grid-column: span 2;
 	}
 
+	/* Accounts Section */
+	.accounts-section {
+		margin-top: 2rem;
+		padding-top: 2rem;
+		border-top: 1px solid #e5e7eb;
+	}
+
+	.accounts-title {
+		font-size: 1rem;
+		font-weight: 600;
+		color: #374151;
+		margin: 0 0 1rem 0;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.accounts-count {
+		background-color: #f3f4f6;
+		color: #6b7280;
+		padding: 0.25rem 0.625rem;
+		border-radius: 9999px;
+		font-size: 0.875rem;
+		font-weight: 500;
+	}
+
+	.accounts-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+		gap: 1rem;
+	}
+
+	.account-card {
+		background: white;
+		border: 1px solid #e5e7eb;
+		border-radius: 0.625rem;
+		padding: 1rem;
+		transition: all 0.15s ease;
+	}
+
+	.account-card:hover {
+		border-color: #d1d5db;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+	}
+
+	.credit-card {
+		border-left: 3px solid #3b82f6;
+	}
+
+	.depository-card {
+		border-left: 3px solid #10b981;
+	}
+
+	.account-header {
+		display: flex;
+		gap: 0.75rem;
+		margin-bottom: 0.75rem;
+	}
+
+	.account-icon {
+		font-size: 1.5rem;
+		line-height: 1;
+		flex-shrink: 0;
+	}
+
+	.account-info {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.account-name {
+		font-size: 0.9375rem;
+		font-weight: 600;
+		color: #1f2937;
+		margin-bottom: 0.25rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.account-subtype {
+		font-size: 0.8125rem;
+		color: #6b7280;
+		display: flex;
+		align-items: center;
+		gap: 0.375rem;
+	}
+
+	.account-mask {
+		color: #9ca3af;
+	}
+
+	.account-balance {
+		margin-bottom: 0.5rem;
+	}
+
+	.balance-label {
+		font-size: 0.75rem;
+		color: #6b7280;
+		text-transform: uppercase;
+		letter-spacing: 0.025em;
+		margin-bottom: 0.25rem;
+	}
+
+	.balance-value {
+		font-size: 1.125rem;
+		font-weight: 600;
+		color: #1f2937;
+	}
+
+	.utilization-bar-container {
+		margin-top: 0.75rem;
+	}
+
+	.utilization-bar {
+		height: 6px;
+		background-color: #f3f4f6;
+		border-radius: 3px;
+		overflow: hidden;
+		margin-bottom: 0.375rem;
+	}
+
+	.utilization-fill {
+		height: 100%;
+		transition: width 0.3s ease;
+		border-radius: 3px;
+	}
+
+	.utilization-bar.good .utilization-fill {
+		background-color: #10b981;
+	}
+
+	.utilization-bar.warning .utilization-fill {
+		background-color: #f59e0b;
+	}
+
+	.utilization-bar.alert .utilization-fill {
+		background-color: #ef4444;
+	}
+
+	.utilization-label {
+		font-size: 0.75rem;
+		color: #6b7280;
+	}
+
+	.overdue-warning {
+		margin-top: 0.5rem;
+		padding: 0.375rem 0.625rem;
+		background-color: #fef2f2;
+		color: #991b1b;
+		font-size: 0.75rem;
+		font-weight: 500;
+		border-radius: 0.375rem;
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+	}
+
 	.recommendations-grid {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
@@ -647,6 +874,10 @@
 		.offers-grid {
 			grid-template-columns: repeat(2, 1fr);
 		}
+
+		.accounts-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
 	}
 
 	@media (max-width: 768px) {
@@ -656,7 +887,8 @@
 
 		.kpi-grid,
 		.recommendations-grid,
-		.offers-grid {
+		.offers-grid,
+		.accounts-grid {
 			grid-template-columns: 1fr;
 		}
 

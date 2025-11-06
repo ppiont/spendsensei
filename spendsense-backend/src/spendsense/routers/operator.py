@@ -2,6 +2,7 @@
 
 import uuid
 from datetime import datetime, timezone
+from typing import List, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -262,23 +263,24 @@ async def flag_recommendation(
 @router.get("/inspect/{user_id}", response_model=InspectUserResponse)
 async def inspect_user(
     user_id: str,
-    window: int = 30,
+    include_recommendations: bool = False,
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Inspect user data for operator debugging (no consent checks).
+    Inspect user with both 30d and 180d analysis windows.
 
     This endpoint provides comprehensive user data for internal review
-    and debugging purposes. Unlike the /insights endpoint, this endpoint
-    does NOT check consent and returns all available data.
+    and debugging purposes with side-by-side comparison of short-term
+    and long-term behavior patterns. Unlike the /insights endpoint,
+    this does NOT check consent and generates insights even if no consent.
 
     Args:
         user_id: User ID to inspect
-        window: Analysis window in days (default 30)
+        include_recommendations: Whether to include detailed recommendations (default False)
         db: Database session
 
     Returns:
-        InspectUserResponse: Comprehensive user data including signals and recommendations
+        InspectUserResponse: Multi-window user analysis with both 30d and 180d insights
 
     Raises:
         HTTPException: 404 if user not found
@@ -286,9 +288,10 @@ async def inspect_user(
     """
     from spendsense.models.account import Account
     from spendsense.models.transaction import Transaction
+    from spendsense.schemas.operator import WindowAnalysis
 
     try:
-        # Get user (no consent check)
+        # Get user (no consent check for operator view)
         result = await db.execute(
             select(User).where(User.id == user_id)
         )
@@ -307,68 +310,67 @@ async def inspect_user(
         accounts = accounts_result.scalars().all()
         account_count = len(accounts)
 
-        # Get transaction count
+        # Get transaction count (all transactions, not filtered by window)
         transactions_result = await db.execute(
             select(Transaction).where(Transaction.account_id.in_([a.id for a in accounts]))
         )
         transactions = transactions_result.scalars().all()
         transaction_count = len(transactions)
 
-        # If user has consented, generate recommendations
-        persona_type = None
-        confidence = None
-        signals_summary = {}
-        education_recommendations = []
-        offer_recommendations = []
+        # Generate both 30d and 180d analysis windows
+        # Even if no consent, operator view needs this for debugging
+        try:
+            result_30d = await engine.generate_recommendations(db, user_id, 30)
+            result_180d = await engine.generate_recommendations(db, user_id, 180)
 
-        if user.consent:
-            try:
-                # Generate recommendations using engine
-                rec_result = await engine.generate_recommendations(
-                    db=db,
-                    user_id=user_id,
-                    window_days=window
-                )
+            short_term = WindowAnalysis(
+                window_days=30,
+                persona_type=result_30d.persona_type,
+                confidence=result_30d.confidence,
+                signals_summary=result_30d.signals_summary,
+                education_count=len(result_30d.education_recommendations),
+                offer_count=len(result_30d.offer_recommendations)
+            )
 
-                persona_type = rec_result.persona_type
-                confidence = rec_result.confidence
-                signals_summary = rec_result.signals_summary
-                education_recommendations = [
-                    {
-                        "id": rec.content.id,
-                        "title": rec.content.title,
-                        "summary": rec.content.summary,
-                        "relevance_score": rec.content.relevance_score
-                    }
-                    for rec in rec_result.education_recommendations
-                ]
-                offer_recommendations = [
-                    {
-                        "id": rec.offer.id,
-                        "title": rec.offer.title,
-                        "provider": rec.offer.provider,
-                        "eligibility_met": rec.offer.eligibility_met
-                    }
-                    for rec in rec_result.offer_recommendations
-                ]
-            except Exception as e:
-                # Log error but continue
-                signals_summary = {"error": str(e)}
+            long_term = WindowAnalysis(
+                window_days=180,
+                persona_type=result_180d.persona_type,
+                confidence=result_180d.confidence,
+                signals_summary=result_180d.signals_summary,
+                education_count=len(result_180d.education_recommendations),
+                offer_count=len(result_180d.offer_recommendations)
+            )
 
-        return InspectUserResponse(
-            user_id=user.id,
-            user_name=user.name,
-            user_email=user.email,
-            consent_status=user.consent,
-            persona_type=persona_type,
-            confidence=confidence,
-            signals_summary=signals_summary,
-            education_recommendations=education_recommendations,
-            offer_recommendations=offer_recommendations,
-            account_count=account_count,
-            transaction_count=transaction_count,
-            window_days=window
-        )
+            persona_changed = result_30d.persona_type != result_180d.persona_type
+
+            # Optionally include detailed recommendations
+            short_term_recs = None
+            long_term_recs = None
+
+            if include_recommendations:
+                short_term_recs = _summarize_recommendations(result_30d)
+                long_term_recs = _summarize_recommendations(result_180d)
+
+            return InspectUserResponse(
+                user_id=user.id,
+                user_name=user.name,
+                user_email=user.email,
+                consent_status=user.consent,
+                short_term=short_term,
+                long_term=long_term,
+                persona_changed=persona_changed,
+                account_count=account_count,
+                transaction_count=transaction_count,
+                short_term_recommendations=short_term_recs,
+                long_term_recommendations=long_term_recs
+            )
+
+        except Exception as e:
+            # If insights generation fails, return error state
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to generate insights: {str(e)}"
+            )
 
     except HTTPException:
         raise
@@ -377,3 +379,28 @@ async def inspect_user(
             status_code=500,
             detail=f"Failed to inspect user: {str(e)}"
         )
+
+
+def _summarize_recommendations(result) -> List[Dict[str, Any]]:
+    """Helper function to summarize recommendations for operator view."""
+    recommendations = []
+
+    # Add education items
+    for rec in result.education_recommendations:
+        recommendations.append({
+            "type": "education",
+            "id": rec.content.id,
+            "title": rec.content.title,
+            "summary": rec.content.summary
+        })
+
+    # Add offers
+    for rec in result.offer_recommendations:
+        recommendations.append({
+            "type": "offer",
+            "id": rec.offer.id,
+            "title": rec.offer.title,
+            "provider": rec.offer.provider
+        })
+
+    return recommendations

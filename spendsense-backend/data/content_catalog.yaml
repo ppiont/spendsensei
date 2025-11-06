@@ -467,6 +467,300 @@ education:
     signal_tags: ["positive_savings"]
     source: "Financial Education Database"
 
+  # DEBT CONSOLIDATOR PERSONA CONTENT (3+ items)
+  - id: "edu_balance_transfer"
+    title: "Balance Transfer Strategy: Save Thousands on Interest"
+    summary: "Learn how to use balance transfers strategically to reduce interest and pay off debt faster."
+    body: |
+      When you're carrying balances across multiple credit cards and paying interest, a balance
+      transfer card can be a powerful tool to save money and accelerate your debt payoff journey.
+
+      **What is a balance transfer?**
+      Moving high-interest credit card debt to a new card with a promotional 0% APR period,
+      typically lasting 12-21 months. This gives you an interest-free window to pay down principal.
+
+      **The math that matters:**
+      If you have $10,000 in credit card debt at 22% APR:
+      - Without balance transfer: $2,200/year in interest ($183/month)
+      - With 0% for 18 months: $0 in interest during promo period
+      - Potential savings: $3,300 over 18 months
+
+      **Key benefits:**
+      - 0% APR for 12-21 months on many cards
+      - Save hundreds to thousands in interest charges
+      - Consolidate multiple payments into one monthly bill
+      - Pay off debt faster with 100% of payment going to principal
+      - Improve credit utilization by spreading balances
+
+      **What to watch out for:**
+      - **Balance transfer fees:** Typically 3-5% of transferred amount ($300-500 on $10,000)
+      - **Credit requirements:** Need good credit score (usually 670+) to qualify
+      - **New purchase trap:** Avoid using the transfer card for new purchases
+      - **Deadline pressure:** Must pay off before promo period ends or rate jumps to 18-25%
+      - **Application impact:** Hard inquiry temporarily affects credit score
+
+      **How to use balance transfers effectively:**
+
+      1. **Calculate break-even point**
+         Transfer fee ÷ monthly interest savings = months to break even
+         Example: $300 fee ÷ $183/month savings = 1.6 months
+         If you can pay off in 18 months, you save $3,000 net
+
+      2. **Create payoff plan before applying**
+         - Total debt ÷ months in promo period = required monthly payment
+         - Add 10% buffer for unexpected expenses
+         - Ensure payment fits comfortably in budget
+
+      3. **Compare offers carefully**
+         - 0% for 18 months with 3% fee vs 0% for 15 months with no fee
+         - Consider post-promo APR if you won't pay off completely
+         - Read fine print on when promo rate ends
+
+      4. **Execute the transfer**
+         - Apply only when ready to commit to payoff plan
+         - Transfer highest APR balances first
+         - Keep old accounts open but unused (helps credit utilization)
+
+      5. **Stay disciplined during promo period**
+         - Set up autopay for calculated monthly amount
+         - Don't use card for new purchases
+         - Resist urge to run up old cards again
+         - Track progress monthly
+
+      **Common mistakes to avoid:**
+      - Missing a payment (kills promo rate immediately)
+      - Only paying minimums during promo period
+      - Closing old credit cards (hurts credit utilization)
+      - Applying for multiple cards at once
+      - Using the transfer card for daily spending
+
+      **Alternative: Personal consolidation loan**
+      If you don't qualify for 0% balance transfer or need longer payoff timeline,
+      consider a fixed-rate personal loan at 8-12% APR. While not interest-free,
+      it's still better than 20%+ credit card rates.
+
+      **Disclaimer:** This is educational content, not financial advice. Balance transfers
+      aren't right for everyone. Consider consulting a credit counselor or financial advisor
+      for personalized debt reduction strategies.
+    cta: "Compare Balance Transfer Offers"
+    persona_tags: ["debt_consolidator"]
+    signal_tags: ["moderate_utilization_30", "interest_charges", "multiple_cards"]
+    source: "Financial Education Database"
+
+  - id: "edu_debt_consolidation_loan"
+    title: "Personal Loans for Debt Consolidation: Pros and Cons"
+    summary: "Explore how a personal loan can simplify payments, reduce interest, and provide a clear payoff timeline."
+    body: |
+      A debt consolidation loan combines multiple credit card debts into a single fixed monthly
+      payment with a lower interest rate. For many people with moderate credit card debt and
+      good income, this can be the fastest path to becoming debt-free.
+
+      **How debt consolidation loans work:**
+      1. Apply for personal loan (typically $5,000-$35,000)
+      2. Use loan proceeds to pay off all credit cards
+      3. Make one fixed monthly payment to loan
+      4. Loan paid off in 3-5 years
+
+      **Why consolidation can work better than balance transfers:**
+      - **Longer payoff timeline:** 3-5 years vs 12-18 months
+      - **Fixed monthly payment:** Know exactly what you owe each month
+      - **No promotional rate expiration:** Rate stays same for life of loan
+      - **Easier qualification:** Less strict than 0% balance transfer cards
+      - **Forced discipline:** Can't re-borrow on the loan like a credit card
+
+      **The interest savings:**
+      Example: $15,000 credit card debt at 20% APR
+      - Minimum payments: 15+ years, $18,000+ in interest
+      - Consolidation loan at 10% for 4 years: $3,200 in interest
+      - **Savings: $14,800**
+
+      **Qualification requirements:**
+      - Credit score: Usually 660+ (better rates at 720+)
+      - Debt-to-income ratio: Typically <40%
+      - Stable income: Employment history or regular income stream
+      - No recent bankruptcies or major delinquencies
+
+      **Expected rates (as of 2025):**
+      - Excellent credit (760+): 7-9% APR
+      - Good credit (700-759): 10-15% APR
+      - Fair credit (660-699): 16-20% APR
+      - Below 660: May not qualify or rates not better than cards
+
+      **Red flags to avoid:**
+      - **Origination fees >5%:** Should be 0-3% max
+      - **Prepayment penalties:** You should be able to pay off early
+      - **Variable rates:** Get fixed rate for predictability
+      - **Secured loans requiring collateral:** Puts assets at risk
+      - **Very long terms (7+ years):** You'll pay more total interest
+
+      **Step-by-step process:**
+
+      1. **Calculate your numbers**
+         - Total credit card debt
+         - Current average APR
+         - Monthly payment you can afford
+
+      2. **Check your credit score**
+         - Use free service like Credit Karma or your bank's app
+         - Estimate which APR range you'll qualify for
+         - Don't apply if score is below 660
+
+      3. **Shop for rates (without hurting credit)**
+         - Use pre-qualification tools (soft pull, doesn't affect score)
+         - Compare 3-5 lenders
+         - Look at APR, fees, and monthly payment
+
+      4. **Apply for best offer**
+         - Have documentation ready (income proof, ID)
+         - Hard inquiry will temporarily drop score 5-10 points
+         - Approval usually within 1-3 days
+
+      5. **Pay off cards immediately**
+         - Funds usually direct deposited
+         - Pay off each card in full
+         - Keep card accounts open but at zero balance
+
+      6. **Lock in new habits**
+         - Set up autopay for consolidation loan
+         - Don't run up credit cards again
+         - Build emergency fund to avoid future debt
+
+      **When consolidation makes sense:**
+      ✅ You have $5,000+ in credit card debt
+      ✅ Your credit score is 660+
+      ✅ You can qualify for rate lower than current credit card APRs
+      ✅ You have stable income to afford fixed monthly payment
+      ✅ You're committed to not re-borrowing on cards
+
+      **When to consider other options:**
+      ❌ Credit score below 660 (rates won't be better)
+      ❌ Can pay off credit cards in <12 months (balance transfer better)
+      ❌ Debt is small (<$2,500) relative to hassle
+      ❌ Still overspending—need budget fix first, not loan
+
+      **Disclaimer:** This is educational content, not financial advice. Debt consolidation
+      loans aren't right for everyone. Carefully compare total cost and ensure you can afford
+      monthly payments before consolidating. Consider consulting a credit counselor for guidance.
+    cta: "Calculate Your Consolidation Savings"
+    persona_tags: ["debt_consolidator"]
+    signal_tags: ["moderate_utilization_30", "interest_charges", "multiple_cards"]
+    source: "Financial Education Database"
+
+  - id: "edu_interest_calculator"
+    title: "Interest Cost Calculator: See What You're Really Paying"
+    summary: "Use this framework to calculate exactly how much interest you're paying and how to reduce it."
+    body: |
+      Understanding the true cost of carrying credit card balances is the first step toward
+      eliminating debt. Many people don't realize they're paying $100-300+ per month just in
+      interest charges that go nowhere.
+
+      **How to calculate your monthly interest cost:**
+
+      For each credit card:
+      1. Current balance × (APR ÷ 100) = Annual interest
+      2. Annual interest ÷ 12 = Monthly interest
+
+      Example:
+      - Card 1: $5,000 balance at 22% APR → $1,100/year → $92/month
+      - Card 2: $3,000 balance at 18% APR → $540/year → $45/month
+      - Card 3: $2,000 balance at 24% APR → $480/year → $40/month
+      - **Total: $177/month in interest (that's $2,120/year going nowhere)**
+
+      **The minimum payment trap:**
+      Credit card companies calculate minimums to keep you in debt as long as possible.
+
+      Example on $10,000 balance at 20% APR:
+      - Minimum payment only: 258 months (21.5 years!) to pay off
+      - Total interest paid: $13,000+
+      - Total paid: $23,000+ for $10,000 borrowed
+
+      **How different payment amounts change the outcome:**
+
+      On $10,000 at 20% APR:
+      - $200/month minimum: 21 years, $13,000 interest
+      - $300/month: 4.5 years, $3,300 interest
+      - $500/month: 2 years, $1,200 interest
+      - $1,000/month: 1 year, $600 interest
+
+      **The power of even small increases:**
+      Adding just $50/month to minimum payment can cut payoff time in half.
+
+      **Create your interest reduction plan:**
+
+      **Step 1: Calculate your current state**
+      - Total monthly interest across all cards: $_______
+      - Total monthly payments: $_______
+      - Amount going to principal: $_______ (payment - interest)
+
+      **Step 2: Set a timeline goal**
+      - "I want to be debt-free in ___ months/years"
+      - Divide total balance by months = required monthly payment
+      - Add monthly interest to get true payment needed
+
+      **Step 3: Find money for extra payments**
+      Common sources:
+      - Cut one subscription → extra $15/month
+      - Pack lunch 2x/week → extra $40/month
+      - Side gig → extra $200-500/month
+      - Tax refund → one-time principal payment
+
+      **Step 4: Choose your attack strategy**
+
+      **Avalanche (mathematically optimal):**
+      - Pay minimums on all cards
+      - Put all extra money toward highest APR card
+      - When that's paid off, roll payment to next highest APR
+      - Saves the most money in interest
+
+      **Snowball (psychologically powerful):**
+      - Pay minimums on all cards
+      - Put all extra money toward smallest balance
+      - When that's paid off, roll payment to next smallest
+      - Provides quick wins to stay motivated
+
+      **Consolidation (structural solution):**
+      - Balance transfer to 0% card, or
+      - Personal loan at lower fixed rate
+      - One payment, lower rate, clear timeline
+
+      **Step 5: Track progress monthly**
+      Create simple spreadsheet:
+      - Month | Total Balance | Interest Paid | Principal Paid | Months Left
+
+      Seeing progress keeps you motivated.
+
+      **Interest reduction quick wins:**
+
+      1. **Call your credit card company**
+         "I've been a customer for X years. Can you lower my APR?"
+         Success rate: 50%+, average reduction: 3-5 percentage points
+
+      2. **Pay twice per month**
+         Instead of $500 once/month, pay $250 every 2 weeks
+         Reduces average daily balance, saves on interest
+
+      3. **Use windfalls strategically**
+         Tax refund, bonus, stimulus, gift money → principal payment
+         One $2,000 payment can save $400+ in future interest
+
+      4. **Stop using the cards**
+         Hard to pay off debt while adding new charges
+         Switch to debit card or cash envelope system
+
+      **The motivation factor:**
+      Take your monthly interest cost and think about what else you could do with that money:
+      - $150/month interest = $1,800/year vacation
+      - $200/month interest = $2,400/year to retirement
+      - $250/month interest = $3,000/year emergency fund
+
+      **Disclaimer:** This is educational content, not financial advice. These calculations are
+      estimates. Actual interest varies based on daily balance method and when payments post.
+      For personalized guidance, consult a financial advisor or credit counselor.
+    cta: "Calculate Your Interest Costs"
+    persona_tags: ["debt_consolidator", "high_utilization"]
+    signal_tags: ["interest_charges", "moderate_utilization_30", "high_utilization_50"]
+    source: "Financial Education Database"
+
   # BALANCED PERSONA CONTENT (2+ items)
   - id: "edu_financial_wellness"
     title: "Financial Wellness Fundamentals: The Complete Checklist"

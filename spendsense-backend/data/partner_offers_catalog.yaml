@@ -39,8 +39,8 @@ partner_offers:
     cta: "Check Eligibility"
     cta_url: "https://example.com/offers/balance-transfer"
     disclaimer: "This offer is provided by a SpendSense partner. Terms and conditions apply. Subject to credit approval."
-    persona_tags: ["high_utilization"]
-    signal_tags: ["high_utilization_50", "high_utilization_80", "interest_charges"]
+    persona_tags: ["high_utilization", "debt_consolidator"]
+    signal_tags: ["high_utilization_50", "high_utilization_80", "moderate_utilization_30", "interest_charges", "multiple_cards"]
 
   - id: "offer_debt_consolidation_01"
     title: "Personal Debt Consolidation Loan"
@@ -62,8 +62,64 @@ partner_offers:
     cta: "Get Pre-Qualified"
     cta_url: "https://example.com/offers/debt-consolidation"
     disclaimer: "This offer is provided by a SpendSense partner. APR varies by creditworthiness. Terms and conditions apply."
-    persona_tags: ["high_utilization"]
-    signal_tags: ["high_utilization_80", "interest_charges", "overdue"]
+    persona_tags: ["high_utilization", "debt_consolidator"]
+    signal_tags: ["high_utilization_80", "moderate_utilization_30", "interest_charges", "overdue", "multiple_cards"]
+
+  # DEBT CONSOLIDATOR PERSONA OFFERS
+
+  - id: "offer_balance_transfer_premium"
+    title: "Premium Balance Transfer Card - 0% for 21 Months"
+    provider: "Premier Credit Union"
+    offer_type: "balance_transfer_card"
+    summary: "Extended 21-month 0% APR period perfect for consolidating multiple card balances."
+    benefits:
+      - "0% intro APR on balance transfers for 21 months"
+      - "Balance transfer fee of only 2% (lower than industry average)"
+      - "No annual fee"
+      - "Credit line up to $25,000"
+      - "Free credit score tracking"
+    eligibility_explanation: "Designed for users with 2+ credit cards, moderate utilization (30-70%), and good credit. Requires regular income and responsible payment history."
+    eligibility_rules:
+      min_credit_utilization: 30.0
+      max_credit_utilization: 70.0
+      min_credit_score_estimate: 670
+      required_account_types: ["credit"]
+      min_credit_cards_with_balance: 2
+      required_signals: ["moderate_utilization_30", "interest_charges"]
+      excluded_signals: ["overdue"]
+    cta: "Apply Now"
+    cta_url: "https://example.com/offers/premium-balance-transfer"
+    disclaimer: "This offer is provided by a SpendSense partner. Credit approval required. Terms and conditions apply."
+    persona_tags: ["debt_consolidator"]
+    signal_tags: ["moderate_utilization_30", "interest_charges", "multiple_cards"]
+
+  - id: "offer_fixed_rate_consolidation"
+    title: "Fixed-Rate Debt Consolidation - Rates from 8.99%"
+    provider: "SmartLending Partners"
+    offer_type: "debt_consolidation"
+    summary: "Consolidate multiple credit cards into one affordable fixed monthly payment."
+    benefits:
+      - "Fixed rates starting at 8.99% APR"
+      - "Loan terms from 3-5 years"
+      - "No origination fees"
+      - "No prepayment penalties"
+      - "Flexible payment dates"
+      - "May improve credit score by reducing utilization"
+    eligibility_explanation: "Available to borrowers with 2+ credit cards, moderate utilization, regular income, and no recent delinquencies."
+    eligibility_rules:
+      min_credit_utilization: 30.0
+      max_credit_utilization: 75.0
+      min_monthly_income: 250000  # $2,500 in cents
+      min_credit_score_estimate: 660
+      required_account_types: ["credit"]
+      min_credit_cards_with_balance: 2
+      required_signals: ["moderate_utilization_30", "interest_charges", "stable_income"]
+      excluded_signals: ["overdue"]
+    cta: "Check Your Rate"
+    cta_url: "https://example.com/offers/fixed-rate-consolidation"
+    disclaimer: "This offer is provided by a SpendSense partner. Rates vary by creditworthiness. Soft credit pull won't affect your score. Terms and conditions apply."
+    persona_tags: ["debt_consolidator"]
+    signal_tags: ["moderate_utilization_30", "interest_charges", "multiple_cards", "stable_income"]
 
   # SAVINGS BUILDER PERSONA OFFERS
 

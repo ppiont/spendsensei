@@ -71,9 +71,11 @@ Visit: http://localhost:8000/docs
 ### Frontend
 ```bash
 cd spendsense-frontend
-npm run dev
+bun run dev
 ```
 Visit: http://localhost:5173/
+
+**IMPORTANT:** Always use `bun`/`bunx` instead of `npm`/`npx` for all frontend commands.
 
 ## Important Patterns
 
@@ -85,6 +87,7 @@ Visit: http://localhost:5173/
 - **Error handling** with HTTPException (404, 500)
 
 ### Frontend Patterns
+- **Package manager**: ALWAYS use `bun`/`bunx` instead of `npm`/`npx` for all commands
 - **Svelte 5 runes**: $state, $derived, $effect (not stores!)
 - **Type safety**: Import types from $lib/types
 - **API calls**: Use api.* from $lib/api/client
