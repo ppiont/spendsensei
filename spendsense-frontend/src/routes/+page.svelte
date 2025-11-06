@@ -23,12 +23,6 @@
 				>
 					Transactions
 				</a>
-				<a
-					href="/insights"
-					class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-base font-medium rounded-lg text-foreground bg-card hover:bg-accent transition-colors duration-200 border border-border shadow-sm hover:shadow-md"
-				>
-					Insights
-				</a>
 			</nav>
 		</div>
 
