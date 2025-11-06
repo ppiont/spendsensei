@@ -13,7 +13,6 @@
 	import RecentActivity from '$lib/components/custom/RecentActivity.svelte';
 	import ConsentCTA from '$lib/components/ConsentCTA.svelte';
 	import ConsentManager from '$lib/components/ConsentManager.svelte';
-	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { Info, ExternalLink, CheckCircle, ChevronDown, ChevronUp } from '@lucide/svelte';
 
 	// User selection from global store
@@ -328,14 +327,22 @@
 				</div>
 			</section>
 
-			<!-- SECTION 4: CONSENT MANAGEMENT -->
+			<!-- SECTION 4: RECENT ACTIVITY -->
+			<section class="dashboard-section">
+				<h2 class="section-title">Recent Activity</h2>
+				<div class="section-card">
+					<RecentActivity {transactions} limit={5} />
+				</div>
+			</section>
+
+			<!-- SECTION 5: CONSENT MANAGEMENT -->
 			{#if !consentRequired}
 				<section class="dashboard-section">
 					<ConsentManager userId={currentUserId} />
 				</section>
 			{/if}
 
-			<!-- SECTION 5: YOUR FINANCIAL PERSONALITY -->
+			<!-- SECTION 6: YOUR FINANCIAL PERSONALITY -->
 			{#if !consentRequired && personaType}
 				<section class="dashboard-section">
 					<h2 class="section-title">Your Financial Personality</h2>
@@ -348,7 +355,7 @@
 				</section>
 			{/if}
 
-			<!-- SECTION 6: PARTNER OFFERS -->
+			<!-- SECTION 7: PARTNER OFFERS -->
 			{#if !consentRequired && offers.length > 0}
 				<section class="dashboard-section">
 					<div class="section-header">
@@ -400,14 +407,6 @@
 				</section>
 			{/if}
 
-			<!-- SECTION 7: RECENT ACTIVITY -->
-			<section class="dashboard-section">
-				<h2 class="section-title">Recent Activity</h2>
-				<div class="section-card">
-					<RecentActivity {transactions} limit={5} />
-				</div>
-			</section>
-
 			<!-- SECTION 8: PERSONALIZED EDUCATION -->
 			{#if consentRequired}
 				<section class="dashboard-section">
@@ -433,21 +432,25 @@
 
 			<!-- SECTION 9: DISCLAIMER -->
 			<section class="dashboard-section disclaimer-section">
-				<Alert>
-					<Info class="w-5 h-5" />
-					<AlertDescription>
-						<p class="disclaimer-text">
-							<strong>Educational Content:</strong> This is educational content, not financial advice. Please
-							consult with a qualified financial professional before making financial decisions.
-						</p>
-						{#if offers.length > 0}
-							<p class="disclaimer-text mt-2">
-								<strong>Partner Offers:</strong> Offers are provided by SpendSense partners and are subject
-								to their terms and conditions. Eligibility determinations are estimates based on your financial profile.
+				<div class="disclaimer-card">
+					<div class="disclaimer-content">
+						<div class="disclaimer-icon">
+							<Info class="w-5 h-5 text-blue-600" />
+						</div>
+						<div class="disclaimer-body">
+							<p class="disclaimer-text">
+								<strong>Educational Content:</strong> This is educational content, not financial advice. Please
+								consult with a qualified financial professional before making financial decisions.
 							</p>
-						{/if}
-					</AlertDescription>
-				</Alert>
+							{#if offers.length > 0}
+								<p class="disclaimer-text">
+									<strong>Partner Offers:</strong> Offers are provided by SpendSense partners and are subject
+									to their terms and conditions. Eligibility determinations are estimates based on your financial profile.
+								</p>
+							{/if}
+						</div>
+					</div>
+				</div>
 			</section>
 		{/if}
 	</div>
@@ -862,14 +865,36 @@
 		margin-bottom: 2rem;
 	}
 
-	.disclaimer-text {
-		font-size: 0.875rem;
-		line-height: 1.5;
-		margin: 0;
+	.disclaimer-card {
+		background: white;
+		border: 1px solid #e5e7eb;
+		border-radius: 0.75rem;
+		padding: 1.5rem;
 	}
 
-	.mt-2 {
-		margin-top: 0.5rem;
+	.disclaimer-content {
+		display: flex;
+		gap: 1rem;
+		align-items: flex-start;
+	}
+
+	.disclaimer-icon {
+		flex-shrink: 0;
+		padding-top: 0.125rem;
+	}
+
+	.disclaimer-body {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.disclaimer-text {
+		font-size: 0.875rem;
+		line-height: 1.6;
+		color: #4b5563;
+		margin: 0;
 	}
 
 	/* Responsive */
