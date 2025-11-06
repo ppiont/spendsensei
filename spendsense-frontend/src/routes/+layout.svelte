@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
-	import UserSwitcher from '$lib/components/UserSwitcher.svelte';
+	import Navigation from '$lib/components/Navigation.svelte';
 
 	let { children } = $props();
 </script>
@@ -20,8 +20,8 @@
 	Skip to main content
 </a>
 
-<!-- Global User Switcher (dev mode only) -->
-<UserSwitcher />
+<!-- Global Navigation -->
+<Navigation />
 
 <main id="main-content">
 	{@render children()}

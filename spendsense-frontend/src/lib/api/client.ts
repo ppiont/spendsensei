@@ -141,9 +141,8 @@ export const userAPI = {
    * Update user consent status
    */
   async updateConsent(userId: string, consent: boolean): Promise<User> {
-    const response = await fetchWithTimeout(`${API_BASE_URL}/users/consent`, {
-      method: 'POST',
-      body: JSON.stringify({ user_id: userId, consent })
+    const response = await fetchWithTimeout(`${API_BASE_URL}/users/consent?user_id=${userId}&consent=${consent}`, {
+      method: 'POST'
     });
     return handleResponse<User>(response);
   }

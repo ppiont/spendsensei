@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+<div class="min-h-screen bg-linear-to-br from-background via-background to-muted/20">
 	<div class="container mx-auto px-4 py-16 sm:px-6 lg:px-8">
 		<!-- Hero Section -->
 		<div class="max-w-4xl mx-auto text-center mb-16">

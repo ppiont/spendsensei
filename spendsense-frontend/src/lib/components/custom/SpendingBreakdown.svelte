@@ -216,7 +216,7 @@
 
 	.category-row {
 		display: grid;
-		grid-template-columns: minmax(120px, 1fr) 2fr minmax(180px, auto);
+		grid-template-columns: minmax(120px, 1fr) 2fr 200px;
 		gap: 1rem;
 		align-items: center;
 	}
@@ -257,8 +257,11 @@
 	.percentage {
 		font-size: 0.75rem;
 		color: #6b7280; /* gray-500 */
-		min-width: 32px;
+		font-variant-numeric: tabular-nums;
+		min-width: 40px;
+		width: 40px;
 		text-align: right;
+		flex-shrink: 0;
 	}
 
 	.amount {
@@ -266,20 +269,26 @@
 		font-weight: 600;
 		color: #1f2937; /* gray-800 */
 		font-variant-numeric: tabular-nums;
-		min-width: 80px;
+		min-width: 90px;
+		width: 90px;
 		text-align: right;
+		flex-shrink: 0;
 	}
 
 	.trend {
 		display: flex;
 		align-items: center;
 		gap: 0.25rem;
-		min-width: 52px;
+		min-width: 60px;
+		width: 60px;
+		justify-content: flex-end;
+		flex-shrink: 0;
 	}
 
 	.trend-text {
 		font-size: 0.75rem;
 		font-weight: 500;
+		font-variant-numeric: tabular-nums;
 	}
 
 	/* Responsive */

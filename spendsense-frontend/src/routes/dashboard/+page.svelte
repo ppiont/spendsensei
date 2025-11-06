@@ -11,8 +11,9 @@
 	import CashFlowSummary from '$lib/components/custom/CashFlowSummary.svelte';
 	import PersonaCard from '$lib/components/custom/PersonaCard.svelte';
 	import RecentActivity from '$lib/components/custom/RecentActivity.svelte';
+	import ConsentCTA from '$lib/components/ConsentCTA.svelte';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
-	import { Info, ExternalLink, CheckCircle } from '@lucide/svelte';
+	import { Info, ExternalLink, CheckCircle, ChevronDown, ChevronUp } from '@lucide/svelte';
 
 	// User selection from global store
 	import { selectedUserId } from '$lib/stores/userStore';
@@ -248,25 +249,7 @@
 				</section>
 			{/if}
 
-			<!-- SECTION 5: PERSONALIZED EDUCATION -->
-			{#if !consentRequired && recommendations.length > 0}
-				<section class="dashboard-section">
-					<h2 class="section-title">Personalized Education</h2>
-					<div class="recommendations-grid">
-						{#each recommendations.slice(0, 3) as rec}
-							<RecommendationCard
-								icon="💡"
-								title={rec.content.title}
-								body={rec.content.summary}
-								rationale={rec.rationale.explanation}
-								cta="Learn More"
-							/>
-						{/each}
-					</div>
-				</section>
-			{/if}
-
-			<!-- SECTION 6: PARTNER OFFERS -->
+			<!-- SECTION 5: PARTNER OFFERS -->
 			{#if !consentRequired && offers.length > 0}
 				<section class="dashboard-section">
 					<div class="section-header">
@@ -318,13 +301,36 @@
 				</section>
 			{/if}
 
-			<!-- SECTION 7: RECENT ACTIVITY -->
+			<!-- SECTION 6: RECENT ACTIVITY -->
 			<section class="dashboard-section">
 				<h2 class="section-title">Recent Activity</h2>
 				<div class="section-card">
 					<RecentActivity {transactions} limit={5} />
 				</div>
 			</section>
+
+			<!-- SECTION 7: PERSONALIZED EDUCATION -->
+			{#if consentRequired}
+				<section class="dashboard-section">
+					<h2 class="section-title">Personalized Education</h2>
+					<ConsentCTA userId={currentUserId} />
+				</section>
+			{:else if recommendations.length > 0}
+				<section class="dashboard-section">
+					<h2 class="section-title">Personalized Education</h2>
+					<div class="recommendations-grid">
+						{#each recommendations.slice(0, 3) as rec}
+							<RecommendationCard
+								icon="💡"
+								title={rec.content.title}
+								body={rec.content.summary}
+								rationale={rec.rationale.explanation}
+								cta="Learn More"
+							/>
+						{/each}
+					</div>
+				</section>
+			{/if}
 
 			<!-- SECTION 8: DISCLAIMER -->
 			<section class="dashboard-section disclaimer-section">
