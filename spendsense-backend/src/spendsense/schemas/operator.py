@@ -52,6 +52,7 @@ class ApprovalRequest(BaseModel):
     """Request to approve or flag a recommendation"""
     user_id: str = Field(..., description="User ID")
     recommendation_id: str = Field(..., description="Recommendation or offer ID")
+    recommendation_type: str = Field(..., description="Type: 'education' or 'offer'")
     action: str = Field(..., description="Action: 'approve' or 'flag'")
     reason: Optional[str] = Field(None, description="Reason for flagging (required if action is 'flag')")
 
@@ -61,6 +62,7 @@ class ApprovalRequest(BaseModel):
                 {
                     "user_id": "550e8400-e29b-41d4-a716-446655440000",
                     "recommendation_id": "offer_balance_transfer_01",
+                    "recommendation_type": "offer",
                     "action": "flag",
                     "reason": "User may not qualify based on credit history"
                 }
@@ -74,3 +76,45 @@ class ApprovalResponse(BaseModel):
     status: str = Field(..., description="Action status")
     message: str = Field(..., description="Result message")
     recommendation_id: str = Field(..., description="ID of affected recommendation")
+
+
+class OperatorOverrideResponse(BaseModel):
+    """Response schema for operator override data"""
+    id: str = Field(..., description="Unique override identifier")
+    user_id: str = Field(..., description="User ID the override applies to")
+    recommendation_id: str = Field(..., description="Recommendation or offer ID")
+    recommendation_type: str = Field(..., description="Type of recommendation")
+    action: str = Field(..., description="Action taken (approve or flag)")
+    reason: Optional[str] = Field(None, description="Reason for action")
+    operator_id: str = Field(..., description="Operator who made the override")
+    created_at: str = Field(..., description="ISO 8601 timestamp of override creation")
+
+    @classmethod
+    def from_orm(cls, override):
+        """Convert OperatorOverride ORM model to response schema"""
+        return cls(
+            id=override.id,
+            user_id=override.user_id,
+            recommendation_id=override.recommendation_id,
+            recommendation_type=override.recommendation_type,
+            action=override.action.value if hasattr(override.action, 'value') else override.action,
+            reason=override.reason,
+            operator_id=override.operator_id,
+            created_at=override.created_at.isoformat() + "Z"
+        )
+
+
+class InspectUserResponse(BaseModel):
+    """Comprehensive user inspection data for operator debugging (no consent checks)"""
+    user_id: str = Field(..., description="User ID")
+    user_name: str = Field(..., description="User name")
+    user_email: str = Field(..., description="User email")
+    consent_status: bool = Field(..., description="Whether user has provided consent")
+    persona_type: Optional[str] = Field(None, description="Assigned persona (if consented)")
+    confidence: Optional[float] = Field(None, description="Persona confidence (if consented)")
+    signals_summary: Dict[str, Any] = Field(default_factory=dict, description="Detected behavioral signals")
+    education_recommendations: List[Any] = Field(default_factory=list, description="Education recommendations (if consented)")
+    offer_recommendations: List[Any] = Field(default_factory=list, description="Offer recommendations (if consented)")
+    account_count: int = Field(..., description="Number of connected accounts")
+    transaction_count: int = Field(..., description="Number of transactions in analysis window")
+    window_days: int = Field(..., description="Analysis window in days")

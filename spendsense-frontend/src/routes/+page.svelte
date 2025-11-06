@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+<div class="min-h-screen bg-linear-to-br from-background via-background to-muted/20">
 	<div class="container mx-auto px-4 py-16 sm:px-6 lg:px-8">
 		<!-- Hero Section -->
 		<div class="max-w-4xl mx-auto text-center mb-16">
@@ -22,12 +22,6 @@
 					class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-base font-medium rounded-lg text-foreground bg-card hover:bg-accent transition-colors duration-200 border border-border shadow-sm hover:shadow-md"
 				>
 					Transactions
-				</a>
-				<a
-					href="/insights"
-					class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-base font-medium rounded-lg text-foreground bg-card hover:bg-accent transition-colors duration-200 border border-border shadow-sm hover:shadow-md"
-				>
-					Insights
 				</a>
 			</nav>
 		</div>

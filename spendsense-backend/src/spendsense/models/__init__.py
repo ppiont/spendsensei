@@ -6,6 +6,7 @@ from spendsense.models.transaction import Transaction
 from spendsense.models.persona import Persona, PersonaType
 from spendsense.models.content import Content
 from spendsense.models.feedback import Feedback, FeedbackType
+from spendsense.models.operator_override import OperatorOverride, OverrideAction
 
 __all__ = [
     "User",
@@ -16,4 +17,6 @@ __all__ = [
     "Content",
     "Feedback",
     "FeedbackType",
+    "OperatorOverride",
+    "OverrideAction",
 ]

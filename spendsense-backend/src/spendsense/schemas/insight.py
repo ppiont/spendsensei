@@ -112,6 +112,7 @@ class InsightsResponse(BaseModel):
     education_recommendations: List[RecommendationResponse] = Field(..., description="Educational content recommendations (typically 3)")
     offer_recommendations: List[OfferRecommendationResponse] = Field(default_factory=list, description="Partner offer recommendations (0-3 eligible offers)")
     signals_summary: Dict[str, Any] = Field(default_factory=dict, description="Summary of detected behavioral signals")
+    consent_required: bool = Field(default=False, description="Whether user needs to provide consent to see insights")
     disclaimer: str = Field(default=DISCLAIMER, description="Legal disclaimer for educational content and offers")
 
     model_config = {

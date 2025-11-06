@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from spendsense.database import get_db
 from spendsense.models.user import User
+from spendsense.models.operator_override import OperatorOverride
 from spendsense.schemas.insight import (
     RecommendationResponse,
     OfferRecommendationResponse,
@@ -73,12 +74,16 @@ async def get_user_insights(
                 detail=f"User {user_id} not found"
             )
 
-        # Check user consent before generating recommendations
+        # Check user consent - if not consented, return empty response instead of 403
         if not check_consent(user.consent):
-            logger.warning(f"User {user_id} has not provided consent for recommendations")
-            raise HTTPException(
-                status_code=403,
-                detail="User consent required. Please accept terms before accessing insights."
+            logger.warning(f"User {user_id} has not provided consent - returning empty insights")
+            return InsightsResponse(
+                persona_type="consent_required",
+                confidence=0.0,
+                education_recommendations=[],
+                offer_recommendations=[],
+                signals_summary={},
+                consent_required=True
             )
 
         logger.info(f"Generating insights for user {user_id} with {window}-day window")
@@ -95,15 +100,43 @@ async def get_user_insights(
             f"education={len(result.education_recommendations)}, offers={len(result.offer_recommendations)}"
         )
 
+        # Get operator overrides for this user to filter flagged recommendations
+        overrides_result = await db.execute(
+            select(OperatorOverride)
+            .where(OperatorOverride.user_id == user_id)
+            .where(OperatorOverride.action == "flag")
+        )
+        overrides = overrides_result.scalars().all()
+
+        # Create set of flagged recommendation IDs for efficient lookup
+        flagged_ids = {override.recommendation_id for override in overrides}
+
+        logger.info(f"Found {len(flagged_ids)} flagged recommendations for user {user_id}")
+
+        # Filter out flagged recommendations
+        filtered_education = [
+            rec for rec in result.education_recommendations
+            if rec.content.id not in flagged_ids
+        ]
+
+        filtered_offers = [
+            rec for rec in result.offer_recommendations
+            if rec.offer.id not in flagged_ids
+        ]
+
+        logger.info(
+            f"After filtering: education={len(filtered_education)}, offers={len(filtered_offers)}"
+        )
+
         # Convert to API response schemas
         education_responses = [
             _convert_education_recommendation(rec)
-            for rec in result.education_recommendations
+            for rec in filtered_education
         ]
 
         offer_responses = [
             _convert_offer_recommendation(rec)
-            for rec in result.offer_recommendations
+            for rec in filtered_offers
         ]
 
         return InsightsResponse(
@@ -111,7 +144,8 @@ async def get_user_insights(
             confidence=result.confidence,
             education_recommendations=education_responses,
             offer_recommendations=offer_responses,
-            signals_summary=result.signals_summary
+            signals_summary=result.signals_summary,
+            consent_required=False
         )
 
     except HTTPException:

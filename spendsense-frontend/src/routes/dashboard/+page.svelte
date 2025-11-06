@@ -2,45 +2,64 @@
 	import { onMount } from 'svelte';
 	import { api } from '$lib/api/client';
 	import { formatCurrency } from '$lib/types';
-	import type { Account, Transaction, Recommendation } from '$lib/types';
+	import type { Account, Transaction, Recommendation, OfferRecommendation } from '$lib/types';
+
+	// Components
 	import KpiCard from '$lib/components/custom/KpiCard.svelte';
 	import RecommendationCard from '$lib/components/custom/RecommendationCard.svelte';
-	import PersonaBadge from '$lib/components/custom/PersonaBadge.svelte';
+	import SpendingBreakdown from '$lib/components/custom/SpendingBreakdown.svelte';
+	import CashFlowSummary from '$lib/components/custom/CashFlowSummary.svelte';
+	import PersonaCard from '$lib/components/custom/PersonaCard.svelte';
+	import RecentActivity from '$lib/components/custom/RecentActivity.svelte';
+	import ConsentCTA from '$lib/components/ConsentCTA.svelte';
+	import { Alert, AlertDescription } from '$lib/components/ui/alert';
+	import { Info, ExternalLink, CheckCircle, ChevronDown, ChevronUp } from '@lucide/svelte';
 
-	// Svelte 5 runes for reactive state
+	// User selection from global store
+	import { selectedUserId } from '$lib/stores/userStore';
+	let currentUserId = $state('');
+	selectedUserId.subscribe(value => {
+		currentUserId = value;
+	});
+
+	// State
 	let accounts = $state<Account[]>([]);
 	let transactions = $state<Transaction[]>([]);
 	let recommendations = $state<Recommendation[]>([]);
+	let offers = $state<OfferRecommendation[]>([]);
+	let personaType = $state<string | null>(null);
+	let personaConfidence = $state<number>(0);
+	let personaExplanation = $state<string>('');
+	let keySignals = $state<string[]>([]);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
+	let consentRequired = $state(false);
 
-	// Dev mode user switching (only in development)
-	const isDev = import.meta.env.DEV;
-	let users = $state<Array<{ id: string; name: string }>>([]);
-	let selectedUserId = $state('');
+	// Expandable offer states
+	let expandedOfferIds = $state<Set<string>>(new Set());
+
+	function toggleOfferExpanded(id: string) {
+		if (expandedOfferIds.has(id)) {
+			expandedOfferIds.delete(id);
+		} else {
+			expandedOfferIds.add(id);
+		}
+		expandedOfferIds = expandedOfferIds; // Trigger reactivity
+	}
 
 	// === KPI CALCULATIONS ===
-
-	// 1. Net Worth (Featured KPI)
 	const assets = $derived(
-		accounts
-			.filter((a) => a.type === 'depository')
-			.reduce((sum, a) => sum + a.current_balance, 0)
+		accounts.filter((a) => a.type === 'depository').reduce((sum, a) => sum + a.current_balance, 0)
 	);
 
 	const liabilities = $derived(
-		accounts
-			.filter((a) => a.type === 'credit')
-			.reduce((sum, a) => sum + a.current_balance, 0)
+		accounts.filter((a) => a.type === 'credit').reduce((sum, a) => sum + a.current_balance, 0)
 	);
 
 	const netWorth = $derived(assets - liabilities);
+	const netWorthChangePercent = $derived(1.9); // Placeholder
+	const netWorthChangeDollar = $derived(240); // Placeholder
 
-	// Calculate month-over-month change (placeholder: assume 1.9% change, $240 increase)
-	const netWorthChangePercent = $derived(1.9);
-	const netWorthChangeDollar = $derived(240); // In the future, calculate from historical data
-
-	// 2. Monthly Savings Rate
 	const savingsAccounts = $derived(accounts.filter((a) => a.subtype === 'savings'));
 	const totalSavings = $derived(
 		savingsAccounts.reduce((sum, a) => sum + a.current_balance, 0)
@@ -54,36 +73,24 @@
 		)
 	);
 
-	const monthlyIncome = $derived(
-		Math.abs(incomeTransactions.reduce((sum, t) => sum + t.amount, 0))
-	);
-
+	const monthlyIncome = $derived(Math.abs(incomeTransactions.reduce((sum, t) => sum + t.amount, 0)));
 	const monthlySavingsRate = $derived(
 		monthlyIncome > 0 ? ((totalSavings / monthlyIncome) * 100).toFixed(1) + '%' : '0%'
 	);
 
-	// 3. Credit Health
 	const creditAccounts = $derived(accounts.filter((a) => a.type === 'credit'));
-	const totalCreditUsed = $derived(
-		creditAccounts.reduce((sum, a) => sum + a.current_balance, 0)
-	);
-	const totalCreditLimit = $derived(
-		creditAccounts.reduce((sum, a) => sum + (a.limit || 0), 0)
-	);
-
+	const totalCreditUsed = $derived(creditAccounts.reduce((sum, a) => sum + a.current_balance, 0));
+	const totalCreditLimit = $derived(creditAccounts.reduce((sum, a) => sum + (a.limit || 0), 0));
 	const creditUtilization = $derived(
 		totalCreditLimit > 0 ? ((totalCreditUsed / totalCreditLimit) * 100).toFixed(1) + '%' : '0%'
 	);
-
 	const creditUtilizationValue = $derived(
 		totalCreditLimit > 0 ? (totalCreditUsed / totalCreditLimit) * 100 : 0
 	);
-
 	const creditVariant = $derived<'standard' | 'success' | 'alert'>(
 		creditUtilizationValue < 30 ? 'success' : creditUtilizationValue > 50 ? 'alert' : 'standard'
 	);
 
-	// 4. Emergency Fund
 	const expenseTransactions = $derived(
 		transactions.filter(
 			(t) =>
@@ -92,14 +99,11 @@
 				!t.personal_finance_category_primary.startsWith('TRANSFER')
 		)
 	);
-
 	const monthlyExpenses = $derived(expenseTransactions.reduce((sum, t) => sum + t.amount, 0));
-
 	const emergencyFundMonths = $derived(
 		monthlyExpenses > 0 ? (totalSavings / monthlyExpenses).toFixed(1) + ' months' : '0 months'
 	);
 
-	// 5. Subscriptions
 	const merchantCounts = $derived(() => {
 		const counts = new Map<string, number>();
 		transactions.forEach((t) => {
@@ -115,37 +119,46 @@
 		return Array.from(counts.values()).filter((count) => count >= 2).length;
 	});
 
-	// Persona data for badge
-	const personaData = $derived(
-		recommendations.length > 0
-			? {
-					name: recommendations[0].rationale.persona_type
-						.split('_')
-						.map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-						.join(' '),
-					type: recommendations[0].rationale.persona_type
-				}
-			: null
-	);
-
 	// === DATA FETCHING ===
-
 	async function loadUserData() {
-		if (!selectedUserId) return;
+		if (!currentUserId) return;
 
 		loading = true;
 		error = null;
 
 		try {
-			const [accountsData, transactionsData, insightsData] = await Promise.all([
-				api.accounts.getUserAccounts(selectedUserId),
-				api.transactions.getUserTransactions(selectedUserId, 100, 0),
-				api.insights.getUserInsights(selectedUserId, 30)
+			const [accountsData, transactionsData] = await Promise.all([
+				api.accounts.getUserAccounts(currentUserId),
+				api.transactions.getUserTransactions(currentUserId, 500, 0)
 			]);
 
 			accounts = accountsData;
 			transactions = transactionsData;
-			recommendations = insightsData.education_recommendations.slice(0, 3);
+
+			// Try to fetch insights
+			try {
+				const insightsData = await api.insights.getUserInsights(currentUserId, 30);
+				if (insightsData.consent_required) {
+					consentRequired = true;
+					recommendations = [];
+					offers = [];
+					personaType = null;
+				} else {
+					consentRequired = false;
+					recommendations = insightsData.education_recommendations || [];
+					offers = insightsData.offer_recommendations || [];
+					personaType = insightsData.persona_type;
+					personaConfidence = insightsData.confidence;
+
+					if (recommendations.length > 0) {
+						personaExplanation = recommendations[0].rationale.explanation;
+						keySignals = recommendations[0].rationale.key_signals;
+					}
+				}
+			} catch (err) {
+				console.log('Insights not available:', err);
+				consentRequired = true;
+			}
 		} catch (err: any) {
 			error = err.detail || err.message || 'Failed to load data';
 			console.error('Dashboard error:', err);
@@ -154,73 +167,42 @@
 		}
 	}
 
-	async function loadUsers() {
-		try {
-			const data = await api.users.getUsers();
-			users = data.map((u) => ({ id: u.id, name: u.name }));
-			if (users.length > 0 && !selectedUserId) {
-				selectedUserId = users[0].id;
-			}
-		} catch (err: any) {
-			console.error('Error loading users:', err);
-		}
-	}
-
-	onMount(async () => {
-		await loadUsers();
-		if (selectedUserId) {
+	onMount(() => {
+		if (currentUserId) {
 			loadUserData();
 		}
 	});
 
-	// Reload data when user changes (dev mode only)
 	$effect(() => {
-		if (selectedUserId) {
+		if (currentUserId) {
 			loadUserData();
 		}
 	});
 </script>
 
-<div class="min-h-screen bg-gray-50">
-	<div class="container mx-auto px-6 py-6 sm:px-8 lg:px-10 max-w-7xl">
+<div class="dashboard-page">
+	<div class="dashboard-container">
 		{#if loading}
-			<div class="flex items-center justify-center py-16">
-				<div class="text-center space-y-3">
-					<div
-						class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"
-					></div>
-					<p class="text-muted-foreground">Loading financial data...</p>
-				</div>
+			<div class="loading-state">
+				<div class="spinner"></div>
+				<p>Loading your financial data...</p>
 			</div>
 		{:else if error}
-			<div class="bg-brand-coral/10 border border-brand-coral/30 rounded-lg p-6 text-center">
-				<strong class="text-brand-coral block mb-2">Error:</strong>
-				<p class="text-brand-coral/90 mb-4">{error}</p>
-				<button
-					onclick={() => loadUserData()}
-					class="px-4 py-2 bg-brand-coral text-white rounded-lg hover:opacity-90 transition-opacity"
-				>
-					Retry
-				</button>
+			<div class="error-state">
+				<Alert variant="destructive">
+					<AlertDescription>
+						<strong>Error:</strong> {error}
+						<button onclick={() => loadUserData()} class="retry-button">Retry</button>
+					</AlertDescription>
+				</Alert>
 			</div>
 		{:else}
-			<!-- Direction 6 Layout: Clean Top Bar + Metrics Grid + Recommendations -->
-
-			<!-- Top Bar: Persona Badge (left) + View All Insights button (right) -->
-			{#if personaData}
-				<div class="bg-white rounded-xl p-6 mb-6 shadow-card flex items-center justify-between">
-					<PersonaBadge personaName={personaData.name} personaType={personaData.type} />
-					<a href="/insights" class="btn-brand px-5 py-2 rounded-lg text-sm font-medium text-white transition-all hover:shadow-soft">
-						View All Insights
-					</a>
-				</div>
-			{/if}
-
-			<!-- Metrics Grid: Featured KPI (2 cols) + 4 supporting KPIs -->
-			<section class="mb-12">
-				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-					<!-- Featured KPI: Net Worth (spans 2 columns) -->
-					<div class="col-span-1 md:col-span-2">
+			<!-- SECTION 1: FINANCIAL SNAPSHOT -->
+			<section class="dashboard-section">
+				<h2 class="section-title">Financial Snapshot</h2>
+				<div class="kpi-grid">
+					<!-- Net Worth (Featured) -->
+					<div class="featured-kpi">
 						<KpiCard
 							variant="featured"
 							label="NET WORTH"
@@ -232,22 +214,112 @@
 
 					<!-- Supporting KPIs -->
 					<KpiCard label="MONTHLY SAVINGS" value={monthlySavingsRate} />
-
 					<KpiCard variant={creditVariant} label="CREDIT HEALTH" value={creditUtilization} />
-
 					<KpiCard label="EMERGENCY FUND" value={emergencyFundMonths} />
-
 					<KpiCard label="SUBSCRIPTIONS" value={subscriptionCount().toString()} />
 				</div>
 			</section>
 
-			<!-- Recommendations Section: 3-column grid -->
-			<section class="bg-white rounded-xl p-8 shadow-card">
-				<h2 class="text-2xl font-semibold text-gray-800 mb-6">Personalized Recommendations</h2>
+			<!-- SECTION 2: SPENDING INSIGHTS -->
+			<section class="dashboard-section">
+				<h2 class="section-title">Spending Insights</h2>
+				<div class="section-card">
+					<SpendingBreakdown {transactions} window={30} />
+				</div>
+			</section>
 
-				{#if recommendations.length > 0}
-					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-						{#each recommendations as rec}
+			<!-- SECTION 3: CASH FLOW -->
+			<section class="dashboard-section">
+				<h2 class="section-title">Cash Flow</h2>
+				<div class="section-card">
+					<CashFlowSummary {transactions} window={30} />
+				</div>
+			</section>
+
+			<!-- SECTION 4: YOUR FINANCIAL PERSONALITY -->
+			{#if !consentRequired && personaType}
+				<section class="dashboard-section">
+					<h2 class="section-title">Your Financial Personality</h2>
+					<PersonaCard
+						{personaType}
+						confidence={personaConfidence}
+						explanation={personaExplanation}
+						{keySignals}
+					/>
+				</section>
+			{/if}
+
+			<!-- SECTION 5: PARTNER OFFERS -->
+			{#if !consentRequired && offers.length > 0}
+				<section class="dashboard-section">
+					<div class="section-header">
+						<h2 class="section-title">Partner Offers</h2>
+						<span class="offers-badge">{offers.length} {offers.length === 1 ? 'Offer' : 'Offers'} Available</span>
+					</div>
+					<div class="offers-grid">
+						{#each offers as offerRec}
+							{@const offer = offerRec.offer}
+							{@const isExpanded = expandedOfferIds.has(offer.id)}
+							<div class="offer-card">
+								<div class="offer-header">
+									<div class="offer-title-section">
+										<h3 class="offer-title">{offer.title}</h3>
+										<p class="offer-provider">{offer.provider}</p>
+									</div>
+									<CheckCircle class="w-5 h-5 text-brand-green" />
+								</div>
+								<p class="offer-summary">{offer.summary}</p>
+
+								<div class="offer-benefits">
+									<h4 class="benefits-heading">Key Benefits:</h4>
+									<ul class="benefits-list">
+										{#each offer.benefits as benefit}
+											<li><span class="check-icon">✓</span> {benefit}</li>
+										{/each}
+									</ul>
+								</div>
+
+								<button onclick={() => toggleOfferExpanded(offer.id)} class="eligibility-button">
+									<span>Eligibility</span>
+									{#if isExpanded}<ChevronUp class="w-4 h-4" />{:else}<ChevronDown class="w-4 h-4" />{/if}
+								</button>
+
+								{#if isExpanded}
+									<div class="eligibility-content">
+										<p>{offer.eligibility_explanation}</p>
+									</div>
+								{/if}
+
+								<a href={offer.cta_url} target="_blank" rel="noopener noreferrer" class="offer-cta">
+									{offer.cta} <ExternalLink class="w-4 h-4" />
+								</a>
+
+								<p class="offer-disclaimer">{offer.disclaimer}</p>
+							</div>
+						{/each}
+					</div>
+				</section>
+			{/if}
+
+			<!-- SECTION 6: RECENT ACTIVITY -->
+			<section class="dashboard-section">
+				<h2 class="section-title">Recent Activity</h2>
+				<div class="section-card">
+					<RecentActivity {transactions} limit={5} />
+				</div>
+			</section>
+
+			<!-- SECTION 7: PERSONALIZED EDUCATION -->
+			{#if consentRequired}
+				<section class="dashboard-section">
+					<h2 class="section-title">Personalized Education</h2>
+					<ConsentCTA userId={currentUserId} />
+				</section>
+			{:else if recommendations.length > 0}
+				<section class="dashboard-section">
+					<h2 class="section-title">Personalized Education</h2>
+					<div class="recommendations-grid">
+						{#each recommendations.slice(0, 3) as rec}
 							<RecommendationCard
 								icon="💡"
 								title={rec.content.title}
@@ -257,29 +329,321 @@
 							/>
 						{/each}
 					</div>
-				{:else}
-					<div class="text-center py-8 text-gray-600">
-						<p>No recommendations available at this time.</p>
-					</div>
-				{/if}
-			</section>
-
-			<!-- Dev-only user switcher (bottom of page) -->
-			{#if isDev && users.length > 0}
-				<div class="mt-8 p-4 bg-gray-800 text-white rounded-lg">
-					<div class="flex items-center justify-between">
-						<span class="text-xs uppercase tracking-wider font-semibold opacity-75">Dev Mode: Switch User</span>
-						<select
-							bind:value={selectedUserId}
-							class="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-						>
-							{#each users as user}
-								<option value={user.id}>{user.name}</option>
-							{/each}
-						</select>
-					</div>
-				</div>
+				</section>
 			{/if}
+
+			<!-- SECTION 8: DISCLAIMER -->
+			<section class="dashboard-section disclaimer-section">
+				<Alert>
+					<Info class="w-5 h-5" />
+					<AlertDescription>
+						<p class="disclaimer-text">
+							<strong>Educational Content:</strong> This is educational content, not financial advice. Please
+							consult with a qualified financial professional before making financial decisions.
+						</p>
+						{#if offers.length > 0}
+							<p class="disclaimer-text mt-2">
+								<strong>Partner Offers:</strong> Offers are provided by SpendSense partners and are subject
+								to their terms and conditions. Eligibility determinations are estimates based on your financial profile.
+							</p>
+						{/if}
+					</AlertDescription>
+				</Alert>
+			</section>
 		{/if}
 	</div>
 </div>
+
+<style>
+	.dashboard-page {
+		min-height: 100vh;
+		background-color: #f9fafb; /* gray-50 */
+	}
+
+	.dashboard-container {
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 2rem 1.5rem;
+	}
+
+	.loading-state {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 4rem;
+		gap: 1rem;
+	}
+
+	.spinner {
+		width: 3rem;
+		height: 3rem;
+		border: 4px solid #e5e7eb;
+		border-top-color: #3b82f6;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+	}
+
+	@keyframes spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
+	.error-state {
+		padding: 2rem;
+	}
+
+	.retry-button {
+		margin-left: 1rem;
+		padding: 0.5rem 1rem;
+		background-color: #3b82f6;
+		color: white;
+		border: none;
+		border-radius: 0.375rem;
+		cursor: pointer;
+	}
+
+	.dashboard-section {
+		margin-bottom: 3rem;
+	}
+
+	.section-title {
+		font-size: 1.5rem;
+		font-weight: 600;
+		color: #1f2937;
+		margin-bottom: 1.5rem;
+	}
+
+	.section-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 1.5rem;
+	}
+
+	.offers-badge {
+		padding: 0.5rem 1rem;
+		background-color: #d1fae5;
+		color: #065f46;
+		font-size: 0.875rem;
+		font-weight: 600;
+		border-radius: 9999px;
+	}
+
+	.section-card {
+		background: white;
+		border-radius: 0.75rem;
+		padding: 2rem;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	}
+
+	.kpi-grid {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: 1.5rem;
+	}
+
+	.featured-kpi {
+		grid-column: span 2;
+	}
+
+	.recommendations-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1.5rem;
+	}
+
+	.offers-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1.5rem;
+	}
+
+	.offer-card {
+		background: white;
+		border: 2px solid #d1fae5;
+		border-radius: 0.75rem;
+		padding: 1.5rem;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+		transition: border-color 0.15s ease;
+	}
+
+	.offer-card:hover {
+		border-color: #10b981;
+	}
+
+	.offer-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		margin-bottom: 1rem;
+	}
+
+	.offer-title-section {
+		flex: 1;
+	}
+
+	.offer-title {
+		font-size: 1.125rem;
+		font-weight: 600;
+		color: #1f2937;
+		margin: 0 0 0.25rem 0;
+	}
+
+	.offer-provider {
+		font-size: 0.875rem;
+		color: #6b7280;
+		margin: 0;
+	}
+
+	.offer-summary {
+		font-size: 0.875rem;
+		color: #374151;
+		margin: 0 0 1rem 0;
+		line-height: 1.5;
+	}
+
+	.offer-benefits {
+		margin-bottom: 1rem;
+	}
+
+	.benefits-heading {
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: #1f2937;
+		margin: 0 0 0.5rem 0;
+	}
+
+	.benefits-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.benefits-list li {
+		font-size: 0.875rem;
+		color: #374151;
+		display: flex;
+		align-items: flex-start;
+		gap: 0.5rem;
+	}
+
+	.check-icon {
+		color: #10b981;
+		font-weight: bold;
+		flex-shrink: 0;
+	}
+
+	.eligibility-button {
+		width: 100%;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.75rem;
+		background-color: #f9fafb;
+		border: 1px solid #e5e7eb;
+		border-radius: 0.5rem;
+		cursor: pointer;
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: #374151;
+		margin-bottom: 1rem;
+		transition: background-color 0.15s ease;
+	}
+
+	.eligibility-button:hover {
+		background-color: #f3f4f6;
+	}
+
+	.eligibility-content {
+		padding: 0.75rem 1rem;
+		background-color: #eff6ff;
+		border-radius: 0.5rem;
+		margin-bottom: 1rem;
+	}
+
+	.eligibility-content p {
+		font-size: 0.875rem;
+		color: #374151;
+		line-height: 1.5;
+		margin: 0;
+	}
+
+	.offer-cta {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		width: 100%;
+		padding: 0.75rem;
+		background-color: #10b981;
+		color: white;
+		border-radius: 0.5rem;
+		text-decoration: none;
+		font-weight: 500;
+		font-size: 0.875rem;
+		transition: background-color 0.15s ease;
+		margin-bottom: 0.75rem;
+	}
+
+	.offer-cta:hover {
+		background-color: #059669;
+	}
+
+	.offer-disclaimer {
+		font-size: 0.75rem;
+		color: #6b7280;
+		line-height: 1.4;
+		margin: 0;
+	}
+
+	.disclaimer-section {
+		margin-bottom: 2rem;
+	}
+
+	.disclaimer-text {
+		font-size: 0.875rem;
+		line-height: 1.5;
+		margin: 0;
+	}
+
+	.mt-2 {
+		margin-top: 0.5rem;
+	}
+
+	/* Responsive */
+	@media (max-width: 1024px) {
+		.kpi-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+
+		.recommendations-grid,
+		.offers-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	@media (max-width: 768px) {
+		.dashboard-container {
+			padding: 1.5rem 1rem;
+		}
+
+		.kpi-grid,
+		.recommendations-grid,
+		.offers-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.featured-kpi {
+			grid-column: span 1;
+		}
+
+		.section-card {
+			padding: 1.5rem;
+		}
+	}
+</style>

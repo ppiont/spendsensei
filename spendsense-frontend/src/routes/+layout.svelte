@@ -1,6 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
+	import Navigation from '$lib/components/Navigation.svelte';
 
 	let { children } = $props();
 </script>
@@ -18,6 +19,9 @@
 >
 	Skip to main content
 </a>
+
+<!-- Global Navigation -->
+<Navigation />
 
 <main id="main-content">
 	{@render children()}
