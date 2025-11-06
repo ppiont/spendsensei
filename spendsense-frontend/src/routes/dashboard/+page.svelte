@@ -57,16 +57,27 @@
 	);
 
 	const netWorth = $derived(assets - liabilities);
-	const netWorthChangePercent = $derived(1.9); // Placeholder
-	const netWorthChangeDollar = $derived(240); // Placeholder
 
 	const savingsAccounts = $derived(accounts.filter((a) => a.subtype === 'savings'));
 	const totalSavings = $derived(
 		savingsAccounts.reduce((sum, a) => sum + a.current_balance, 0)
 	);
 
+	// Filter transactions to last 30 days
+	const recentTransactions = $derived(() => {
+		const now = new Date();
+		const windowDate = new Date(now);
+		windowDate.setDate(windowDate.getDate() - 30);
+		windowDate.setHours(0, 0, 0, 0);
+
+		return transactions.filter((t) => {
+			const txDate = new Date(t.date);
+			return txDate >= windowDate;
+		});
+	});
+
 	const incomeTransactions = $derived(
-		transactions.filter(
+		recentTransactions().filter(
 			(t) =>
 				t.personal_finance_category_primary === 'INCOME' ||
 				t.personal_finance_category_primary.startsWith('INCOME')
@@ -74,9 +85,6 @@
 	);
 
 	const monthlyIncome = $derived(Math.abs(incomeTransactions.reduce((sum, t) => sum + t.amount, 0)));
-	const monthlySavingsRate = $derived(
-		monthlyIncome > 0 ? ((totalSavings / monthlyIncome) * 100).toFixed(1) + '%' : '0%'
-	);
 
 	const creditAccounts = $derived(accounts.filter((a) => a.type === 'credit'));
 	const totalCreditUsed = $derived(creditAccounts.reduce((sum, a) => sum + a.current_balance, 0));
@@ -92,7 +100,7 @@
 	);
 
 	const expenseTransactions = $derived(
-		transactions.filter(
+		recentTransactions().filter(
 			(t) =>
 				t.amount > 0 &&
 				!t.personal_finance_category_primary.startsWith('INCOME') &&
@@ -100,6 +108,20 @@
 		)
 	);
 	const monthlyExpenses = $derived(expenseTransactions.reduce((sum, t) => sum + t.amount, 0));
+
+	// Calculate actual monthly savings rate (income - expenses) / income
+	const monthlySavingsRate = $derived(
+		monthlyIncome > 0 ? (((monthlyIncome - monthlyExpenses) / monthlyIncome) * 100).toFixed(1) + '%' : '0%'
+	);
+
+	// Calculate net worth change over last 30 days
+	const netWorthChange = $derived(monthlyIncome - monthlyExpenses);
+	const netWorth30DaysAgo = $derived(netWorth - netWorthChange);
+	const netWorthChangeDollar = $derived(netWorthChange);
+	const netWorthChangePercent = $derived(
+		netWorth30DaysAgo !== 0 ? parseFloat(((netWorthChange / Math.abs(netWorth30DaysAgo)) * 100).toFixed(1)) : 0
+	);
+
 	const emergencyFundMonths = $derived(
 		monthlyExpenses > 0 ? (totalSavings / monthlyExpenses).toFixed(1) + ' months' : '0 months'
 	);

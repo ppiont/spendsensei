@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { formatCurrency } from '$lib/types';
 	import type { Transaction } from '$lib/types';
+	import CashFlowChart from './CashFlowChart.svelte';
 
 	// Props
 	let { transactions, window = 30 } = $props<{
@@ -9,86 +10,36 @@
 	}>();
 
 	// Calculate current period cash flow
-	const currentCashFlow = $derived(() => {
-		const windowDate = new Date();
+	const currentCashFlow = $derived.by(() => {
+		// Create cutoff date (start of day, X days ago)
+		const now = new Date();
+		const windowDate = new Date(now);
 		windowDate.setDate(windowDate.getDate() - window);
+		// Set to start of day to include full 30 days
+		windowDate.setHours(0, 0, 0, 0);
 
-		const periodTransactions = transactions.filter((t) => new Date(t.date) >= windowDate);
+		// Filter transactions within window
+		const periodTransactions = transactions.filter((t: Transaction) => {
+			const txDate = new Date(t.date);
+			return txDate >= windowDate;
+		});
 
 		const income = periodTransactions
-			.filter((t) => t.amount < 0)
-			.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+			.filter((t: Transaction) => t.amount < 0)
+			.reduce((sum: number, t: Transaction) => sum + Math.abs(t.amount), 0);
 
 		const expenses = periodTransactions
-			.filter((t) => t.amount > 0)
-			.reduce((sum, t) => sum + t.amount, 0);
+			.filter((t: Transaction) => t.amount > 0)
+			.reduce((sum: number, t: Transaction) => sum + t.amount, 0);
 
 		const net = income - expenses;
 
 		return { income, expenses, net };
 	});
 
-	// Calculate last 6 months trend for sparkline
-	const monthlyTrend = $derived(() => {
-		const months: number[] = [];
-
-		for (let i = 5; i >= 0; i--) {
-			const endDate = new Date();
-			endDate.setMonth(endDate.getMonth() - i);
-			endDate.setDate(1);
-			const startDate = new Date(endDate);
-			startDate.setMonth(startDate.getMonth() - 1);
-
-			const monthTransactions = transactions.filter((t) => {
-				const tDate = new Date(t.date);
-				return tDate >= startDate && tDate < endDate;
-			});
-
-			const income = monthTransactions
-				.filter((t) => t.amount < 0)
-				.reduce((sum, t) => sum + Math.abs(t.amount), 0);
-
-			const expenses = monthTransactions
-				.filter((t) => t.amount > 0)
-				.reduce((sum, t) => sum + t.amount, 0);
-
-			months.push(income - expenses);
-		}
-
-		return months;
-	});
-
-	// Generate SVG sparkline path
-	const sparklinePath = $derived(() => {
-		const data = monthlyTrend();
-		if (data.length === 0) return '';
-
-		const width = 200;
-		const height = 40;
-		const padding = 4;
-
-		const max = Math.max(...data.map(Math.abs));
-		const min = Math.min(...data);
-
-		if (max === 0) {
-			// Flat line at middle
-			return `M 0,${height / 2} L ${width},${height / 2}`;
-		}
-
-		const points = data.map((value, index) => {
-			const x = (index / (data.length - 1)) * width;
-			// Normalize to 0-1 range, then scale to height with padding
-			const normalized = (value - min) / (max - min || 1);
-			const y = height - padding - normalized * (height - padding * 2);
-			return `${x.toFixed(2)},${y.toFixed(2)}`;
-		});
-
-		return `M ${points.join(' L ')}`;
-	});
-
 	// Get bar width percentages (max 100%)
-	const barWidths = $derived(() => {
-		const { income, expenses } = currentCashFlow();
+	const barWidths = $derived.by(() => {
+		const { income, expenses } = currentCashFlow;
 		const max = Math.max(income, expenses);
 
 		return {
@@ -103,65 +54,48 @@
 	<div class="metrics-grid">
 		<!-- Income -->
 		<div class="metric-card income-card">
-			<div class="metric-label">Income</div>
-			<div class="metric-value income-value">{formatCurrency(currentCashFlow().income)}</div>
+			<div class="metric-label">Income (Last 30 Days)</div>
+			<div class="metric-value income-value">{formatCurrency(currentCashFlow.income)}</div>
 			<div class="metric-bar">
 				<div class="bar-background">
-					<div class="bar-fill income-bar" style="width: {barWidths().income}%"></div>
+					<div class="bar-fill income-bar" style="width: {barWidths.income}%"></div>
 				</div>
 			</div>
 		</div>
 
 		<!-- Expenses -->
 		<div class="metric-card expenses-card">
-			<div class="metric-label">Expenses</div>
-			<div class="metric-value expenses-value">{formatCurrency(currentCashFlow().expenses)}</div>
+			<div class="metric-label">Expenses (Last 30 Days)</div>
+			<div class="metric-value expenses-value">{formatCurrency(currentCashFlow.expenses)}</div>
 			<div class="metric-bar">
 				<div class="bar-background">
-					<div class="bar-fill expenses-bar" style="width: {barWidths().expenses}%"></div>
+					<div class="bar-fill expenses-bar" style="width: {barWidths.expenses}%"></div>
 				</div>
 			</div>
 		</div>
 
 		<!-- Net Cash Flow -->
 		<div class="metric-card net-card">
-			<div class="metric-label">Net Cash Flow</div>
-			<div class="metric-value net-value" class:positive={currentCashFlow().net > 0} class:negative={currentCashFlow().net < 0}>
-				{currentCashFlow().net > 0 ? '+' : ''}{formatCurrency(currentCashFlow().net)}
+			<div class="metric-label">Net Cash Flow (Last 30 Days)</div>
+			<div class="metric-value net-value" class:positive={currentCashFlow.net > 0} class:negative={currentCashFlow.net < 0}>
+				{currentCashFlow.net > 0 ? '+' : ''}{formatCurrency(currentCashFlow.net)}
 			</div>
 			<div class="metric-bar">
 				<div class="bar-background">
 					<div
 						class="bar-fill net-bar"
-						class:positive={currentCashFlow().net > 0}
-						class:negative={currentCashFlow().net < 0}
-						style="width: {Math.min(100, Math.abs(currentCashFlow().net) / Math.max(currentCashFlow().income, currentCashFlow().expenses) * 100)}%"
+						class:positive={currentCashFlow.net > 0}
+						class:negative={currentCashFlow.net < 0}
+						style="width: {Math.min(100, Math.abs(currentCashFlow.net) / Math.max(currentCashFlow.income, currentCashFlow.expenses) * 100)}%"
 					></div>
 				</div>
 			</div>
 		</div>
 	</div>
 
-	<!-- Sparkline trend -->
-	<div class="trend-section">
-		<div class="trend-header">
-			<span class="trend-label">Last 6 Months Trend</span>
-		</div>
-		<div class="sparkline-container">
-			<svg width="200" height="40" class="sparkline">
-				<!-- Zero line -->
-				<line x1="0" y1="20" x2="200" y2="20" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="2,2" />
-				<!-- Path -->
-				<path
-					d={sparklinePath()}
-					fill="none"
-					stroke="#3b82f6"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-				/>
-			</svg>
-		</div>
+	<!-- Interactive Cash Flow Chart -->
+	<div class="chart-section">
+		<CashFlowChart {transactions} />
 	</div>
 </div>
 
@@ -255,30 +189,10 @@
 		background-color: #f87171; /* brand-coral */
 	}
 
-	.trend-section {
+	.chart-section {
 		padding-top: 1.5rem;
+		margin-top: 1.5rem;
 		border-top: 1px solid #e5e7eb; /* gray-200 */
-	}
-
-	.trend-header {
-		margin-bottom: 0.75rem;
-	}
-
-	.trend-label {
-		font-size: 0.75rem;
-		font-weight: 500;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		color: #6b7280; /* gray-500 */
-	}
-
-	.sparkline-container {
-		display: flex;
-		justify-content: center;
-	}
-
-	.sparkline {
-		display: block;
 	}
 
 	/* Responsive */
