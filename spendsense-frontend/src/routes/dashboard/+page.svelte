@@ -12,6 +12,7 @@
 	import PersonaCard from '$lib/components/custom/PersonaCard.svelte';
 	import RecentActivity from '$lib/components/custom/RecentActivity.svelte';
 	import ConsentCTA from '$lib/components/ConsentCTA.svelte';
+	import ConsentManager from '$lib/components/ConsentManager.svelte';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { Info, ExternalLink, CheckCircle, ChevronDown, ChevronUp } from '@lucide/svelte';
 
@@ -327,7 +328,14 @@
 				</div>
 			</section>
 
-			<!-- SECTION 4: YOUR FINANCIAL PERSONALITY -->
+			<!-- SECTION 4: CONSENT MANAGEMENT -->
+			{#if !consentRequired}
+				<section class="dashboard-section">
+					<ConsentManager userId={currentUserId} />
+				</section>
+			{/if}
+
+			<!-- SECTION 5: YOUR FINANCIAL PERSONALITY -->
 			{#if !consentRequired && personaType}
 				<section class="dashboard-section">
 					<h2 class="section-title">Your Financial Personality</h2>
@@ -340,7 +348,7 @@
 				</section>
 			{/if}
 
-			<!-- SECTION 5: PARTNER OFFERS -->
+			<!-- SECTION 6: PARTNER OFFERS -->
 			{#if !consentRequired && offers.length > 0}
 				<section class="dashboard-section">
 					<div class="section-header">
@@ -392,7 +400,7 @@
 				</section>
 			{/if}
 
-			<!-- SECTION 6: RECENT ACTIVITY -->
+			<!-- SECTION 7: RECENT ACTIVITY -->
 			<section class="dashboard-section">
 				<h2 class="section-title">Recent Activity</h2>
 				<div class="section-card">
@@ -400,7 +408,7 @@
 				</div>
 			</section>
 
-			<!-- SECTION 7: PERSONALIZED EDUCATION -->
+			<!-- SECTION 8: PERSONALIZED EDUCATION -->
 			{#if consentRequired}
 				<section class="dashboard-section">
 					<h2 class="section-title">Personalized Education</h2>
@@ -423,7 +431,7 @@
 				</section>
 			{/if}
 
-			<!-- SECTION 8: DISCLAIMER -->
+			<!-- SECTION 9: DISCLAIMER -->
 			<section class="dashboard-section disclaimer-section">
 				<Alert>
 					<Info class="w-5 h-5" />
