@@ -37,6 +37,9 @@
 	let selectedCategory = $state('all');
 	let selectedDateRange = $state<30 | 90 | 180 | 'all'>('all');
 
+	// Spending categories expansion state
+	let showAllCategories = $state(false);
+
 	// Debounced search
 	let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 	let debouncedSearch = $state('');
@@ -97,7 +100,30 @@
 			.sort((a, b) => b.amount - a.amount);
 
 		const total = sorted.reduce((sum, item) => sum + item.amount, 0);
-		return sorted.map((item) => ({ ...item, percentage: (item.amount / total) * 100 }));
+
+		// Calculate percentages with proper rounding to ensure they add up to 100%
+		const items = sorted.map((item) => ({
+			...item,
+			exactPercentage: (item.amount / total) * 100
+		}));
+
+		// Use largest remainder method to distribute rounding error
+		let remainingPercentage = 100;
+		const result = items.map((item, index) => {
+			const floored = Math.floor(item.exactPercentage);
+			const remainder = item.exactPercentage - floored;
+			return { ...item, floored, remainder, percentage: floored };
+		});
+
+		// Distribute remaining percentage points to items with largest remainders
+		const toDistribute = 100 - result.reduce((sum, item) => sum + item.percentage, 0);
+		result
+			.sort((a, b) => b.remainder - a.remainder)
+			.slice(0, toDistribute)
+			.forEach(item => item.percentage += 1);
+
+		// Sort back by amount and return
+		return result.sort((a, b) => b.amount - a.amount);
 	});
 
 	// Get badge variant for category
@@ -207,10 +233,16 @@
 			<div class="space-y-6">
 				<!-- Category Spending Summary Card -->
 				{#if categoryBreakdown().length > 0}
+					{@const visibleCategories = showAllCategories ? categoryBreakdown() : categoryBreakdown().slice(0, 5)}
+					{@const hiddenCategories = categoryBreakdown().slice(5)}
+					{@const hiddenCount = hiddenCategories.length}
+					{@const hiddenTotal = hiddenCategories.reduce((sum, cat) => sum + cat.amount, 0)}
+					{@const hiddenPercentage = hiddenCategories.reduce((sum, cat) => sum + cat.percentage, 0)}
+
 					<section class="bg-white rounded-xl p-8 shadow-card">
 						<h2 class="text-xl font-semibold text-gray-800 mb-6">Spending by Category</h2>
 						<div class="spending-categories-list">
-							{#each categoryBreakdown().slice(0, 5) as { category, amount, percentage }}
+							{#each visibleCategories as { category, amount, percentage }}
 								<div class="spending-category-row">
 									<!-- Category name -->
 									<div class="spending-category-name">
@@ -232,6 +264,23 @@
 								</div>
 							{/each}
 						</div>
+
+						<!-- Show More / Show Less Button -->
+						{#if hiddenCount > 0}
+							<button
+								onclick={() => showAllCategories = !showAllCategories}
+								class="spending-expand-button"
+							>
+								{#if showAllCategories}
+									<span class="expand-icon">−</span>
+									<span>Show Less</span>
+								{:else}
+									<span class="expand-icon">+</span>
+									<span>Show {hiddenCount} more {hiddenCount === 1 ? 'category' : 'categories'}</span>
+									<span class="expand-meta">({hiddenPercentage.toFixed(0)}% of spending)</span>
+								{/if}
+							</button>
+						{/if}
 					</section>
 				{/if}
 
@@ -539,6 +588,41 @@
 		font-variant-numeric: tabular-nums;
 		min-width: 80px;
 		text-align: right;
+	}
+
+	/* Expand/Collapse Button */
+	.spending-expand-button {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-top: 1.5rem;
+		padding: 0.75rem 1rem;
+		width: 100%;
+		background-color: #f9fafb; /* gray-50 */
+		border: 1px solid #e5e7eb; /* gray-200 */
+		border-radius: 0.5rem;
+		color: #374151; /* gray-700 */
+		font-size: 0.875rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.15s ease;
+		justify-content: center;
+	}
+
+	.spending-expand-button:hover {
+		background-color: #f3f4f6; /* gray-100 */
+		border-color: #d1d5db; /* gray-300 */
+	}
+
+	.expand-icon {
+		font-size: 1.125rem;
+		font-weight: 600;
+		color: #3b82f6; /* brand-blue */
+	}
+
+	.expand-meta {
+		color: #6b7280; /* gray-500 */
+		font-weight: 400;
 	}
 
 	/* Responsive */
