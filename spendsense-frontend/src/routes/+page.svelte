@@ -1,3 +1,7 @@
+<script lang="ts">
+	import { BarChart3, Lightbulb, GraduationCap } from '@lucide/svelte';
+</script>
+
 <div class="landing-page">
 	<!-- Decorative Background Blob -->
 	<svg class="background-blob" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
@@ -33,15 +37,15 @@
 			<!-- Feature Pills -->
 			<div class="feature-pills">
 				<div class="feature-pill">
-					<span class="feature-icon">📊</span>
+					<BarChart3 class="feature-icon" />
 					<span class="feature-label">Track</span>
 				</div>
 				<div class="feature-pill">
-					<span class="feature-icon">🎯</span>
+					<Lightbulb class="feature-icon" />
 					<span class="feature-label">Insights</span>
 				</div>
 				<div class="feature-pill">
-					<span class="feature-icon">📈</span>
+					<GraduationCap class="feature-icon" />
 					<span class="feature-label">Learn</span>
 				</div>
 			</div>
@@ -177,8 +181,11 @@
 		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
 	}
 
-	.feature-icon {
-		font-size: 1.25rem;
+	:global(.feature-icon) {
+		width: 1.25rem;
+		height: 1.25rem;
+		color: #3b82f6;
+		flex-shrink: 0;
 	}
 
 	.feature-label {
