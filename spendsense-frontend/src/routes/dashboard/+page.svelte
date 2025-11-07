@@ -304,11 +304,25 @@
 									{:else}
 										<!-- Depository Account Display -->
 										<div class="account-balance">
-											<div class="balance-label">Available Balance</div>
+											<div class="balance-label">Current Balance</div>
 											<div class="balance-value">
-												{formatCurrency(account.available_balance || account.current_balance)}
+												{formatCurrency(account.current_balance)}
 											</div>
 										</div>
+
+										{#if account.available_balance && account.available_balance !== account.current_balance}
+											{@const pendingAmount = account.current_balance - account.available_balance}
+											<div class="pending-section">
+												<div class="pending-row">
+													<span class="pending-label">Available:</span>
+													<span class="pending-value available">{formatCurrency(account.available_balance)}</span>
+												</div>
+												<div class="pending-row">
+													<span class="pending-label">Pending/Holds:</span>
+													<span class="pending-value pending">-{formatCurrency(pendingAmount)}</span>
+												</div>
+											</div>
+										{/if}
 									{/if}
 								</div>
 							{/each}
@@ -716,6 +730,41 @@
 		display: flex;
 		align-items: center;
 		gap: 0.25rem;
+	}
+
+	.pending-section {
+		margin-top: 0.75rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid #f3f4f6;
+	}
+
+	.pending-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		font-size: 0.8125rem;
+		margin-bottom: 0.375rem;
+	}
+
+	.pending-row:last-child {
+		margin-bottom: 0;
+	}
+
+	.pending-label {
+		color: #6b7280;
+		font-weight: 500;
+	}
+
+	.pending-value {
+		font-weight: 600;
+	}
+
+	.pending-value.available {
+		color: #059669;
+	}
+
+	.pending-value.pending {
+		color: #f59e0b;
 	}
 
 	.recommendations-grid {

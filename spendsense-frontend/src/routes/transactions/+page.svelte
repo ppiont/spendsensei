@@ -360,7 +360,12 @@
 										{formatDate(txn.date)}
 									</TableCell>
 									<TableCell class="font-semibold text-gray-800 py-3 px-4">
-										{txn.merchant_name || 'Unknown'}
+										<div class="flex items-center gap-2">
+											<span>{txn.merchant_name || 'Unknown'}</span>
+											{#if txn.pending}
+												<Badge class="bg-amber-100 text-amber-800 text-xs font-semibold uppercase">Pending</Badge>
+											{/if}
+										</div>
 									</TableCell>
 									<TableCell class="py-3 px-4">
 										<Badge class={`${getCategoryBadgeClass(txn.personal_finance_category_primary)} text-xs uppercase`}>
@@ -401,8 +406,13 @@
 						<div class="bg-white rounded-lg p-4 shadow-card">
 							<div class="flex items-start justify-between mb-2">
 								<div class="flex-1">
-									<h3 class="font-semibold text-gray-800">{txn.merchant_name || 'Unknown'}</h3>
-									<Badge class={`${getCategoryBadgeClass(txn.personal_finance_category_primary)} text-xs uppercase mt-1`}>
+									<div class="flex items-center gap-2 mb-1">
+										<h3 class="font-semibold text-gray-800">{txn.merchant_name || 'Unknown'}</h3>
+										{#if txn.pending}
+											<Badge class="bg-amber-100 text-amber-800 text-xs font-semibold uppercase">Pending</Badge>
+										{/if}
+									</div>
+									<Badge class={`${getCategoryBadgeClass(txn.personal_finance_category_primary)} text-xs uppercase`}>
 										{formatCategory(txn.personal_finance_category_primary)}
 									</Badge>
 								</div>
