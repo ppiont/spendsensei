@@ -209,21 +209,25 @@
 				{#if categoryBreakdown().length > 0}
 					<section class="bg-white rounded-xl p-8 shadow-card">
 						<h2 class="text-xl font-semibold text-gray-800 mb-6">Spending by Category</h2>
-						<div class="space-y-4">
+						<div class="spending-categories-list">
 							{#each categoryBreakdown().slice(0, 5) as { category, amount, percentage }}
-								<div class="space-y-2">
-									<div class="flex justify-between items-center">
-										<span class="text-sm font-medium text-gray-700">{formatCategory(category)}</span>
-										<div class="flex items-center gap-3">
-											<span class="text-xs text-gray-500">{percentage.toFixed(1)}%</span>
-											<span class="text-sm font-semibold text-gray-800">{formatCurrency(amount)}</span>
+								<div class="spending-category-row">
+									<!-- Category name -->
+									<div class="spending-category-name">
+										{formatCategory(category)}
+									</div>
+
+									<!-- Bar -->
+									<div class="spending-bar-container">
+										<div class="spending-bar-background">
+											<div class="spending-bar-fill" style="width: {percentage}%"></div>
 										</div>
 									</div>
-									<div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-										<div
-											class="h-full bg-brand-blue rounded-full transition-all duration-300"
-											style="width: {percentage}%"
-										></div>
+
+									<!-- Stats -->
+									<div class="spending-category-stats">
+										<span class="spending-percentage">{percentage.toFixed(0)}%</span>
+										<span class="spending-amount">{formatCurrency(amount)}</span>
 									</div>
 								</div>
 							{/each}
@@ -471,3 +475,81 @@
 		{/if}
 	</div>
 </div>
+
+<style>
+	/* Spending by Category - Match Dashboard SpendingBreakdown styles */
+	.spending-categories-list {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+	}
+
+	.spending-category-row {
+		display: grid;
+		grid-template-columns: minmax(120px, 1fr) 2fr 140px;
+		gap: 1rem;
+		align-items: center;
+	}
+
+	.spending-category-name {
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: #374151; /* gray-700 */
+	}
+
+	.spending-bar-container {
+		width: 100%;
+	}
+
+	.spending-bar-background {
+		width: 100%;
+		height: 24px;
+		background-color: #f3f4f6; /* gray-100 */
+		border-radius: 9999px;
+		overflow: hidden;
+		position: relative;
+	}
+
+	.spending-bar-fill {
+		height: 100%;
+		background: linear-gradient(to right, #3b82f6, #60a5fa); /* brand-blue gradient */
+		border-radius: 9999px;
+		transition: width 0.3s ease;
+	}
+
+	.spending-category-stats {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		justify-content: flex-end;
+	}
+
+	.spending-percentage {
+		font-size: 0.75rem;
+		color: #6b7280; /* gray-500 */
+		font-variant-numeric: tabular-nums;
+		min-width: 40px;
+		text-align: right;
+	}
+
+	.spending-amount {
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: #1f2937; /* gray-800 */
+		font-variant-numeric: tabular-nums;
+		min-width: 80px;
+		text-align: right;
+	}
+
+	/* Responsive */
+	@media (max-width: 768px) {
+		.spending-category-row {
+			grid-template-columns: 1fr;
+			gap: 0.5rem;
+		}
+
+		.spending-category-stats {
+			justify-content: space-between;
+		}
+	}
+</style>
