@@ -329,6 +329,72 @@ class TemplateGenerator(ContentGenerator):
         logger.info(f"Generated rationale: {len(explanation)} chars, {len(signal_tags)} signals")
         return rationale
 
+    async def generate_content_rationale(
+        self,
+        content_item: EducationItem,
+        persona_type: str,
+        confidence: float,
+        signals: BehaviorSignals
+    ) -> Rationale:
+        """
+        Generate explainable rationale specific to a content item.
+
+        Creates a rationale that explains why THIS SPECIFIC content is relevant
+        to the user's situation, referencing concrete behavioral signals.
+
+        Args:
+            content_item: The education item being recommended
+            persona_type: User's assigned persona
+            confidence: Confidence score for persona assignment (0.0-1.0)
+            signals: BehaviorSignals object with computed user data
+
+        Returns:
+            Rationale object with content-specific explanation
+
+        Raises:
+            ValueError: If inputs are invalid or missing
+        """
+        logger.info(f"Generating content-specific rationale for '{content_item.title}'")
+
+        # Validate inputs
+        if not content_item:
+            raise ValueError("content_item is required")
+        if not persona_type:
+            raise ValueError("persona_type is required")
+        if signals is None:
+            raise ValueError("signals are required")
+
+        # Extract active signal tags
+        signal_tags = self._extract_signal_tags(signals)
+
+        # Generate content-specific explanation
+        explanation = self._generate_content_explanation(
+            content_item=content_item,
+            persona_type=persona_type,
+            signals=signals,
+            signal_tags=signal_tags
+        )
+
+        # Apply tone checking guardrail
+        is_valid, violations = check_tone(explanation)
+        if not is_valid:
+            error_msg = (
+                f"Tone guardrail violation in content rationale: "
+                f"Found {len(violations)} violations: {violations}"
+            )
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+
+        rationale = Rationale(
+            persona_type=persona_type,
+            confidence=confidence,
+            explanation=explanation,
+            key_signals=signal_tags
+        )
+
+        logger.info(f"Generated content-specific rationale: {len(explanation)} chars")
+        return rationale
+
     def _generate_explanation(
         self,
         persona_type: str,
@@ -444,6 +510,71 @@ class TemplateGenerator(ContentGenerator):
                 "Continue monitoring your financial wellness and consider setting specific goals "
                 "to optimize your savings, reduce debt, or build wealth."
             )
+
+        return explanation
+
+    def _generate_content_explanation(
+        self,
+        content_item: EducationItem,
+        persona_type: str,
+        signals: BehaviorSignals,
+        signal_tags: List[str]
+    ) -> str:
+        """
+        Generate content-specific explanation with concrete data points.
+
+        Creates an explanation that references the specific content being recommended
+        and explains why it's relevant based on the user's behavioral signals.
+
+        Args:
+            content_item: The education item being recommended
+            persona_type: User's assigned persona
+            signals: BehaviorSignals object
+            signal_tags: List of active signal tags
+
+        Returns:
+            Human-readable explanation string with content-specific context
+        """
+        # Generate concise, data-driven explanation
+        if persona_type == "high_utilization" and signals.credit:
+            utilization = signals.credit.get("overall_utilization", 0.0)
+            total_balance = signals.credit.get("total_balance", 0) / 100
+            explanation = (
+                f"Your credit utilization is {utilization:.1f}% with ${total_balance:,.0f} in balances"
+            )
+            if "interest_charges" in signal_tags:
+                explanation += ", and you're paying interest charges"
+            explanation += "."
+
+        elif persona_type == "subscription_heavy" and signals.subscriptions:
+            count = signals.subscriptions.get("count", 0)
+            monthly_spend = signals.subscriptions.get("monthly_recurring_spend", 0) / 100
+            explanation = (
+                f"You have {count} recurring subscriptions totaling ${monthly_spend:,.0f}/month."
+            )
+
+        elif persona_type == "variable_income" and signals.income:
+            median_gap = signals.income.get("median_gap_days", 0)
+            buffer_months = signals.income.get("buffer_months", 0.0)
+            explanation = (
+                f"Your income arrives every {median_gap} days with {buffer_months:.1f} months buffer."
+            )
+
+        elif persona_type == "savings_builder" and signals.savings:
+            monthly_inflow = signals.savings.get("monthly_inflow", 0) / 100
+            growth_rate = signals.savings.get("growth_rate", 0.0)
+            explanation = (
+                f"You're saving ${monthly_inflow:,.0f}/month with {growth_rate:.1f}% growth."
+            )
+
+        elif persona_type == "debt_consolidator" and signals.credit:
+            utilization = signals.credit.get("overall_utilization", 0.0)
+            explanation = (
+                f"You're managing multiple cards at {utilization:.1f}% utilization."
+            )
+
+        else:  # balanced or fallback
+            explanation = "This matches your current financial profile."
 
         return explanation
 

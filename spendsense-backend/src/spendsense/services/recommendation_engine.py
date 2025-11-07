@@ -218,12 +218,14 @@ class StandardRecommendationEngine(RecommendationEngine):
 
         logger.info(f"[StandardEngine] Generated {len(offer_items)} eligible offers")
 
-        # Step 5: Generate rationale for each education item
-        logger.info(f"[StandardEngine] Step 4: Generating rationales")
+        # Step 5: Generate content-specific rationale for each education item
+        logger.info(f"[StandardEngine] Step 4: Generating content-specific rationales")
         education_recommendations = []
 
         for content_item in education_items:
-            rationale = await self.generator.generate_rationale(
+            # Use content-specific rationale generation
+            rationale = await self.generator.generate_content_rationale(
+                content_item=content_item,
                 persona_type=persona_type,
                 confidence=confidence,
                 signals=signals

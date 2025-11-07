@@ -37,14 +37,20 @@
 
 	// Expandable offer states
 	let expandedOfferIds = $state<Set<string>>(new Set());
+	let expandedEducationIds = $state<Set<string>>(new Set());
 
 	function toggleOfferExpanded(id: string) {
-		if (expandedOfferIds.has(id)) {
-			expandedOfferIds.delete(id);
-		} else {
-			expandedOfferIds.add(id);
-		}
-		expandedOfferIds = expandedOfferIds; // Trigger reactivity
+		// Use immutable Set update for Svelte 5 reactivity
+		expandedOfferIds = expandedOfferIds.has(id)
+			? new Set([...expandedOfferIds].filter(x => x !== id))
+			: new Set([...expandedOfferIds, id]);
+	}
+
+	function toggleEducationExpanded(id: string) {
+		// Use immutable Set update for Svelte 5 reactivity
+		expandedEducationIds = expandedEducationIds.has(id)
+			? new Set([...expandedEducationIds].filter(x => x !== id))
+			: new Set([...expandedEducationIds, id]);
 	}
 
 	// === KPI CALCULATIONS ===
@@ -417,13 +423,17 @@
 				<section class="dashboard-section">
 					<h2 class="section-title">Personalized Education</h2>
 					<div class="recommendations-grid">
-						{#each recommendations.slice(0, 3) as rec}
+						{#each recommendations.slice(0, 3) as rec, idx (rec.content.id)}
+							{@const cardId = `edu-${rec.content.id}`}
 							<RecommendationCard
 								icon="💡"
 								title={rec.content.title}
-								body={rec.content.summary}
+								summary={rec.content.summary}
+								body={rec.content.body}
 								rationale={rec.rationale.explanation}
 								cta="Learn More"
+								expanded={expandedEducationIds.has(cardId)}
+								onclick={() => toggleEducationExpanded(cardId)}
 							/>
 						{/each}
 					</div>
@@ -712,12 +722,14 @@
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
 		gap: 1.5rem;
+		align-items: start; /* Top-align cards instead of stretching */
 	}
 
 	.offers-grid {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
 		gap: 1.5rem;
+		align-items: start; /* Top-align cards instead of stretching */
 	}
 
 	.offer-card {
