@@ -35,7 +35,7 @@
 	// Filter state
 	let searchQuery = $state('');
 	let selectedCategory = $state('all');
-	let selectedDateRange = $state<30 | 90 | 180 | 'all'>(30);
+	let selectedDateRange = $state<30 | 90 | 180 | 'all'>('all');
 
 	// Debounced search
 	let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -78,7 +78,7 @@
 
 	// Check if any filters are active
 	const hasActiveFilters = $derived(
-		debouncedSearch !== '' || selectedCategory !== 'all' || selectedDateRange !== 30
+		debouncedSearch !== '' || selectedCategory !== 'all' || selectedDateRange !== 'all'
 	);
 
 	// Calculate category spending breakdown
@@ -139,7 +139,7 @@
 		searchQuery = '';
 		debouncedSearch = '';
 		selectedCategory = 'all';
-		selectedDateRange = 30;
+		selectedDateRange = 'all';
 		currentPage = 1;
 	}
 
