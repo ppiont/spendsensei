@@ -271,8 +271,9 @@ def analyze_savings(accounts: List[Dict[str, Any]], transactions: List[Dict[str,
     if monthly_expenses > 0:
         emergency_fund_months = round(total_savings_balance / monthly_expenses, 2)
     elif total_savings_balance > 0:
-        # Has savings but no expenses tracked - return infinity indicator
-        emergency_fund_months = float('inf')
+        # Has savings but no expenses tracked - use large but finite number
+        # Cannot use float('inf') as it breaks JSON serialization
+        emergency_fund_months = 999.0
     else:
         emergency_fund_months = 0.0
 
@@ -391,6 +392,25 @@ def analyze_credit(accounts: List[Dict], transactions: List[Dict]) -> Dict:
     # Add interest charges flag
     if monthly_interest > 0:
         flags.append("interest_charges")
+
+    # Check for minimum-payment-only behavior
+    has_minimum_payment_only = False
+    for acc in credit_accounts:
+        last_payment = acc.get("last_payment_amount", 0)
+        min_payment = acc.get("min_payment", 0)
+
+        # Allow 10% tolerance for rounding/fees
+        # Check payment was made but was only minimum amount
+        if min_payment > 0 and 0 < last_payment <= min_payment * 1.1:
+            has_minimum_payment_only = True
+            logger.warning(
+                f"Account {acc.get('id')} appears to be minimum-payment-only: "
+                f"last_payment=${last_payment/100:.2f}, min=${min_payment/100:.2f}"
+            )
+            break
+
+    if has_minimum_payment_only:
+        flags.append("minimum_payment_only")
 
     # Add utilization flags (only one, highest threshold met)
     if overall_utilization >= 80:
@@ -536,8 +556,11 @@ def detect_subscriptions(transactions: List[Dict[str, Any]], window_days: int) -
             })
 
     # Calculate percentage of total spending
+    # Need to compare apples-to-apples: window total vs window total
+    # total_recurring_spend is monthly, so multiply by months in window
+    total_recurring_in_window = total_recurring_spend * (window_days / 30)
     percentage_of_spending = (
-        (total_recurring_spend / total_spend) * 100 if total_spend > 0 else 0.0
+        (total_recurring_in_window / total_spend) * 100 if total_spend > 0 else 0.0
     )
 
     return {

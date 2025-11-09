@@ -5,8 +5,10 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import text
 
-# Database connection string
-DATABASE_URL = "sqlite+aiosqlite:///data/spendsense.db"
+from spendsense.config import settings
+
+# Database connection string from config (supports environment variable overrides)
+DATABASE_URL = settings.database_url
 
 # Create async engine
 engine = create_async_engine(

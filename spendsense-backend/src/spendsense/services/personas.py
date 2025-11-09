@@ -18,7 +18,7 @@ from typing import Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
 
-from spendsense.services.features import BehaviorSignals, compute_signals
+from spendsense.features import BehaviorSignals, compute_signals
 from spendsense.models.persona import Persona
 
 # Set up logging
@@ -26,17 +26,19 @@ logger = logging.getLogger(__name__)
 
 # Persona priority order (most urgent/important first)
 PERSONA_PRIORITY = [
-    "high_utilization",
-    "variable_income",
-    "subscription_heavy",
-    "savings_builder",
-    "balanced"
+    "high_utilization",    # Most urgent: >70% utilization OR overdue OR min-payment-only
+    "variable_income",     # Cash flow risk: irregular income + low buffer
+    "debt_consolidator",   # Opportunity: multiple cards with moderate utilization
+    "subscription_heavy",  # Cost optimization: high recurring spend
+    "savings_builder",     # Building wealth: positive savings trajectory
+    "balanced"             # Default fallback
 ]
 
 # Confidence scores for each persona type
 CONFIDENCE_SCORES = {
     "high_utilization": 0.95,
     "variable_income": 0.90,
+    "debt_consolidator": 0.88,
     "subscription_heavy": 0.85,
     "savings_builder": 0.80,
     "balanced": 0.60
@@ -50,7 +52,8 @@ def matches_high_utilization(signals: BehaviorSignals) -> bool:
     Criteria:
     - Overall credit utilization ≥50% OR
     - Has interest charges OR
-    - Has overdue accounts
+    - Has overdue accounts OR
+    - Making minimum payments only
 
     Args:
         signals: BehaviorSignals object with credit data
@@ -67,11 +70,21 @@ def matches_high_utilization(signals: BehaviorSignals) -> bool:
     # Check utilization threshold
     utilization = credit.get("overall_utilization", 0.0)
     if utilization >= 50.0:
+        logger.info("High utilization match: utilization >= 50%")
         return True
 
-    # Check flags for interest charges or overdue
+    # Check flags for interest charges, overdue, or minimum payment only
     flags = credit.get("flags", [])
-    if "interest_charges" in flags or "overdue" in flags:
+    if "interest_charges" in flags:
+        logger.info("High utilization match: interest charges detected")
+        return True
+
+    if "overdue" in flags:
+        logger.info("High utilization match: overdue payments detected")
+        return True
+
+    if "minimum_payment_only" in flags:
+        logger.info("High utilization match: minimum payment only behavior detected")
         return True
 
     return False
@@ -187,6 +200,75 @@ def matches_savings_builder(signals: BehaviorSignals) -> bool:
     return True
 
 
+def matches_debt_consolidator(signals: BehaviorSignals) -> bool:
+    """
+    Check if user matches debt consolidator persona.
+
+    Criteria:
+    - Has 2+ credit cards with balances
+    - Overall utilization 30-70% (significant but not urgent)
+    - No overdue payments (responsible borrower)
+    - Has regular income (can afford consolidation)
+    - Paying interest charges
+
+    Rationale:
+    - Represents prime consolidation candidates
+    - Not in crisis but paying unnecessary interest
+    - Good credit score, qualifies for balance transfer offers
+
+    Primary Focus:
+    - Balance transfer strategies
+    - Debt consolidation loans
+    - Interest savings calculators
+
+    Args:
+        signals: BehaviorSignals object with credit and income data
+
+    Returns:
+        True if user matches debt consolidator criteria
+    """
+    credit = signals.credit
+    income = signals.income
+
+    # Must have credit data
+    if not credit:
+        return False
+
+    # Check utilization is moderate (30-70%)
+    utilization = credit.get("overall_utilization", 0.0)
+    if utilization < 30.0 or utilization >= 70.0:
+        return False
+
+    # Must have 2+ cards with balances
+    per_card = credit.get("per_card", [])
+    cards_with_balance = [c for c in per_card if c.get("balance", 0) > 0]
+    if len(cards_with_balance) < 2:
+        return False
+
+    # Must be paying interest (consolidation opportunity)
+    monthly_interest = credit.get("monthly_interest", 0)
+    if monthly_interest <= 0:
+        return False
+
+    # Check NOT overdue (responsible borrower)
+    flags = credit.get("flags", [])
+    if "overdue" in flags:
+        return False
+
+    # Should have regular income (ability to consolidate)
+    if income:
+        frequency = income.get("frequency", "unknown")
+        if frequency == "unknown":
+            return False
+
+    logger.info(
+        f"Debt consolidator match: {len(cards_with_balance)} cards, "
+        f"{utilization:.1f}% utilization, ${monthly_interest/100:.2f}/mo interest"
+    )
+
+    return True
+
+
 async def assign_persona(
     db: AsyncSession,
     user_id: str,
@@ -231,6 +313,8 @@ async def assign_persona(
         persona_type = "high_utilization"
     elif matches_variable_income(signals):
         persona_type = "variable_income"
+    elif matches_debt_consolidator(signals):
+        persona_type = "debt_consolidator"
     elif matches_subscription_heavy(signals):
         persona_type = "subscription_heavy"
     elif matches_savings_builder(signals):

@@ -10,7 +10,7 @@ from datetime import datetime
 backend_root = Path(__file__).parent.parent
 sys.path.insert(0, str(backend_root / "src"))
 
-from spendsense.services.features import analyze_savings
+from spendsense.features import analyze_savings
 
 
 def load_user_data_from_db(db_path):

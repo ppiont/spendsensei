@@ -12,7 +12,7 @@
 	import PersonaCard from '$lib/components/custom/PersonaCard.svelte';
 	import RecentActivity from '$lib/components/custom/RecentActivity.svelte';
 	import ConsentCTA from '$lib/components/ConsentCTA.svelte';
-	import { Alert, AlertDescription } from '$lib/components/ui/alert';
+	import ConsentManager from '$lib/components/ConsentManager.svelte';
 	import { Info, ExternalLink, CheckCircle, ChevronDown, ChevronUp } from '@lucide/svelte';
 
 	// User selection from global store
@@ -37,14 +37,20 @@
 
 	// Expandable offer states
 	let expandedOfferIds = $state<Set<string>>(new Set());
+	let expandedEducationIds = $state<Set<string>>(new Set());
 
 	function toggleOfferExpanded(id: string) {
-		if (expandedOfferIds.has(id)) {
-			expandedOfferIds.delete(id);
-		} else {
-			expandedOfferIds.add(id);
-		}
-		expandedOfferIds = expandedOfferIds; // Trigger reactivity
+		// Use immutable Set update for Svelte 5 reactivity
+		expandedOfferIds = expandedOfferIds.has(id)
+			? new Set([...expandedOfferIds].filter(x => x !== id))
+			: new Set([...expandedOfferIds, id]);
+	}
+
+	function toggleEducationExpanded(id: string) {
+		// Use immutable Set update for Svelte 5 reactivity
+		expandedEducationIds = expandedEducationIds.has(id)
+			? new Set([...expandedEducationIds].filter(x => x !== id))
+			: new Set([...expandedEducationIds, id]);
 	}
 
 	// === KPI CALCULATIONS ===
@@ -57,16 +63,27 @@
 	);
 
 	const netWorth = $derived(assets - liabilities);
-	const netWorthChangePercent = $derived(1.9); // Placeholder
-	const netWorthChangeDollar = $derived(240); // Placeholder
 
 	const savingsAccounts = $derived(accounts.filter((a) => a.subtype === 'savings'));
 	const totalSavings = $derived(
 		savingsAccounts.reduce((sum, a) => sum + a.current_balance, 0)
 	);
 
+	// Filter transactions to last 30 days
+	const recentTransactions = $derived(() => {
+		const now = new Date();
+		const windowDate = new Date(now);
+		windowDate.setDate(windowDate.getDate() - 30);
+		windowDate.setHours(0, 0, 0, 0);
+
+		return transactions.filter((t) => {
+			const txDate = new Date(t.date);
+			return txDate >= windowDate;
+		});
+	});
+
 	const incomeTransactions = $derived(
-		transactions.filter(
+		recentTransactions().filter(
 			(t) =>
 				t.personal_finance_category_primary === 'INCOME' ||
 				t.personal_finance_category_primary.startsWith('INCOME')
@@ -74,9 +91,6 @@
 	);
 
 	const monthlyIncome = $derived(Math.abs(incomeTransactions.reduce((sum, t) => sum + t.amount, 0)));
-	const monthlySavingsRate = $derived(
-		monthlyIncome > 0 ? ((totalSavings / monthlyIncome) * 100).toFixed(1) + '%' : '0%'
-	);
 
 	const creditAccounts = $derived(accounts.filter((a) => a.type === 'credit'));
 	const totalCreditUsed = $derived(creditAccounts.reduce((sum, a) => sum + a.current_balance, 0));
@@ -92,7 +106,7 @@
 	);
 
 	const expenseTransactions = $derived(
-		transactions.filter(
+		recentTransactions().filter(
 			(t) =>
 				t.amount > 0 &&
 				!t.personal_finance_category_primary.startsWith('INCOME') &&
@@ -100,6 +114,20 @@
 		)
 	);
 	const monthlyExpenses = $derived(expenseTransactions.reduce((sum, t) => sum + t.amount, 0));
+
+	// Calculate actual monthly savings rate (income - expenses) / income
+	const monthlySavingsRate = $derived(
+		monthlyIncome > 0 ? (((monthlyIncome - monthlyExpenses) / monthlyIncome) * 100).toFixed(1) + '%' : '0%'
+	);
+
+	// Calculate net worth change over last 30 days
+	const netWorthChange = $derived(monthlyIncome - monthlyExpenses);
+	const netWorth30DaysAgo = $derived(netWorth - netWorthChange);
+	const netWorthChangeDollar = $derived(netWorthChange);
+	const netWorthChangePercent = $derived(
+		netWorth30DaysAgo !== 0 ? parseFloat(((netWorthChange / Math.abs(netWorth30DaysAgo)) * 100).toFixed(1)) : 0
+	);
+
 	const emergencyFundMonths = $derived(
 		monthlyExpenses > 0 ? (totalSavings / monthlyExpenses).toFixed(1) + ' months' : '0 months'
 	);
@@ -218,6 +246,89 @@
 					<KpiCard label="EMERGENCY FUND" value={emergencyFundMonths} />
 					<KpiCard label="SUBSCRIPTIONS" value={subscriptionCount().toString()} />
 				</div>
+
+				<!-- Accounts Grid -->
+				{#if accounts.length > 0}
+					<div class="accounts-section">
+						<h3 class="accounts-title">
+							Connected Accounts
+							<span class="accounts-count">{accounts.length}</span>
+						</h3>
+						<div class="accounts-grid">
+							{#each accounts as account}
+								{@const isCredit = account.type === 'credit'}
+								{@const utilization = isCredit && account.limit ? (account.current_balance / account.limit) * 100 : 0}
+								{@const utilizationVariant = utilization > 80 ? 'alert' : utilization > 50 ? 'warning' : 'good'}
+
+								<div class="account-card {isCredit ? 'credit-card' : 'depository-card'}">
+									<div class="account-header">
+										<div class="account-icon">
+											{#if isCredit}
+												💳
+											{:else if account.subtype === 'savings'}
+												🏦
+											{:else}
+												💰
+											{/if}
+										</div>
+										<div class="account-info">
+											<div class="account-name" title={account.name}>
+												{account.name}
+											</div>
+											<div class="account-subtype">
+												{account.subtype === 'checking' ? 'Checking' : account.subtype === 'savings' ? 'Savings' : 'Credit Card'}
+												{#if account.mask}
+													<span class="account-mask">••{account.mask}</span>
+												{/if}
+											</div>
+										</div>
+									</div>
+
+									{#if isCredit}
+										<!-- Credit Card Display -->
+										<div class="account-balance">
+											<div class="balance-label">Balance / Limit</div>
+											<div class="balance-value">
+												{formatCurrency(account.current_balance)} / {formatCurrency(account.limit || 0)}
+											</div>
+										</div>
+										<div class="utilization-bar-container">
+											<div class="utilization-bar {utilizationVariant}">
+												<div class="utilization-fill" style="width: {Math.min(utilization, 100)}%"></div>
+											</div>
+											<div class="utilization-label">{utilization.toFixed(0)}% used</div>
+										</div>
+										{#if account.is_overdue}
+											<div class="overdue-warning">⚠️ Payment overdue</div>
+										{/if}
+									{:else}
+										<!-- Depository Account Display -->
+										<div class="account-balance">
+											<div class="balance-label">Current Balance</div>
+											<div class="balance-value">
+												{formatCurrency(account.current_balance)}
+											</div>
+										</div>
+
+										{#if account.available_balance && account.available_balance !== account.current_balance}
+											{@const pendingAmount = account.current_balance - account.available_balance}
+											<div class="pending-section">
+												<div class="pending-row">
+													<span class="pending-label">Available:</span>
+													<span class="pending-value available">{formatCurrency(account.available_balance)}</span>
+												</div>
+												<div class="pending-row">
+													<span class="pending-label">Pending/Holds:</span>
+													<span class="pending-value pending">-{formatCurrency(pendingAmount)}</span>
+												</div>
+											</div>
+										{/if}
+									{/if}
+								</div>
+							{/each}
+						</div>
+					</div>
+				{/if}
 			</section>
 
 			<!-- SECTION 2: SPENDING INSIGHTS -->
@@ -236,7 +347,22 @@
 				</div>
 			</section>
 
-			<!-- SECTION 4: YOUR FINANCIAL PERSONALITY -->
+			<!-- SECTION 4: RECENT ACTIVITY -->
+			<section class="dashboard-section">
+				<h2 class="section-title">Recent Activity</h2>
+				<div class="section-card">
+					<RecentActivity {transactions} limit={5} />
+				</div>
+			</section>
+
+			<!-- SECTION 5: CONSENT MANAGEMENT -->
+			{#if !consentRequired}
+				<section class="dashboard-section">
+					<ConsentManager userId={currentUserId} />
+				</section>
+			{/if}
+
+			<!-- SECTION 6: YOUR FINANCIAL PERSONALITY -->
 			{#if !consentRequired && personaType}
 				<section class="dashboard-section">
 					<h2 class="section-title">Your Financial Personality</h2>
@@ -249,7 +375,7 @@
 				</section>
 			{/if}
 
-			<!-- SECTION 5: PARTNER OFFERS -->
+			<!-- SECTION 7: PARTNER OFFERS -->
 			{#if !consentRequired && offers.length > 0}
 				<section class="dashboard-section">
 					<div class="section-header">
@@ -301,15 +427,7 @@
 				</section>
 			{/if}
 
-			<!-- SECTION 6: RECENT ACTIVITY -->
-			<section class="dashboard-section">
-				<h2 class="section-title">Recent Activity</h2>
-				<div class="section-card">
-					<RecentActivity {transactions} limit={5} />
-				</div>
-			</section>
-
-			<!-- SECTION 7: PERSONALIZED EDUCATION -->
+			<!-- SECTION 8: PERSONALIZED EDUCATION -->
 			{#if consentRequired}
 				<section class="dashboard-section">
 					<h2 class="section-title">Personalized Education</h2>
@@ -319,36 +437,44 @@
 				<section class="dashboard-section">
 					<h2 class="section-title">Personalized Education</h2>
 					<div class="recommendations-grid">
-						{#each recommendations.slice(0, 3) as rec}
+						{#each recommendations.slice(0, 3) as rec, idx (rec.content.id)}
+							{@const cardId = `edu-${rec.content.id}`}
 							<RecommendationCard
 								icon="💡"
 								title={rec.content.title}
-								body={rec.content.summary}
+								summary={rec.content.summary}
+								body={rec.content.body}
 								rationale={rec.rationale.explanation}
 								cta="Learn More"
+								expanded={expandedEducationIds.has(cardId)}
+								onclick={() => toggleEducationExpanded(cardId)}
 							/>
 						{/each}
 					</div>
 				</section>
 			{/if}
 
-			<!-- SECTION 8: DISCLAIMER -->
+			<!-- SECTION 9: DISCLAIMER -->
 			<section class="dashboard-section disclaimer-section">
-				<Alert>
-					<Info class="w-5 h-5" />
-					<AlertDescription>
-						<p class="disclaimer-text">
-							<strong>Educational Content:</strong> This is educational content, not financial advice. Please
-							consult with a qualified financial professional before making financial decisions.
-						</p>
-						{#if offers.length > 0}
-							<p class="disclaimer-text mt-2">
-								<strong>Partner Offers:</strong> Offers are provided by SpendSense partners and are subject
-								to their terms and conditions. Eligibility determinations are estimates based on your financial profile.
+				<div class="disclaimer-card">
+					<div class="disclaimer-content">
+						<div class="disclaimer-icon">
+							<Info class="w-5 h-5 text-blue-600" />
+						</div>
+						<div class="disclaimer-body">
+							<p class="disclaimer-text">
+								<strong>Educational Content:</strong> This is educational content, not financial advice. Please
+								consult with a qualified financial professional before making financial decisions.
 							</p>
-						{/if}
-					</AlertDescription>
-				</Alert>
+							{#if offers.length > 0}
+								<p class="disclaimer-text">
+									<strong>Partner Offers:</strong> Offers are provided by SpendSense partners and are subject
+									to their terms and conditions. Eligibility determinations are estimates based on your financial profile.
+								</p>
+							{/if}
+						</div>
+					</div>
+				</div>
 			</section>
 		{/if}
 	</div>
@@ -448,16 +574,211 @@
 		grid-column: span 2;
 	}
 
+	/* Accounts Section */
+	.accounts-section {
+		margin-top: 2rem;
+		padding-top: 2rem;
+		border-top: 1px solid #e5e7eb;
+	}
+
+	.accounts-title {
+		font-size: 1rem;
+		font-weight: 600;
+		color: #374151;
+		margin: 0 0 1rem 0;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.accounts-count {
+		background-color: #f3f4f6;
+		color: #6b7280;
+		padding: 0.25rem 0.625rem;
+		border-radius: 9999px;
+		font-size: 0.875rem;
+		font-weight: 500;
+	}
+
+	.accounts-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+		gap: 1rem;
+	}
+
+	.account-card {
+		background: white;
+		border: 1px solid #e5e7eb;
+		border-radius: 0.625rem;
+		padding: 1rem;
+		transition: all 0.15s ease;
+	}
+
+	.account-card:hover {
+		border-color: #d1d5db;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+	}
+
+	.credit-card {
+		border-left: 3px solid #3b82f6;
+	}
+
+	.depository-card {
+		border-left: 3px solid #10b981;
+	}
+
+	.account-header {
+		display: flex;
+		gap: 0.75rem;
+		margin-bottom: 0.75rem;
+	}
+
+	.account-icon {
+		font-size: 1.5rem;
+		line-height: 1;
+		flex-shrink: 0;
+	}
+
+	.account-info {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.account-name {
+		font-size: 0.9375rem;
+		font-weight: 600;
+		color: #1f2937;
+		margin-bottom: 0.25rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.account-subtype {
+		font-size: 0.8125rem;
+		color: #6b7280;
+		display: flex;
+		align-items: center;
+		gap: 0.375rem;
+	}
+
+	.account-mask {
+		color: #9ca3af;
+	}
+
+	.account-balance {
+		margin-bottom: 0.5rem;
+	}
+
+	.balance-label {
+		font-size: 0.75rem;
+		color: #6b7280;
+		text-transform: uppercase;
+		letter-spacing: 0.025em;
+		margin-bottom: 0.25rem;
+	}
+
+	.balance-value {
+		font-size: 1.125rem;
+		font-weight: 600;
+		color: #1f2937;
+	}
+
+	.utilization-bar-container {
+		margin-top: 0.75rem;
+	}
+
+	.utilization-bar {
+		height: 6px;
+		background-color: #f3f4f6;
+		border-radius: 3px;
+		overflow: hidden;
+		margin-bottom: 0.375rem;
+	}
+
+	.utilization-fill {
+		height: 100%;
+		transition: width 0.3s ease;
+		border-radius: 3px;
+	}
+
+	.utilization-bar.good .utilization-fill {
+		background-color: #10b981;
+	}
+
+	.utilization-bar.warning .utilization-fill {
+		background-color: #f59e0b;
+	}
+
+	.utilization-bar.alert .utilization-fill {
+		background-color: #ef4444;
+	}
+
+	.utilization-label {
+		font-size: 0.75rem;
+		color: #6b7280;
+	}
+
+	.overdue-warning {
+		margin-top: 0.5rem;
+		padding: 0.375rem 0.625rem;
+		background-color: #fef2f2;
+		color: #991b1b;
+		font-size: 0.75rem;
+		font-weight: 500;
+		border-radius: 0.375rem;
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+	}
+
+	.pending-section {
+		margin-top: 0.75rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid #f3f4f6;
+	}
+
+	.pending-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		font-size: 0.8125rem;
+		margin-bottom: 0.375rem;
+	}
+
+	.pending-row:last-child {
+		margin-bottom: 0;
+	}
+
+	.pending-label {
+		color: #6b7280;
+		font-weight: 500;
+	}
+
+	.pending-value {
+		font-weight: 600;
+	}
+
+	.pending-value.available {
+		color: #059669;
+	}
+
+	.pending-value.pending {
+		color: #f59e0b;
+	}
+
 	.recommendations-grid {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
 		gap: 1.5rem;
+		align-items: start; /* Top-align cards instead of stretching */
 	}
 
 	.offers-grid {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
 		gap: 1.5rem;
+		align-items: start; /* Top-align cards instead of stretching */
 	}
 
 	.offer-card {
@@ -605,14 +926,36 @@
 		margin-bottom: 2rem;
 	}
 
-	.disclaimer-text {
-		font-size: 0.875rem;
-		line-height: 1.5;
-		margin: 0;
+	.disclaimer-card {
+		background: white;
+		border: 1px solid #e5e7eb;
+		border-radius: 0.75rem;
+		padding: 1.5rem;
 	}
 
-	.mt-2 {
-		margin-top: 0.5rem;
+	.disclaimer-content {
+		display: flex;
+		gap: 1rem;
+		align-items: flex-start;
+	}
+
+	.disclaimer-icon {
+		flex-shrink: 0;
+		padding-top: 0.125rem;
+	}
+
+	.disclaimer-body {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.disclaimer-text {
+		font-size: 0.875rem;
+		line-height: 1.6;
+		color: #4b5563;
+		margin: 0;
 	}
 
 	/* Responsive */
@@ -625,6 +968,10 @@
 		.offers-grid {
 			grid-template-columns: repeat(2, 1fr);
 		}
+
+		.accounts-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
 	}
 
 	@media (max-width: 768px) {
@@ -634,7 +981,8 @@
 
 		.kpi-grid,
 		.recommendations-grid,
-		.offers-grid {
+		.offers-grid,
+		.accounts-grid {
 			grid-template-columns: 1fr;
 		}
 

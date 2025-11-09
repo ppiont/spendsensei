@@ -35,7 +35,10 @@
 	// Filter state
 	let searchQuery = $state('');
 	let selectedCategory = $state('all');
-	let selectedDateRange = $state<30 | 90 | 180 | 'all'>(30);
+	let selectedDateRange = $state<30 | 90 | 180 | 'all'>('all');
+
+	// Spending categories expansion state
+	let showAllCategories = $state(false);
 
 	// Debounced search
 	let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -78,7 +81,7 @@
 
 	// Check if any filters are active
 	const hasActiveFilters = $derived(
-		debouncedSearch !== '' || selectedCategory !== 'all' || selectedDateRange !== 30
+		debouncedSearch !== '' || selectedCategory !== 'all' || selectedDateRange !== 'all'
 	);
 
 	// Calculate category spending breakdown
@@ -97,7 +100,30 @@
 			.sort((a, b) => b.amount - a.amount);
 
 		const total = sorted.reduce((sum, item) => sum + item.amount, 0);
-		return sorted.map((item) => ({ ...item, percentage: (item.amount / total) * 100 }));
+
+		// Calculate percentages with proper rounding to ensure they add up to 100%
+		const items = sorted.map((item) => ({
+			...item,
+			exactPercentage: (item.amount / total) * 100
+		}));
+
+		// Use largest remainder method to distribute rounding error
+		let remainingPercentage = 100;
+		const result = items.map((item, index) => {
+			const floored = Math.floor(item.exactPercentage);
+			const remainder = item.exactPercentage - floored;
+			return { ...item, floored, remainder, percentage: floored };
+		});
+
+		// Distribute remaining percentage points to items with largest remainders
+		const toDistribute = 100 - result.reduce((sum, item) => sum + item.percentage, 0);
+		result
+			.sort((a, b) => b.remainder - a.remainder)
+			.slice(0, toDistribute)
+			.forEach(item => item.percentage += 1);
+
+		// Sort back by amount and return
+		return result.sort((a, b) => b.amount - a.amount);
 	});
 
 	// Get badge variant for category
@@ -139,7 +165,7 @@
 		searchQuery = '';
 		debouncedSearch = '';
 		selectedCategory = 'all';
-		selectedDateRange = 30;
+		selectedDateRange = 'all';
 		currentPage = 1;
 	}
 
@@ -207,27 +233,54 @@
 			<div class="space-y-6">
 				<!-- Category Spending Summary Card -->
 				{#if categoryBreakdown().length > 0}
+					{@const visibleCategories = showAllCategories ? categoryBreakdown() : categoryBreakdown().slice(0, 5)}
+					{@const hiddenCategories = categoryBreakdown().slice(5)}
+					{@const hiddenCount = hiddenCategories.length}
+					{@const hiddenTotal = hiddenCategories.reduce((sum, cat) => sum + cat.amount, 0)}
+					{@const hiddenPercentage = hiddenCategories.reduce((sum, cat) => sum + cat.percentage, 0)}
+
 					<section class="bg-white rounded-xl p-8 shadow-card">
 						<h2 class="text-xl font-semibold text-gray-800 mb-6">Spending by Category</h2>
-						<div class="space-y-4">
-							{#each categoryBreakdown().slice(0, 5) as { category, amount, percentage }}
-								<div class="space-y-2">
-									<div class="flex justify-between items-center">
-										<span class="text-sm font-medium text-gray-700">{formatCategory(category)}</span>
-										<div class="flex items-center gap-3">
-											<span class="text-xs text-gray-500">{percentage.toFixed(1)}%</span>
-											<span class="text-sm font-semibold text-gray-800">{formatCurrency(amount)}</span>
+						<div class="spending-categories-list">
+							{#each visibleCategories as { category, amount, percentage }}
+								<div class="spending-category-row">
+									<!-- Category name -->
+									<div class="spending-category-name">
+										{formatCategory(category)}
+									</div>
+
+									<!-- Bar -->
+									<div class="spending-bar-container">
+										<div class="spending-bar-background">
+											<div class="spending-bar-fill" style="width: {percentage}%"></div>
 										</div>
 									</div>
-									<div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-										<div
-											class="h-full bg-brand-blue rounded-full transition-all duration-300"
-											style="width: {percentage}%"
-										></div>
+
+									<!-- Stats -->
+									<div class="spending-category-stats">
+										<span class="spending-percentage">{percentage.toFixed(0)}%</span>
+										<span class="spending-amount">{formatCurrency(amount)}</span>
 									</div>
 								</div>
 							{/each}
 						</div>
+
+						<!-- Show More / Show Less Button -->
+						{#if hiddenCount > 0}
+							<button
+								onclick={() => showAllCategories = !showAllCategories}
+								class="spending-expand-button"
+							>
+								{#if showAllCategories}
+									<span class="expand-icon">−</span>
+									<span>Show Less</span>
+								{:else}
+									<span class="expand-icon">+</span>
+									<span>Show {hiddenCount} more {hiddenCount === 1 ? 'category' : 'categories'}</span>
+									<span class="expand-meta">({hiddenPercentage.toFixed(0)}% of spending)</span>
+								{/if}
+							</button>
+						{/if}
 					</section>
 				{/if}
 
@@ -360,7 +413,12 @@
 										{formatDate(txn.date)}
 									</TableCell>
 									<TableCell class="font-semibold text-gray-800 py-3 px-4">
-										{txn.merchant_name || 'Unknown'}
+										<div class="flex items-center gap-2">
+											<span>{txn.merchant_name || 'Unknown'}</span>
+											{#if txn.pending}
+												<Badge class="bg-amber-100 text-amber-800 text-xs font-semibold uppercase">Pending</Badge>
+											{/if}
+										</div>
 									</TableCell>
 									<TableCell class="py-3 px-4">
 										<Badge class={`${getCategoryBadgeClass(txn.personal_finance_category_primary)} text-xs uppercase`}>
@@ -401,8 +459,13 @@
 						<div class="bg-white rounded-lg p-4 shadow-card">
 							<div class="flex items-start justify-between mb-2">
 								<div class="flex-1">
-									<h3 class="font-semibold text-gray-800">{txn.merchant_name || 'Unknown'}</h3>
-									<Badge class={`${getCategoryBadgeClass(txn.personal_finance_category_primary)} text-xs uppercase mt-1`}>
+									<div class="flex items-center gap-2 mb-1">
+										<h3 class="font-semibold text-gray-800">{txn.merchant_name || 'Unknown'}</h3>
+										{#if txn.pending}
+											<Badge class="bg-amber-100 text-amber-800 text-xs font-semibold uppercase">Pending</Badge>
+										{/if}
+									</div>
+									<Badge class={`${getCategoryBadgeClass(txn.personal_finance_category_primary)} text-xs uppercase`}>
 										{formatCategory(txn.personal_finance_category_primary)}
 									</Badge>
 								</div>
@@ -461,3 +524,116 @@
 		{/if}
 	</div>
 </div>
+
+<style>
+	/* Spending by Category - Match Dashboard SpendingBreakdown styles */
+	.spending-categories-list {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+	}
+
+	.spending-category-row {
+		display: grid;
+		grid-template-columns: minmax(120px, 1fr) 2fr 140px;
+		gap: 1rem;
+		align-items: center;
+	}
+
+	.spending-category-name {
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: #374151; /* gray-700 */
+	}
+
+	.spending-bar-container {
+		width: 100%;
+	}
+
+	.spending-bar-background {
+		width: 100%;
+		height: 24px;
+		background-color: #f3f4f6; /* gray-100 */
+		border-radius: 9999px;
+		overflow: hidden;
+		position: relative;
+	}
+
+	.spending-bar-fill {
+		height: 100%;
+		background: linear-gradient(to right, #3b82f6, #60a5fa); /* brand-blue gradient */
+		border-radius: 9999px;
+		transition: width 0.3s ease;
+	}
+
+	.spending-category-stats {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		justify-content: flex-end;
+	}
+
+	.spending-percentage {
+		font-size: 0.75rem;
+		color: #6b7280; /* gray-500 */
+		font-variant-numeric: tabular-nums;
+		min-width: 40px;
+		text-align: right;
+	}
+
+	.spending-amount {
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: #1f2937; /* gray-800 */
+		font-variant-numeric: tabular-nums;
+		min-width: 80px;
+		text-align: right;
+	}
+
+	/* Expand/Collapse Button */
+	.spending-expand-button {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-top: 1.5rem;
+		padding: 0.75rem 1rem;
+		width: 100%;
+		background-color: #f9fafb; /* gray-50 */
+		border: 1px solid #e5e7eb; /* gray-200 */
+		border-radius: 0.5rem;
+		color: #374151; /* gray-700 */
+		font-size: 0.875rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.15s ease;
+		justify-content: center;
+	}
+
+	.spending-expand-button:hover {
+		background-color: #f3f4f6; /* gray-100 */
+		border-color: #d1d5db; /* gray-300 */
+	}
+
+	.expand-icon {
+		font-size: 1.125rem;
+		font-weight: 600;
+		color: #3b82f6; /* brand-blue */
+	}
+
+	.expand-meta {
+		color: #6b7280; /* gray-500 */
+		font-weight: 400;
+	}
+
+	/* Responsive */
+	@media (max-width: 768px) {
+		.spending-category-row {
+			grid-template-columns: 1fr;
+			gap: 0.5rem;
+		}
+
+		.spending-category-stats {
+			justify-content: space-between;
+		}
+	}
+</style>

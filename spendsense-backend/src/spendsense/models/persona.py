@@ -19,6 +19,7 @@ class PersonaType(str, Enum):
     VARIABLE_INCOME = "variable_income"  # Irregular payroll patterns
     SUBSCRIPTION_HEAVY = "subscription_heavy"  # Multiple recurring merchants
     SAVINGS_BUILDER = "savings_builder"  # Growing savings accounts
+    DEBT_CONSOLIDATOR = "debt_consolidator"  # Multiple cards with moderate utilization (5th custom persona)
     BALANCED = "balanced"  # Default, no specific patterns
 
 

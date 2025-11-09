@@ -74,7 +74,12 @@
 						<div class="transaction-left">
 							<span class="category-icon">{getCategoryIcon(transaction.personal_finance_category_primary)}</span>
 							<div class="transaction-details">
-								<span class="merchant-name">{transaction.merchant_name || 'Transaction'}</span>
+								<div class="merchant-row">
+									<span class="merchant-name">{transaction.merchant_name || 'Transaction'}</span>
+									{#if transaction.pending}
+										<span class="pending-badge">Pending</span>
+									{/if}
+								</div>
 								<span class="transaction-date">{formatRelativeDate(transaction.date)}</span>
 							</div>
 						</div>
@@ -148,6 +153,13 @@
 		min-width: 0;
 	}
 
+	.merchant-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		min-width: 0;
+	}
+
 	.merchant-name {
 		font-size: 0.875rem;
 		font-weight: 500;
@@ -155,6 +167,18 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+
+	.pending-badge {
+		flex-shrink: 0;
+		font-size: 0.625rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.025em;
+		padding: 0.125rem 0.375rem;
+		background-color: #fef3c7; /* amber-100 */
+		color: #92400e; /* amber-800 */
+		border-radius: 0.25rem;
 	}
 
 	.transaction-date {

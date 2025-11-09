@@ -4,6 +4,16 @@ from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 
 
+class WindowAnalysis(BaseModel):
+    """Analysis for a specific time window"""
+    window_days: int = Field(..., description="Analysis window in days (e.g., 30 or 180)")
+    persona_type: str = Field(..., description="Assigned persona type")
+    confidence: float = Field(..., ge=0.0, le=1.0, description="Persona confidence score")
+    signals_summary: Dict[str, Any] = Field(..., description="Summary of detected behavioral signals")
+    education_count: int = Field(..., description="Number of education recommendations")
+    offer_count: int = Field(..., description="Number of partner offers")
+
+
 class UserRecommendationSummary(BaseModel):
     """Summary of recommendations for a user in review queue"""
     user_id: str = Field(..., description="User ID")
@@ -105,16 +115,21 @@ class OperatorOverrideResponse(BaseModel):
 
 
 class InspectUserResponse(BaseModel):
-    """Comprehensive user inspection data for operator debugging (no consent checks)"""
+    """Comprehensive user inspection data for operator debugging with multi-window analysis"""
     user_id: str = Field(..., description="User ID")
     user_name: str = Field(..., description="User name")
     user_email: str = Field(..., description="User email")
     consent_status: bool = Field(..., description="Whether user has provided consent")
-    persona_type: Optional[str] = Field(None, description="Assigned persona (if consented)")
-    confidence: Optional[float] = Field(None, description="Persona confidence (if consented)")
-    signals_summary: Dict[str, Any] = Field(default_factory=dict, description="Detected behavioral signals")
-    education_recommendations: List[Any] = Field(default_factory=list, description="Education recommendations (if consented)")
-    offer_recommendations: List[Any] = Field(default_factory=list, description="Offer recommendations (if consented)")
+
+    # Multi-window analysis
+    short_term: WindowAnalysis = Field(..., description="30-day analysis window")
+    long_term: WindowAnalysis = Field(..., description="180-day analysis window")
+    persona_changed: bool = Field(..., description="True if personas differ between windows")
+
+    # Account/transaction counts
     account_count: int = Field(..., description="Number of connected accounts")
-    transaction_count: int = Field(..., description="Number of transactions in analysis window")
-    window_days: int = Field(..., description="Analysis window in days")
+    transaction_count: int = Field(..., description="Total number of transactions")
+
+    # Optional detailed recommendations
+    short_term_recommendations: Optional[List[Dict[str, Any]]] = Field(None, description="30-day recommendations (if requested)")
+    long_term_recommendations: Optional[List[Dict[str, Any]]] = Field(None, description="180-day recommendations (if requested)")

@@ -18,7 +18,7 @@ src_path = Path(__file__).parent.parent / "src"
 sys.path.insert(0, str(src_path))
 
 from spendsense.generators.template import TemplateGenerator
-from spendsense.services.features import BehaviorSignals
+from spendsense.features import BehaviorSignals
 
 
 async def test_high_utilization_persona():

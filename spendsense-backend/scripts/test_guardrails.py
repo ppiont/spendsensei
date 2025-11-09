@@ -6,7 +6,7 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from spendsense.utils.guardrails import check_tone, check_consent, DISCLAIMER
+from spendsense.guardrails import check_tone, check_consent, DISCLAIMER
 
 
 def test_check_tone():

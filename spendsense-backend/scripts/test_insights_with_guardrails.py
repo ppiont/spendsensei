@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from sqlalchemy import select
 from spendsense.database import AsyncSessionLocal
 from spendsense.models.user import User
-from spendsense.services.recommendations import generate_recommendations
+from spendsense.recommend.legacy import generate_recommendations
 from spendsense.generators.template import TemplateGenerator
 from spendsense.schemas.insight import InsightsResponse, RecommendationResponse
 
@@ -63,7 +63,7 @@ async def test_insights_integration():
             print(f"    Explanation length: {len(explanation)} chars")
 
             # Check for shaming language
-            from spendsense.utils.guardrails import check_tone
+            from spendsense.guardrails import check_tone
             is_valid, violations = check_tone(explanation)
 
             if is_valid:
@@ -91,7 +91,7 @@ async def test_insights_integration():
         print(f"  {insights_response.disclaimer}")
 
         # Verify disclaimer is present and contains key terms
-        from spendsense.utils.guardrails import DISCLAIMER
+        from spendsense.guardrails import DISCLAIMER
 
         if insights_response.disclaimer == DISCLAIMER:
             print("\n✓ Disclaimer matches DISCLAIMER constant")

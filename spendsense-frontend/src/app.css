@@ -71,8 +71,8 @@
 
 @theme {
   /* SpendSense Custom Colors - Tailwind v4 @theme format */
-  --color-blue-primary: #2C5282;
-  --color-blue-dark: #1A365D;
+  --color-blue-primary: #3b82f6; /* Updated to match gradient bar start (blue-500) */
+  --color-blue-dark: #2563eb; /* Updated to match gradient color family (blue-600) */
   --color-blue-50: #EBF8FF;
 
   --color-green-primary: #38A169;
@@ -200,6 +200,10 @@
   }
 
   .bg-brand-blue-dark {
+    background-color: var(--color-blue-dark);
+  }
+
+  .bg-blue-dark {
     background-color: var(--color-blue-dark);
   }
 
