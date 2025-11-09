@@ -5,7 +5,6 @@
  * Handles errors, timeouts, and JSON parsing automatically.
  */
 
-import { PUBLIC_API_BASE_URL } from '$env/static/public';
 import type {
   User,
   UserCreate,
@@ -17,10 +16,25 @@ import type {
   APIError
 } from '$lib/types';
 
-// Get API base URL from environment variable
-// Using $env/static/public - values embedded at BUILD time from Railway env vars
-// Railway must have PUBLIC_API_BASE_URL set as environment variable
-const API_BASE_URL = PUBLIC_API_BASE_URL || 'http://localhost:8000';
+// SIMPLE APPROACH: Detect environment from browser
+// In production (Railway), window.location.hostname won't be localhost
+// In development, it will be localhost
+function getApiBaseUrl(): string {
+  if (typeof window !== 'undefined') {
+    // Client-side: check if we're on Railway or localhost
+    const isProduction = !window.location.hostname.includes('localhost') &&
+                        !window.location.hostname.includes('127.0.0.1');
+
+    return isProduction
+      ? 'https://spendsense-backend.up.railway.app'
+      : 'http://localhost:8000';
+  }
+
+  // Server-side: use localhost for dev
+  return 'http://localhost:8000';
+}
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Request timeout in milliseconds
 const REQUEST_TIMEOUT = 10000;

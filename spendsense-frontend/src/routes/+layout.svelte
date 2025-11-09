@@ -2,9 +2,13 @@
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import Navigation from '$lib/components/Navigation.svelte';
+	import { setContext } from 'svelte';
 
-	let { children } = $props();
-</script>
+	let { children, data } = $props();
+
+	// Make API URL available to all child components
+	setContext('apiBaseUrl', data.apiBaseUrl);
+
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
