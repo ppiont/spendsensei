@@ -60,9 +60,22 @@ async def init_database():
             print("   Skipping synthetic data generation (database not empty)")
             return True
 
-        print("\n⚠️  Database is empty - synthetic data generation required")
-        print("   Run synthetic data generator script separately:")
-        print("   uv run python scripts/init_and_load_data.py")
+        print("\n⚠️  Database is empty - generating 50 demo users...")
+
+        # Import and run synthetic data generator
+        from spendsense.ingest.synthetic_generator import generate_dataset, save_dataset, load_data_from_json
+
+        print("   Step 1/2: Generating synthetic data...")
+        dataset = generate_dataset(num_users=50)
+        save_dataset(dataset)
+
+        print("   Step 2/2: Loading data into database...")
+        await load_data_from_json(db)
+
+        # Verify data loaded
+        result = await db.execute(select(User))
+        loaded_users = result.scalars().all()
+        print(f"\n✅ Successfully loaded {len(loaded_users)} users with demo data")
 
     print("\n" + "=" * 80)
     print("✅ Database initialization complete")
