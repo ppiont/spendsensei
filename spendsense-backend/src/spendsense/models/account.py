@@ -39,6 +39,9 @@ class Account(Base):
 
     # Credit card specific fields
     apr: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    apr_type: Mapped[Optional[str]] = mapped_column(
+        String(20), nullable=True, comment="APR type: purchase, cash_advance, penalty"
+    )  # Credit cards only: purchase, cash_advance, penalty
     min_payment: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     is_overdue: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     last_payment_amount: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)

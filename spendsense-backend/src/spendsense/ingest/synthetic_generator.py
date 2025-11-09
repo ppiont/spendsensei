@@ -81,6 +81,8 @@ def generate_accounts(user_id: str) -> list[dict[str, Any]]:
         ("depository", "checking"),
         ("depository", "savings"),
         ("credit", "credit_card"),
+        ("loan", "mortgage"),
+        ("loan", "student_loan"),
     ]
 
     for _ in range(num_accounts):
@@ -109,6 +111,11 @@ def generate_accounts(user_id: str) -> list[dict[str, Any]]:
             limit = random.randint(1000, 25000) * 100
             account["limit"] = limit
             account["apr"] = round(random.uniform(12.99, 29.99), 2)
+            # APR types: purchase (70%), cash_advance (20%), penalty (10%)
+            account["apr_type"] = random.choices(
+                ["purchase", "cash_advance", "penalty"],
+                weights=[0.7, 0.2, 0.1]
+            )[0]
             account["min_payment"] = int(current * 0.02)  # 2% minimum payment
             account["is_overdue"] = False
 
@@ -119,9 +126,35 @@ def generate_accounts(user_id: str) -> list[dict[str, Any]]:
             account["last_statement_balance"] = random.randint(100, 2000) * 100
             account["last_statement_date"] = fake.date_time_between(start_date="-60d", end_date="-30d").isoformat()
             account["interest_rate"] = None
-        else:
+        elif account_type == "loan":
+            # Loan-specific fields (mortgages and student loans)
             account["limit"] = None
             account["apr"] = None
+            account["apr_type"] = None
+            account["min_payment"] = None
+            account["is_overdue"] = False
+            account["last_payment_amount"] = None
+            account["last_payment_date"] = None
+            account["last_statement_balance"] = None
+            account["last_statement_date"] = None
+
+            if subtype == "mortgage":
+                # Mortgage: $100k-$500k balance, 3-7% interest rate
+                account["current_balance"] = random.randint(100000, 500000) * 100  # $100k-$500k in cents
+                account["available_balance"] = None  # Loans don't have available balance
+                account["interest_rate"] = round(random.uniform(0.03, 0.07), 4)  # 3-7%
+                account["next_payment_due_date"] = fake.date_time_between(start_date="+1d", end_date="+30d").isoformat()
+            elif subtype == "student_loan":
+                # Student loan: $10k-$150k balance, 4-8% interest rate
+                account["current_balance"] = random.randint(10000, 150000) * 100  # $10k-$150k in cents
+                account["available_balance"] = None  # Loans don't have available balance
+                account["interest_rate"] = round(random.uniform(0.04, 0.08), 4)  # 4-8%
+                account["next_payment_due_date"] = fake.date_time_between(start_date="+1d", end_date="+30d").isoformat()
+        else:
+            # Depository accounts (checking, savings)
+            account["limit"] = None
+            account["apr"] = None
+            account["apr_type"] = None
             account["min_payment"] = None
             account["is_overdue"] = False
             account["last_payment_amount"] = None
@@ -284,6 +317,7 @@ async def load_data_from_json(db: AsyncSession, json_path: str = "data/users.jso
                 currency=account_data["currency"],
                 holder_category=account_data["holder_category"],
                 apr=account_data.get("apr"),
+                apr_type=account_data.get("apr_type"),
                 min_payment=account_data.get("min_payment"),
                 is_overdue=account_data["is_overdue"],
                 last_payment_amount=account_data.get("last_payment_amount"),
