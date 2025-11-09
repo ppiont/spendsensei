@@ -2,6 +2,7 @@
 
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
+from spendsense.schemas.insight import RationaleResponse
 
 
 class WindowAnalysis(BaseModel):
@@ -24,6 +25,7 @@ class UserRecommendationSummary(BaseModel):
     education_count: int = Field(..., description="Number of education recommendations")
     offer_count: int = Field(..., description="Number of partner offers")
     signals_summary: Dict[str, Any] = Field(..., description="Behavioral signals")
+    rationale: RationaleResponse = Field(..., description="Explainable rationale for persona assignment")
     generated_at: str = Field(..., description="When insights were generated (ISO 8601)")
 
 
@@ -47,6 +49,12 @@ class ReviewQueueResponse(BaseModel):
                             "offer_count": 2,
                             "signals_summary": {
                                 "credit": {"overall_utilization": 85.5}
+                            },
+                            "rationale": {
+                                "persona_type": "high_utilization",
+                                "confidence": 0.92,
+                                "explanation": "Your credit card utilization is currently at 85.5%, significantly above the recommended 30% threshold.",
+                                "key_signals": ["high_credit_utilization", "revolving_balance"]
                             },
                             "generated_at": "2025-11-05T12:00:00Z"
                         }

@@ -18,6 +18,7 @@ from spendsense.schemas.operator import (
     OperatorOverrideResponse,
     InspectUserResponse
 )
+from spendsense.schemas.insight import RationaleResponse
 from spendsense.recommend.engine import StandardRecommendationEngine
 
 router = APIRouter(prefix="/operator", tags=["operator"])
@@ -70,6 +71,24 @@ async def get_review_queue(
                     window_days=30
                 )
 
+                # Extract rationale from first recommendation (all share same persona rationale)
+                if rec_result.education_recommendations:
+                    first_rec = rec_result.education_recommendations[0]
+                    rationale = RationaleResponse(
+                        persona_type=first_rec.rationale.persona_type,
+                        confidence=first_rec.rationale.confidence,
+                        explanation=first_rec.rationale.explanation,
+                        key_signals=first_rec.rationale.key_signals
+                    )
+                else:
+                    # Fallback: create basic rationale from persona data
+                    rationale = RationaleResponse(
+                        persona_type=rec_result.persona_type,
+                        confidence=rec_result.confidence,
+                        explanation=f"Assigned {rec_result.persona_type} persona based on behavioral signals.",
+                        key_signals=list(rec_result.signals_summary.keys())
+                    )
+
                 # Create summary
                 summary = UserRecommendationSummary(
                     user_id=user.id,
@@ -80,6 +99,7 @@ async def get_review_queue(
                     education_count=len(rec_result.education_recommendations),
                     offer_count=len(rec_result.offer_recommendations),
                     signals_summary=rec_result.signals_summary,
+                    rationale=rationale,
                     generated_at=datetime.now(timezone.utc).isoformat() + "Z"
                 )
 
