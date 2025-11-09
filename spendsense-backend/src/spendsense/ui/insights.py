@@ -100,28 +100,39 @@ async def get_user_insights(
             f"education={len(result.education_recommendations)}, offers={len(result.offer_recommendations)}"
         )
 
-        # Get operator overrides for this user to filter flagged recommendations
-        overrides_result = await db.execute(
+        # Get operator overrides for this user to filter/force-include recommendations
+        flagged_result = await db.execute(
             select(OperatorOverride)
             .where(OperatorOverride.user_id == user_id)
             .where(OperatorOverride.action == "flag")
         )
-        overrides = overrides_result.scalars().all()
+        flagged_overrides = flagged_result.scalars().all()
 
-        # Create set of flagged recommendation IDs for efficient lookup
-        flagged_ids = {override.recommendation_id for override in overrides}
+        approved_result = await db.execute(
+            select(OperatorOverride)
+            .where(OperatorOverride.user_id == user_id)
+            .where(OperatorOverride.action == "approve")
+        )
+        approved_overrides = approved_result.scalars().all()
 
-        logger.info(f"Found {len(flagged_ids)} flagged recommendations for user {user_id}")
+        # Create sets of override IDs for efficient lookup
+        flagged_ids = {override.recommendation_id for override in flagged_overrides}
+        approved_ids = {override.recommendation_id for override in approved_overrides}
 
-        # Filter out flagged recommendations
+        logger.info(
+            f"Operator overrides for user {user_id}: "
+            f"{len(flagged_ids)} flagged, {len(approved_ids)} approved"
+        )
+
+        # Filter out flagged recommendations (unless also approved - approve wins)
         filtered_education = [
             rec for rec in result.education_recommendations
-            if rec.content.id not in flagged_ids
+            if rec.content.id not in flagged_ids or rec.content.id in approved_ids
         ]
 
         filtered_offers = [
             rec for rec in result.offer_recommendations
-            if rec.offer.id not in flagged_ids
+            if rec.offer.id not in flagged_ids or rec.offer.id in approved_ids
         ]
 
         logger.info(

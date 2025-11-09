@@ -3,11 +3,11 @@ Eligibility Checking Guardrails
 
 Validates that users meet requirements for recommended products and services.
 
-TODO: Implement comprehensive eligibility checks including:
-- Income requirements
-- Credit score requirements (when available)
-- Existing account filtering
-- Predatory product blocklist
+Implemented checks:
+- Income requirements (minimum income thresholds)
+- Existing account filtering (avoid duplicate account types)
+- Predatory product blocklist (payday loans, high-APR products)
+- Credit score requirements (when available in future)
 """
 
 import logging
@@ -26,8 +26,6 @@ def check_income_requirement(offer: Dict[str, Any], user_income: int) -> bool:
 
     Returns:
         True if user meets income requirement or no requirement exists
-
-    TODO: Implement actual income checking logic
     """
     min_income = offer.get("min_income", 0)
     if min_income == 0:
@@ -50,8 +48,6 @@ def has_existing_account(user_accounts: List[Dict[str, Any]], account_type: str)
 
     Returns:
         True if user has an account of this type
-
-    TODO: Implement actual account type checking
     """
     for account in user_accounts:
         if account.get("subtype") == account_type:
@@ -69,9 +65,10 @@ def is_predatory_product(offer: Dict[str, Any]) -> bool:
     Returns:
         True if product is predatory (should be blocked)
 
-    TODO: Implement predatory product detection (payday loans, high-fee products, etc.)
+    Blocked products:
+        - Payday loans, title loans, rent-to-own
+        - Any product with APR > 36% (state cap threshold)
     """
-    # Placeholder implementation
     product_type = offer.get("type", "").lower()
 
     # Block known predatory products
@@ -93,14 +90,17 @@ def check_eligibility(offer: Dict[str, Any], user_data: Dict[str, Any]) -> bool:
     """
     Comprehensive eligibility check for a partner offer.
 
+    Runs all eligibility checks in sequence:
+    1. Predatory product filtering (blocks high-risk products)
+    2. Income requirement verification
+    3. Existing account duplication prevention
+
     Args:
         offer: Partner offer to check eligibility for
         user_data: User's financial data including accounts, income, etc.
 
     Returns:
         True if user is eligible for this offer
-
-    TODO: Implement comprehensive eligibility pipeline
     """
     # Check for predatory products first
     if is_predatory_product(offer):
