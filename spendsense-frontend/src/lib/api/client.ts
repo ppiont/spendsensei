@@ -5,6 +5,7 @@
  * Handles errors, timeouts, and JSON parsing automatically.
  */
 
+import { PUBLIC_API_BASE_URL } from '$env/static/public';
 import type {
   User,
   UserCreate,
@@ -16,25 +17,14 @@ import type {
   APIError
 } from '$lib/types';
 
-// SIMPLE APPROACH: Detect environment from browser
-// In production (Railway), window.location.hostname won't be localhost
-// In development, it will be localhost
-function getApiBaseUrl(): string {
-  if (typeof window !== 'undefined') {
-    // Client-side: check if we're on Railway or localhost
-    const isProduction = !window.location.hostname.includes('localhost') &&
-                        !window.location.hostname.includes('127.0.0.1');
+// Railway sets PUBLIC_API_BASE_URL during build
+// SvelteKit's $env/static/public embeds the value at build time
+const API_BASE_URL = PUBLIC_API_BASE_URL || 'http://localhost:8000';
 
-    return isProduction
-      ? 'https://spendsense-backend.up.railway.app'
-      : 'http://localhost:8000';
-  }
-
-  // Server-side: use localhost for dev
-  return 'http://localhost:8000';
+// Log the API URL on client initialization to debug
+if (typeof window !== 'undefined') {
+  console.log('[API Client] Using API URL:', API_BASE_URL);
 }
-
-const API_BASE_URL = getApiBaseUrl();
 
 // Request timeout in milliseconds
 const REQUEST_TIMEOUT = 10000;
