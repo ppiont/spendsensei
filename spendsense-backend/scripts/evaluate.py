@@ -54,6 +54,9 @@ class EvaluationMetrics:
         # Auditability metrics
         self.recs_with_complete_trace = 0
 
+        # Relevance metrics
+        self.relevance_scores = []
+
         # Persona distribution
         self.persona_counts = {}
 
@@ -99,6 +102,12 @@ class EvaluationMetrics:
         if self.total_recommendations == 0:
             return 0.0
         return (self.recs_with_complete_trace / self.total_recommendations) * 100
+
+    def calculate_relevance_avg(self) -> float:
+        """Calculate average relevance score (1-5 scale)."""
+        if not self.relevance_scores:
+            return 0.0
+        return statistics.mean(self.relevance_scores)
 
 
 async def evaluate_user(
@@ -180,7 +189,7 @@ async def evaluate_user(
             if signal_count >= 3:
                 metrics.users_with_min_signals += 1
 
-        # Check explainability and auditability for each recommendation
+        # Check explainability, auditability, and relevance for each recommendation
         for rec in recommendations:
             # Explainability: has explanation text
             if rec.rationale.explanation and len(rec.rationale.explanation) > 0:
@@ -201,6 +210,10 @@ async def evaluate_user(
 
             if has_complete_trace:
                 metrics.recs_with_complete_trace += 1
+
+            # Relevance: track relevance score (1-5 scale)
+            if hasattr(rec.content, 'relevance_score') and rec.content.relevance_score is not None:
+                metrics.relevance_scores.append(rec.content.relevance_score)
 
         user_result["success"] = True
 
@@ -292,6 +305,15 @@ async def run_evaluation() -> Dict[str, Any]:
     print(f"  - Recs with complete trace: {metrics.recs_with_complete_trace}/{metrics.total_recommendations}")
     print()
 
+    # Relevance
+    relevance_avg = metrics.calculate_relevance_avg()
+    relevance_pass = relevance_avg >= 3.0  # Target: average relevance ≥ 3.0 (Good match or better)
+    print(f"Relevance (avg): {relevance_avg:6.2f}/5 {'✓ PASS' if relevance_pass else '✗ FAIL'} (target: ≥3.0)")
+    print(f"  - Recommendations with relevance scores: {len(metrics.relevance_scores)}/{metrics.total_recommendations}")
+    if metrics.relevance_scores:
+        print(f"  - Min: {min(metrics.relevance_scores)}, Max: {max(metrics.relevance_scores)}")
+    print()
+
     # Persona distribution
     print("Persona Distribution:")
     for persona, count in sorted(metrics.persona_counts.items()):
@@ -300,7 +322,7 @@ async def run_evaluation() -> Dict[str, Any]:
     print()
 
     # Overall result
-    all_pass = all([coverage_pass, explainability_pass, latency_pass, auditability_pass])
+    all_pass = all([coverage_pass, explainability_pass, latency_pass, auditability_pass, relevance_pass])
     print("=" * 80)
     if all_pass:
         print("✓ ALL METRICS PASS")
@@ -339,6 +361,14 @@ async def run_evaluation() -> Dict[str, Any]:
                 "target": 100.0,
                 "pass": auditability_pass,
                 "recs_with_complete_trace": metrics.recs_with_complete_trace
+            },
+            "relevance_avg": {
+                "value": relevance_avg,
+                "target": 3.0,
+                "pass": relevance_pass,
+                "recs_with_scores": len(metrics.relevance_scores),
+                "min_score": min(metrics.relevance_scores) if metrics.relevance_scores else None,
+                "max_score": max(metrics.relevance_scores) if metrics.relevance_scores else None
             }
         },
         "latency_percentiles": percentiles,
