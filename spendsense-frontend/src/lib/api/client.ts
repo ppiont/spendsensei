@@ -137,7 +137,9 @@ export const userAPI = {
    * Get all users
    */
   async getUsers(): Promise<User[]> {
-    const response = await fetchWithTimeout(`${API_BASE_URL}/users`);
+    const url = `${API_BASE_URL}/users`;
+    console.log('[API] getUsers() - API_BASE_URL:', API_BASE_URL, '- Full URL:', url);
+    const response = await fetchWithTimeout(url);
     return handleResponse<User[]>(response);
   },
 
