@@ -144,6 +144,34 @@ class TemplateGenerator(ContentGenerator):
         logger.debug(f"Extracted signal tags: {tags}")
         return tags
 
+    def _convert_to_1_to_5_scale(self, match_score: float) -> int:
+        """
+        Convert 0-1 match score to 1-5 relevance scale.
+
+        Scale mapping:
+        - 1 = Poor match (0.0-0.2)
+        - 2 = Fair match (0.2-0.4)
+        - 3 = Good match (0.4-0.6)
+        - 4 = Very good match (0.6-0.8)
+        - 5 = Excellent match (0.8-1.0)
+
+        Args:
+            match_score: Raw relevance score between 0.0 and 1.0
+
+        Returns:
+            Integer score between 1 and 5
+        """
+        if match_score < 0.2:
+            return 1
+        elif match_score < 0.4:
+            return 2
+        elif match_score < 0.6:
+            return 3
+        elif match_score < 0.8:
+            return 4
+        else:
+            return 5
+
     def _calculate_relevance(
         self,
         content_item: Dict[str, Any],
@@ -258,7 +286,7 @@ class TemplateGenerator(ContentGenerator):
                 body=item["body"],
                 cta=item["cta"],
                 source=item["source"],
-                relevance_score=score
+                relevance_score=self._convert_to_1_to_5_scale(score)
             )
             result.append(education_item)
 
@@ -795,7 +823,7 @@ class TemplateGenerator(ContentGenerator):
                 continue
 
             # Calculate relevance score (similar to education content)
-            relevance_score = self._calculate_relevance(offer_data, persona_type, signal_tags)
+            raw_score = self._calculate_relevance(offer_data, persona_type, signal_tags)
 
             # Create PartnerOffer object
             partner_offer = PartnerOffer(
@@ -809,11 +837,11 @@ class TemplateGenerator(ContentGenerator):
                 cta=offer_data["cta"],
                 cta_url=offer_data["cta_url"],
                 disclaimer=offer_data["disclaimer"],
-                relevance_score=relevance_score,
+                relevance_score=self._convert_to_1_to_5_scale(raw_score),
                 eligibility_met=True
             )
 
-            scored_offers.append((relevance_score, partner_offer))
+            scored_offers.append((raw_score, partner_offer))
 
         # Sort by relevance score (highest first)
         scored_offers.sort(reverse=True, key=lambda x: x[0])
