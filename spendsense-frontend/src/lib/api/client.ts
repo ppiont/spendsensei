@@ -5,6 +5,8 @@
  * Handles errors, timeouts, and JSON parsing automatically.
  */
 
+import { env } from '$env/dynamic/public';
+import { browser } from '$app/environment';
 import type {
   User,
   UserCreate,
@@ -17,11 +19,24 @@ import type {
 } from '$lib/types';
 
 // Get API base URL from environment variable
-// Railway provides RAILWAY_SERVICE_SPENDSENSEI_URL, fallback to VITE_API_BASE_URL
-const railwayServiceUrl = import.meta.env.VITE_RAILWAY_SERVICE_SPENDSENSEI_URL;
-const API_BASE_URL = railwayServiceUrl
-  ? `https://${railwayServiceUrl}`
-  : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
+// SvelteKit's $env/dynamic/public works at runtime (not build-time)
+// This is critical for adapter-node with SSR
+function getApiBaseUrl(): string {
+  // Try Railway's auto-provided service URL first
+  if (env.PUBLIC_RAILWAY_SERVICE_SPENDSENSEI_URL) {
+    return `https://${env.PUBLIC_RAILWAY_SERVICE_SPENDSENSEI_URL}`;
+  }
+
+  // Fallback to explicit API base URL
+  if (env.PUBLIC_API_BASE_URL) {
+    return env.PUBLIC_API_BASE_URL;
+  }
+
+  // Development fallback
+  return 'http://localhost:8000';
+}
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Request timeout in milliseconds
 const REQUEST_TIMEOUT = 10000;
