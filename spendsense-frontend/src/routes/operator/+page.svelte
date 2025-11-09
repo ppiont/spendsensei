@@ -18,11 +18,11 @@
 	let error = $state<string | null>(null);
 	let selectedWindow = $state(30);
 
-	// Get derived data
+	// Get derived data (using short_term window by default)
 	const hasConsent = $derived(inspectData?.consent_status || false);
-	const hasPersona = $derived(inspectData?.persona_type !== null && inspectData?.persona_type !== undefined);
-	const recommendations = $derived(inspectData?.education_recommendations || []);
-	const offers = $derived(inspectData?.offer_recommendations || []);
+	const hasPersona = $derived(inspectData?.short_term?.persona_type !== null && inspectData?.short_term?.persona_type !== undefined);
+	const recommendations = $derived(inspectData?.short_term_recommendations || []);
+	const offers = $derived(inspectData?.long_term_recommendations || []);
 
 	// Format JSON for display
 	function formatJSON(obj: any): string {
@@ -147,7 +147,7 @@
 							<p class="text-xs font-medium text-muted-foreground">Persona</p>
 							{#if hasPersona}
 								<p class="text-sm font-semibold text-primary px-2 py-1 bg-primary/10 rounded inline-block">
-									{inspectData.persona_type}
+									{inspectData.short_term.persona_type}
 								</p>
 							{:else}
 								<p class="text-sm text-muted-foreground">Not assigned</p>
@@ -168,30 +168,30 @@
 					</div>
 				</section>
 
-				<!-- Behavioral Signals -->
+				<!-- Behavioral Signals (Short-Term) -->
 				<section class="bg-card rounded-lg border border-border shadow-sm p-6">
 					<h2 class="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-						<span>🎯</span> Behavioral Signals
+						<span>🎯</span> Behavioral Signals (30-day)
 					</h2>
 					<div class="bg-muted rounded-lg p-4 overflow-x-auto">
-						<pre class="text-xs font-mono text-foreground">{formatJSON(inspectData.signals_summary)}</pre>
+						<pre class="text-xs font-mono text-foreground">{formatJSON(inspectData.short_term.signals_summary)}</pre>
 					</div>
 				</section>
 
-				<!-- Persona Assignment -->
+				<!-- Persona Assignment (Short-Term) -->
 				<section class="bg-card rounded-lg border border-border shadow-sm p-6">
 					<h2 class="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-						<span>🎭</span> Persona Assignment
+						<span>🎭</span> Persona Assignment (30-day)
 					</h2>
 					{#if hasConsent && hasPersona}
 						<div class="space-y-3">
 							<div class="flex gap-4 py-2 border-b border-border">
 								<span class="text-sm font-medium text-muted-foreground min-w-[140px]">Assigned Persona:</span>
-								<span class="text-sm text-foreground font-semibold">{inspectData.persona_type}</span>
+								<span class="text-sm text-foreground font-semibold">{inspectData.short_term.persona_type}</span>
 							</div>
 							<div class="flex gap-4 py-2">
 								<span class="text-sm font-medium text-muted-foreground min-w-[140px]">Confidence Score:</span>
-								<span class="text-sm text-foreground">{((inspectData.confidence || 0) * 100).toFixed(2)}%</span>
+								<span class="text-sm text-foreground">{((inspectData.short_term.confidence || 0) * 100).toFixed(2)}%</span>
 							</div>
 						</div>
 					{:else if !hasConsent}

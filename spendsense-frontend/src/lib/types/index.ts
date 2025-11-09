@@ -113,19 +113,27 @@ export interface InsightsResponse {
   disclaimer: string;
 }
 
+export interface WindowAnalysis {
+  window_days: number;
+  persona_type: string | null;
+  confidence: number | null;
+  signals_summary: Record<string, any>;
+  education_count: number;
+  offer_count: number;
+}
+
 export interface InspectUserResponse {
   user_id: string;
   user_name: string;
   user_email: string;
   consent_status: boolean;
-  persona_type: string | null;
-  confidence: number | null;
-  signals_summary: Record<string, any>;
-  education_recommendations: any[];
-  offer_recommendations: any[];
+  short_term: WindowAnalysis;
+  long_term: WindowAnalysis;
+  persona_changed: boolean;
   account_count: number;
   transaction_count: number;
-  window_days: number;
+  short_term_recommendations: any[] | null;
+  long_term_recommendations: any[] | null;
 }
 
 // API Error type
