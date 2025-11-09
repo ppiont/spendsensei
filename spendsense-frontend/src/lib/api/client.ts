@@ -5,8 +5,7 @@
  * Handles errors, timeouts, and JSON parsing automatically.
  */
 
-import { env } from '$env/dynamic/public';
-import { browser } from '$app/environment';
+import { PUBLIC_API_BASE_URL, PUBLIC_RAILWAY_SERVICE_SPENDSENSEI_URL } from '$env/static/public';
 import type {
   User,
   UserCreate,
@@ -19,17 +18,17 @@ import type {
 } from '$lib/types';
 
 // Get API base URL from environment variable
-// SvelteKit's $env/dynamic/public works at runtime (not build-time)
-// This is critical for adapter-node with SSR
+// Using $env/static/public so values are embedded at BUILD time from Railway env vars
+// This works with adapter-node SSR for both server and client
 function getApiBaseUrl(): string {
   // Try Railway's auto-provided service URL first
-  if (env.PUBLIC_RAILWAY_SERVICE_SPENDSENSEI_URL) {
-    return `https://${env.PUBLIC_RAILWAY_SERVICE_SPENDSENSEI_URL}`;
+  if (PUBLIC_RAILWAY_SERVICE_SPENDSENSEI_URL) {
+    return `https://${PUBLIC_RAILWAY_SERVICE_SPENDSENSEI_URL}`;
   }
 
   // Fallback to explicit API base URL
-  if (env.PUBLIC_API_BASE_URL) {
-    return env.PUBLIC_API_BASE_URL;
+  if (PUBLIC_API_BASE_URL) {
+    return PUBLIC_API_BASE_URL;
   }
 
   // Development fallback
