@@ -268,13 +268,30 @@ class TemplateGenerator(ContentGenerator):
 
         # Score and filter content items
         scored_items = []
+        zero_score_count = 0
         for item in education_items:
             score = self._calculate_relevance(item, persona_type, signal_tags)
             if score > 0:
                 scored_items.append((score, item))
+            else:
+                zero_score_count += 1
+
+        # Decision trace: Items filtered out by zero score
+        if zero_score_count > 0:
+            logger.info(
+                f"[DecisionTrace] Filtered {zero_score_count}/{len(education_items)} education items "
+                f"(zero relevance score)"
+            )
 
         # Sort by score (highest first)
         scored_items.sort(key=lambda x: x[0], reverse=True)
+
+        # Decision trace: Items ranked but not selected
+        if len(scored_items) > limit:
+            logger.info(
+                f"[DecisionTrace] {len(scored_items) - limit} education items ranked but not selected "
+                f"(below top {limit})"
+            )
 
         # Convert to EducationItem objects (top N)
         result = []
@@ -809,16 +826,20 @@ class TemplateGenerator(ContentGenerator):
 
         # Filter and score offers
         scored_offers = []
+        persona_filtered = 0
+        eligibility_filtered = 0
 
         for offer_data in all_offers:
             # Check if offer is relevant to persona
             persona_tags = offer_data.get("persona_tags", [])
             if persona_type not in persona_tags:
+                persona_filtered += 1
                 continue
 
             # Check eligibility
             is_eligible = self._check_eligibility(offer_data, signals, accounts, signal_tags)
             if not is_eligible:
+                eligibility_filtered += 1
                 logger.debug(f"Offer {offer_data['id']} not eligible for user")
                 continue
 
@@ -843,8 +864,23 @@ class TemplateGenerator(ContentGenerator):
 
             scored_offers.append((raw_score, partner_offer))
 
+        # Decision trace: Offers filtered out
+        logger.info(
+            f"[DecisionTrace] Partner offers: {len(all_offers)} total, "
+            f"{persona_filtered} filtered (persona mismatch), "
+            f"{eligibility_filtered} filtered (eligibility), "
+            f"{len(scored_offers)} eligible"
+        )
+
         # Sort by relevance score (highest first)
         scored_offers.sort(reverse=True, key=lambda x: x[0])
+
+        # Decision trace: Offers ranked but not selected
+        if len(scored_offers) > limit:
+            logger.info(
+                f"[DecisionTrace] {len(scored_offers) - limit} partner offers ranked but not selected "
+                f"(below top {limit})"
+            )
 
         # Return top N offers
         top_offers = [offer for score, offer in scored_offers[:limit]]

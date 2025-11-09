@@ -222,7 +222,14 @@ class StandardRecommendationEngine(RecommendationEngine):
         logger.info(f"[StandardEngine] Step 4: Generating content-specific rationales")
         education_recommendations = []
 
-        for content_item in education_items:
+        for i, content_item in enumerate(education_items, 1):
+            # Log decision trace for content selection
+            logger.info(
+                f"[DecisionTrace] Education item {i}/{len(education_items)}: "
+                f"id={content_item.id}, relevance_score={content_item.relevance_score}/5, "
+                f"title='{content_item.title[:50]}...'"
+            )
+
             # Use content-specific rationale generation
             rationale = await self.generator.generate_content_rationale(
                 content_item=content_item,
@@ -242,7 +249,14 @@ class StandardRecommendationEngine(RecommendationEngine):
         # Step 6: Generate rationale for each offer
         offer_recommendations = []
 
-        for offer_item in offer_items:
+        for i, offer_item in enumerate(offer_items, 1):
+            # Log decision trace for offer selection
+            logger.info(
+                f"[DecisionTrace] Partner offer {i}/{len(offer_items)}: "
+                f"id={offer_item.id}, relevance_score={offer_item.relevance_score}/5, "
+                f"eligibility_met={offer_item.eligibility_met}, title='{offer_item.title[:50]}...'"
+            )
+
             # Offers use the same rationale as education (explains persona)
             rationale = await self.generator.generate_rationale(
                 persona_type=persona_type,
