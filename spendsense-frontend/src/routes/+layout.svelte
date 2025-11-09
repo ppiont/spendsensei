@@ -2,8 +2,12 @@
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import Navigation from '$lib/components/Navigation.svelte';
+	import { setApiBaseUrl } from '$lib/api/client';
 
-	let { children } = $props();
+	let { children, data } = $props();
+
+	// Set API URL from server-loaded data (Railway environment variable)
+	setApiBaseUrl(data.apiBaseUrl);
 </script>
 
 <svelte:head>

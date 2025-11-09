@@ -5,7 +5,6 @@
  * Handles errors, timeouts, and JSON parsing automatically.
  */
 
-import { PUBLIC_API_BASE_URL } from '$env/static/public';
 import type {
   User,
   UserCreate,
@@ -17,13 +16,22 @@ import type {
   APIError
 } from '$lib/types';
 
-// Railway sets PUBLIC_API_BASE_URL during build
-// SvelteKit's $env/static/public embeds the value at build time
-const API_BASE_URL = PUBLIC_API_BASE_URL || 'http://localhost:8000';
+// Global API base URL - will be set by setApiBaseUrl()
+let API_BASE_URL = 'http://localhost:8000';
 
-// Log the API URL on client initialization to debug
-if (typeof window !== 'undefined') {
-  console.log('[API Client] Using API URL:', API_BASE_URL);
+/**
+ * Set the API base URL (called from +layout.svelte with server-loaded data)
+ */
+export function setApiBaseUrl(url: string) {
+  API_BASE_URL = url;
+  console.log('[API Client] API URL set to:', API_BASE_URL);
+}
+
+/**
+ * Get current API base URL
+ */
+export function getApiBaseUrl(): string {
+  return API_BASE_URL;
 }
 
 // Request timeout in milliseconds

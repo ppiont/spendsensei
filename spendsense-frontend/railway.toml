@@ -1,6 +1,7 @@
-# Railway will auto-detect Dockerfile
-# No build config needed - Dockerfile handles everything
+[build]
+builder = "RAILPACK"
 
 [deploy]
+startCommand = "node build/index.js"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
