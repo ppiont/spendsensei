@@ -17,7 +17,11 @@ import type {
 } from '$lib/types';
 
 // Get API base URL from environment variable
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+// Railway provides RAILWAY_SERVICE_SPENDSENSEI_URL, fallback to VITE_API_BASE_URL
+const railwayServiceUrl = import.meta.env.VITE_RAILWAY_SERVICE_SPENDSENSEI_URL;
+const API_BASE_URL = railwayServiceUrl
+  ? `https://${railwayServiceUrl}`
+  : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
 
 // Request timeout in milliseconds
 const REQUEST_TIMEOUT = 10000;
