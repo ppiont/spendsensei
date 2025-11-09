@@ -16,8 +16,7 @@
 	// Fetch users on mount
 	onMount(async () => {
 		try {
-			const response = await fetch('http://localhost:8000/users');
-			users = await response.json();
+			users = await api.users.getUsers();
 
 			// Set first user if none selected
 			if (!$selectedUserId && users.length > 0) {
