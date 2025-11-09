@@ -5,7 +5,7 @@
  * Handles errors, timeouts, and JSON parsing automatically.
  */
 
-import { PUBLIC_API_BASE_URL, PUBLIC_RAILWAY_SERVICE_SPENDSENSEI_URL } from '$env/static/public';
+import { PUBLIC_API_BASE_URL } from '$env/static/public';
 import type {
   User,
   UserCreate,
@@ -18,24 +18,9 @@ import type {
 } from '$lib/types';
 
 // Get API base URL from environment variable
-// Using $env/static/public so values are embedded at BUILD time from Railway env vars
-// This works with adapter-node SSR for both server and client
-function getApiBaseUrl(): string {
-  // Try Railway's auto-provided service URL first
-  if (PUBLIC_RAILWAY_SERVICE_SPENDSENSEI_URL) {
-    return `https://${PUBLIC_RAILWAY_SERVICE_SPENDSENSEI_URL}`;
-  }
-
-  // Fallback to explicit API base URL
-  if (PUBLIC_API_BASE_URL) {
-    return PUBLIC_API_BASE_URL;
-  }
-
-  // Development fallback
-  return 'http://localhost:8000';
-}
-
-const API_BASE_URL = getApiBaseUrl();
+// Using $env/static/public - values embedded at BUILD time from Railway env vars
+// Railway must have PUBLIC_API_BASE_URL set as environment variable
+const API_BASE_URL = PUBLIC_API_BASE_URL || 'http://localhost:8000';
 
 // Request timeout in milliseconds
 const REQUEST_TIMEOUT = 10000;
