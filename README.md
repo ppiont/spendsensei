@@ -22,8 +22,8 @@ The API will be available at:
 
 ```bash
 cd spendsense-frontend
-npm install                          # or: bun install
-npm run dev                          # or: bun run dev
+bun install                          # or: npm install
+bun run dev                          # or: npm run dev
 ```
 
 The app will be available at: http://localhost:5173
@@ -96,13 +96,19 @@ SpendSense uses a Plaid-compliant data model:
 
 ## Project Structure
 
+SpendSense follows a modular architecture with 8 core modules for clear separation of concerns:
+
 ```
 spendsensei/
 ├── spendsense-backend/          # FastAPI backend
 │   ├── src/spendsense/
-│   │   ├── routers/             # API endpoints
-│   │   ├── services/            # Business logic (signals, personas, recommendations)
-│   │   ├── generators/          # Content generation
+│   │   ├── ingest/              # Data loading and validation
+│   │   ├── features/            # Signal detection (subscriptions, savings, credit, income)
+│   │   ├── personas/            # Persona assignment logic
+│   │   ├── recommend/           # Recommendation engine and content selection
+│   │   ├── guardrails/          # Content safety, consent, eligibility checks
+│   │   ├── ui/                  # API endpoints (users, accounts, transactions, insights)
+│   │   ├── eval/                # Evaluation harness and metrics
 │   │   ├── schemas/             # Pydantic models for API
 │   │   └── models/              # SQLAlchemy ORM models
 │   ├── data/                    # SQLite database and content catalog
@@ -140,10 +146,10 @@ python scripts/test_insights_endpoint.py
 
 ### Understanding the Recommendation Pipeline
 
-1. **Signal Detection** (`services/features.py`) - Analyzes transactions for patterns
-2. **Persona Assignment** (`services/personas.py`) - Matches signals to persona types
-3. **Content Generation** (`generators/template.py`) - Scores and selects relevant content
-4. **Recommendation Engine** (`services/recommendations.py`) - Orchestrates the full pipeline
+1. **Signal Detection** (`features/`) - Analyzes transactions for patterns (subscriptions, savings, credit, income)
+2. **Persona Assignment** (`personas/`) - Matches signals to persona types with confidence scoring
+3. **Content Selection** (`recommend/content_selection.py`) - Scores and selects relevant educational content
+4. **Recommendation Engine** (`recommend/engine.py`) - Orchestrates the full pipeline with guardrails
 
 ## System Performance
 

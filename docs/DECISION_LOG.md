@@ -125,6 +125,47 @@ This document captures key technical and architectural decisions made during the
 
 ---
 
+### ADR-007: Module Reorganization for Project Description Compliance
+
+**Decision:** Reorganize codebase from generic module names (routers/, services/, generators/) to domain-specific modules (ui/, features/, personas/, recommend/, guardrails/, ingest/, eval/)
+
+**Context:**
+- Original Project Description specified 8 required modules with specific naming
+- Initial implementation used generic names that didn't match requirements
+- Needed to refactor for architectural compliance and maintainability
+
+**Rationale:**
+- **Compliance**: Project Description explicitly required specific module structure
+- **Clarity**: Domain-specific names make purpose immediately obvious
+- **Separation of Concerns**: Clear boundaries between data loading, analysis, decision-making, and safety
+- **Maintainability**: Easier to locate and modify code when modules match domain concepts
+- **Auditability**: Straightforward to verify each requirement is properly implemented
+
+**Implementation:**
+- Created 8 new modules: `ingest/`, `features/`, `personas/`, `recommend/`, `guardrails/`, `ui/`, `eval/`
+- Split monolithic `services/features.py` (692 lines) into 6 modular files
+- Moved 100+ imports across entire codebase
+- Added comprehensive `__init__.py` files for clean public APIs
+- Maintained backward compatibility through aliases where needed
+
+**Trade-offs:**
+- ✅ Clear domain boundaries and improved code organization
+- ✅ Easier to audit against Project Description requirements
+- ✅ Better separation of concerns (one module = one responsibility)
+- ✅ Easier onboarding for new developers (self-documenting structure)
+- ❌ One-time refactoring effort (~4-6 hours)
+- ❌ Slightly deeper import paths
+
+**Impact:**
+- All 16 test scripts pass without modification to logic
+- API endpoints continue working identically
+- Zero functional changes, pure organizational refactoring
+- Documentation updated (README, CLAUDE.md)
+
+**Status:** Implemented (2025-11-09) - All modules reorganized, tests passing, systems operational
+
+---
+
 ## Technology Choices
 
 ### Backend Stack

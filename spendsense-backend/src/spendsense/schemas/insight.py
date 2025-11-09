@@ -2,7 +2,7 @@
 
 from typing import List, Dict, Any
 from pydantic import BaseModel, Field
-from spendsense.utils.guardrails import DISCLAIMER
+from spendsense.guardrails import DISCLAIMER
 
 
 class EducationItemResponse(BaseModel):

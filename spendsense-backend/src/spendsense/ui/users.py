@@ -10,8 +10,8 @@ from spendsense.database import get_db
 from spendsense.models.user import User
 from spendsense.models.account import Account
 from spendsense.schemas.user import UserCreate, UserResponse, ProfileResponse, AccountSummary, PersonaSummary
-from spendsense.services.personas import assign_persona
-from spendsense.services.features import compute_signals
+from spendsense.personas import assign_persona
+from spendsense.features import compute_signals
 
 router = APIRouter(prefix="/users", tags=["users"])
 

@@ -19,7 +19,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from sqlalchemy import select
 from spendsense.database import AsyncSessionLocal
-from spendsense.services.features import compute_signals
+from spendsense.features import compute_signals
 from spendsense.models.user import User
 
 

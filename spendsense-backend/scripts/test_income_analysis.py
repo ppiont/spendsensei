@@ -18,7 +18,7 @@ from datetime import datetime
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root / "src"))
 
-from spendsense.services.features import analyze_income, BehaviorSignals
+from spendsense.features import analyze_income, BehaviorSignals
 
 
 def load_synthetic_data():

@@ -27,10 +27,10 @@ from typing import List, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, Field
 
-from spendsense.services.personas import assign_persona
-from spendsense.generators.base import ContentGenerator, EducationItem, Rationale, PartnerOffer
-from spendsense.generators.template import TemplateGenerator
-from spendsense.services.features import BehaviorSignals
+from spendsense.personas import assign_persona
+from spendsense.recommend.types import ContentGenerator, EducationItem, Rationale, PartnerOffer
+from spendsense.recommend.content_selection import TemplateGenerator
+from spendsense.features import BehaviorSignals
 
 # Set up logging
 logger = logging.getLogger(__name__)

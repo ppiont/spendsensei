@@ -12,8 +12,8 @@ from pathlib import Path
 src_path = Path(__file__).parent.parent / "src"
 sys.path.insert(0, str(src_path))
 
-from spendsense.services.features import BehaviorSignals
-from spendsense.services.personas import (
+from spendsense.features import BehaviorSignals
+from spendsense.personas import (
     matches_high_utilization,
     matches_variable_income,
     matches_subscription_heavy,

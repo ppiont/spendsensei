@@ -21,7 +21,7 @@ sys.path.insert(0, str(project_root / "src"))
 
 from spendsense.database import AsyncSessionLocal
 from spendsense.models.user import User
-from spendsense.services.recommendations import generate_recommendations
+from spendsense.recommend.legacy import generate_recommendations
 from spendsense.generators.template import TemplateGenerator
 from sqlalchemy import select
 

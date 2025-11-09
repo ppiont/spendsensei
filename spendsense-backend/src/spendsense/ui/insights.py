@@ -16,8 +16,8 @@ from spendsense.schemas.insight import (
     PartnerOfferResponse,
     RationaleResponse
 )
-from spendsense.services.recommendation_engine import StandardRecommendationEngine
-from spendsense.utils.guardrails import check_consent
+from spendsense.recommend.engine import StandardRecommendationEngine
+from spendsense.guardrails import check_consent
 
 # Set up logging
 logger = logging.getLogger(__name__)

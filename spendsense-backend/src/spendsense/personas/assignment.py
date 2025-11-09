@@ -1,13 +1,13 @@
 """
-Persona Assignment Logic Module
+Persona Assignment Logic
 
-This module provides functions to assign financial personas to users based on
-their behavioral signals. Personas are assigned in priority order (most urgent first)
-with confidence scoring.
+Assigns financial personas to users based on their behavioral signals.
+Personas are assigned in priority order (most urgent first) with confidence scoring.
 
 Personas:
 - high_utilization: Credit card usage ≥50% OR interest charges OR overdue
 - variable_income: Median pay gap >45 days AND buffer <1 month
+- debt_consolidator: Multiple cards with moderate utilization, paying interest
 - subscription_heavy: ≥3 subscriptions AND (monthly spend ≥$50 OR ≥10% of total)
 - savings_builder: Growth rate ≥2% OR monthly inflow ≥$200, AND utilization <30%
 - balanced: Default fallback if no other persona matches
@@ -19,30 +19,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import logging
 
 from spendsense.features import BehaviorSignals, compute_signals
+from spendsense.personas.types import PERSONA_PRIORITY, CONFIDENCE_SCORES
 from spendsense.models.persona import Persona
 
-# Set up logging
 logger = logging.getLogger(__name__)
-
-# Persona priority order (most urgent/important first)
-PERSONA_PRIORITY = [
-    "high_utilization",    # Most urgent: >70% utilization OR overdue OR min-payment-only
-    "variable_income",     # Cash flow risk: irregular income + low buffer
-    "debt_consolidator",   # Opportunity: multiple cards with moderate utilization
-    "subscription_heavy",  # Cost optimization: high recurring spend
-    "savings_builder",     # Building wealth: positive savings trajectory
-    "balanced"             # Default fallback
-]
-
-# Confidence scores for each persona type
-CONFIDENCE_SCORES = {
-    "high_utilization": 0.95,
-    "variable_income": 0.90,
-    "debt_consolidator": 0.88,
-    "subscription_heavy": 0.85,
-    "savings_builder": 0.80,
-    "balanced": 0.60
-}
 
 
 def matches_high_utilization(signals: BehaviorSignals) -> bool:

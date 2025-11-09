@@ -18,7 +18,7 @@ from spendsense.schemas.operator import (
     OperatorOverrideResponse,
     InspectUserResponse
 )
-from spendsense.services.recommendation_engine import StandardRecommendationEngine
+from spendsense.recommend.engine import StandardRecommendationEngine
 
 router = APIRouter(prefix="/operator", tags=["operator"])
 

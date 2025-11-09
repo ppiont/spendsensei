@@ -23,6 +23,9 @@ class Settings(BaseSettings):
         "http://localhost:3000",  # Alternative frontend port
         "http://localhost:4173",  # Vite preview
     ]
+    # Additional CORS origins from environment variable (comma-separated)
+    # Set RAILWAY_PUBLIC_DOMAIN or FRONTEND_URL for production
+    cors_origins_extra: str = ""
 
     # API
     api_title: str = "SpendSense API"

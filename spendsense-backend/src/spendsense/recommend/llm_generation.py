@@ -21,19 +21,19 @@ SWAPPING INSTRUCTIONS:
     To swap from TemplateGenerator to LLMGenerator in production:
     
     Before:
-        from spendsense.generators.template import TemplateGenerator
+        from spendsense.recommend.content_selection import TemplateGenerator
         generator = TemplateGenerator(catalog_path="content_catalog.yaml")
     
     After:
-        from spendsense.generators.llm import LLMGenerator
+        from spendsense.recommend.llm_generation import LLMGenerator
         generator = LLMGenerator(provider="anthropic", model="claude-3-5-sonnet-20241022")
     
     The interface remains identical - no other code changes required.
 """
 
 from typing import List, Dict, Any, Literal
-from spendsense.generators.base import ContentGenerator, EducationItem, Rationale, PartnerOffer
-from spendsense.services.features import BehaviorSignals
+from spendsense.recommend.types import ContentGenerator, EducationItem, Rationale, PartnerOffer
+from spendsense.features import BehaviorSignals
 
 
 # ==============================================================================

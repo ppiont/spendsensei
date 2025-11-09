@@ -13,7 +13,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 from pydantic import BaseModel, Field
 
-from spendsense.services.features import BehaviorSignals
+from spendsense.features import BehaviorSignals
 
 
 class EducationItem(BaseModel):

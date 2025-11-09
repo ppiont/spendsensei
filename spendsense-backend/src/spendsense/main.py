@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 
 from spendsense.database import init_db
 from spendsense.config import settings
-from spendsense.routers import users_router, accounts_router, transactions_router, insights_router, feedback_router, operator_router
+from spendsense.ui import users_router, accounts_router, transactions_router, insights_router, feedback_router, operator_router
 
 # Set up logging
 logging.basicConfig(level=settings.log_level)
@@ -28,10 +28,18 @@ app.include_router(insights_router)
 app.include_router(feedback_router)
 app.include_router(operator_router)
 
+# Build CORS origins list: combine defaults with extra origins from environment
+cors_origins = settings.cors_origins.copy()
+if settings.cors_origins_extra:
+    # Split comma-separated origins and add them
+    extra_origins = [origin.strip() for origin in settings.cors_origins_extra.split(",") if origin.strip()]
+    cors_origins.extend(extra_origins)
+    logger.info(f"Added extra CORS origins: {extra_origins}")
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods (GET, POST, PUT, DELETE, etc.)
     allow_headers=["*"],  # Allow all headers

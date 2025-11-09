@@ -37,11 +37,41 @@ SpendSense is a **full-stack financial education platform** that provides person
 
 ## Key Directories
 
+**NEW MODULE STRUCTURE** (Reorganized 2025-11-09 for Project Description compliance):
+
 ```
 spendsense-backend/src/spendsense/
-├── routers/        # API endpoints (users, accounts, transactions, insights)
-├── services/       # Business logic (features, personas, recommendations)
-├── generators/     # Content generation (template, llm)
+├── ingest/         # Data loading and validation
+│   └── synthetic_generator.py
+├── features/       # Signal detection and feature engineering
+│   ├── types.py    # BehaviorSignals dataclass
+│   ├── signals.py  # Orchestrator (compute_signals)
+│   ├── income.py   # Income stability analysis
+│   ├── savings.py  # Savings patterns
+│   ├── credit.py   # Credit utilization
+│   └── subscriptions.py  # Subscription detection
+├── personas/       # Persona assignment logic
+│   ├── types.py    # Persona priority and confidence scores
+│   └── assignment.py  # Matching functions (assign_persona)
+├── recommend/      # Recommendation engine
+│   ├── types.py    # Content types, base classes
+│   ├── engine.py   # StandardRecommendationEngine
+│   ├── content_selection.py  # TemplateGenerator
+│   ├── llm_generation.py     # LLMGenerator
+│   └── legacy.py   # Backward compatibility
+├── guardrails/     # Content safety and compliance
+│   ├── consent.py  # Consent verification
+│   ├── tone.py     # Shame pattern detection
+│   ├── disclosure.py  # Standard disclaimers
+│   └── eligibility.py # Product eligibility checks
+├── ui/             # API endpoints (renamed from routers/)
+│   ├── users.py
+│   ├── accounts.py
+│   ├── transactions.py
+│   ├── insights.py
+│   ├── operator.py
+│   └── feedback.py
+├── eval/           # Evaluation harness (placeholder)
 ├── schemas/        # Pydantic models for API
 └── models/         # SQLAlchemy ORM models
 
@@ -105,28 +135,31 @@ Visit: http://localhost:5173/
 
 ## Recommendation Pipeline
 
-The system follows this flow:
+The system follows this modular flow:
 
-1. **Signal Detection** (`services/features.py`)
-   - analyze_subscriptions()
-   - analyze_savings()
-   - analyze_credit()
-   - analyze_income()
-   - compute_signals() - orchestrates all
+1. **Signal Detection** (`features/`)
+   - `features/subscriptions.py` - detect_subscriptions()
+   - `features/savings.py` - analyze_savings()
+   - `features/credit.py` - analyze_credit()
+   - `features/income.py` - analyze_income()
+   - `features/signals.py` - compute_signals() orchestrates all
 
-2. **Persona Assignment** (`services/personas.py`)
+2. **Persona Assignment** (`personas/`)
+   - `personas/assignment.py` - assign_persona()
    - Matches signals to persona types
-   - Priority order: high_utilization → variable_income → subscription_heavy → savings_builder → balanced
-   - Assigns confidence scores
+   - Priority order: high_utilization → variable_income → debt_consolidator → subscription_heavy → savings_builder → balanced
+   - Assigns confidence scores from `personas/types.py`
 
-3. **Content Generation** (`generators/template.py`)
+3. **Content Selection** (`recommend/`)
+   - `recommend/content_selection.py` - TemplateGenerator
    - Loads content catalog (YAML)
    - Scores content by signal tag matching
-   - Returns top 3 recommendations
+   - Returns top 3 recommendations with rationales
 
-4. **Recommendation Engine** (`services/recommendations.py`)
-   - generate_recommendations() - orchestrates full pipeline
-   - Returns list of Recommendation objects
+4. **Recommendation Engine** (`recommend/engine.py`)
+   - StandardRecommendationEngine
+   - Orchestrates full pipeline with guardrails
+   - Returns RecommendationResult with education + offers
 
 ## API Endpoints
 
@@ -149,14 +182,14 @@ This project uses BMAD workflows for structured development:
 ## What to Know When Modifying
 
 ### Adding New Signals
-1. Add detection logic to `services/features.py`
-2. Call from `compute_signals()`
-3. Add to `BehaviorSignals` dataclass
-4. Update persona matching in `services/personas.py`
+1. Create detection function in appropriate `features/*.py` file
+2. Call from `features/signals.py` - `compute_signals()`
+3. Add fields to `BehaviorSignals` dataclass in `features/types.py`
+4. Update persona matching in `personas/assignment.py`
 5. Add content with matching tags to `data/content_catalog.yaml`
 
 ### Adding New Endpoints
-1. Create router in `routers/*.py`
+1. Create router in `ui/*.py`
 2. Register in `main.py`
 3. Add schema to `schemas/*.py`
 4. Create test script in `scripts/test_*.py`

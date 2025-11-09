@@ -11,9 +11,9 @@ import logging
 from typing import List, Dict, Any
 from pathlib import Path
 
-from spendsense.generators.base import ContentGenerator, EducationItem, Rationale, PartnerOffer, EligibilityRules
-from spendsense.services.features import BehaviorSignals
-from spendsense.utils.guardrails import check_tone
+from spendsense.recommend.types import ContentGenerator, EducationItem, Rationale, PartnerOffer, EligibilityRules
+from spendsense.features import BehaviorSignals
+from spendsense.guardrails import check_tone
 
 # Set up logging
 logger = logging.getLogger(__name__)

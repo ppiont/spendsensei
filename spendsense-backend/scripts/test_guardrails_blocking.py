@@ -6,9 +6,9 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from spendsense.utils.guardrails import check_tone, check_consent
+from spendsense.guardrails import check_tone, check_consent
 from spendsense.generators.base import Rationale
-from spendsense.services.features import BehaviorSignals
+from spendsense.features import BehaviorSignals
 
 
 def test_tone_blocking():

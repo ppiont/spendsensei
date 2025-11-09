@@ -15,7 +15,7 @@ sys.path.insert(0, str(src_path))
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from spendsense.database import AsyncSessionLocal
-from spendsense.services.personas import assign_persona, PERSONA_PRIORITY
+from spendsense.personas import assign_persona, PERSONA_PRIORITY
 
 
 async def test_persona_assignment():

@@ -9,7 +9,7 @@ the new StandardRecommendationEngine for backward compatibility. It returns
 only educational recommendations (not offers) to match the old interface.
 
 For new code, use:
-    from spendsense.services.recommendation_engine import StandardRecommendationEngine
+    from spendsense.recommend.engine import StandardRecommendationEngine
     engine = StandardRecommendationEngine()
     result = await engine.generate_recommendations(db, user_id, window_days)
 """
@@ -19,8 +19,8 @@ from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, Field
 
-from spendsense.services.recommendation_engine import StandardRecommendationEngine
-from spendsense.generators.base import ContentGenerator, EducationItem, Rationale
+from spendsense.recommend.engine import StandardRecommendationEngine
+from spendsense.recommend.types import ContentGenerator, EducationItem, Rationale
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -56,7 +56,7 @@ async def generate_recommendations(
     recommendations (not partner offers) to match the old interface.
 
     New code should use:
-        from spendsense.services.recommendation_engine import StandardRecommendationEngine
+        from spendsense.recommend.engine import StandardRecommendationEngine
         engine = StandardRecommendationEngine()
         result = await engine.generate_recommendations(db, user_id, window_days)
 
