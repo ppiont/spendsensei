@@ -88,13 +88,14 @@ def analyze_savings(accounts: List[Dict[str, Any]], transactions: List[Dict[str,
     # Estimate monthly inflow rate
     monthly_inflow = int(net_inflow / (window_days / 30)) if window_days > 0 else 0
 
-    # Task 3: Calculate monthly expenses from non-savings accounts
+    # Task 3: Calculate monthly expenses from ALL transactions
+    # Note: Use all transactions (not just non-savings) because users may spend from savings accounts
     # Exclude INCOME category, sum all debits
     monthly_expenses = 0
     total_debits = sum(
         txn["amount"]
-        for txn in non_savings_transactions
-        if txn["amount"] > 0 and txn.get("category") != "INCOME"
+        for txn in transactions  # Changed from non_savings_transactions
+        if txn["amount"] > 0 and txn.get("personal_finance_category_primary") != "INCOME"
     )
     monthly_expenses = int(total_debits / (window_days / 30)) if window_days > 0 else 0
 

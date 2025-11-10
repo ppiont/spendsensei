@@ -283,7 +283,7 @@ async def flag_recommendation(
 @router.get("/inspect/{user_id}", response_model=InspectUserResponse)
 async def inspect_user(
     user_id: str,
-    include_recommendations: bool = False,
+    include_recommendations: bool = True,  # Changed from False - operator needs full transparency
     db: AsyncSession = Depends(get_db)
 ):
     """

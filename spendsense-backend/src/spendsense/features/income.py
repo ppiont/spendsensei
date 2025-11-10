@@ -36,7 +36,7 @@ def analyze_income(transactions: List[Dict], window_days: int) -> Dict:
         - Insufficient data for stdev: returns "unknown" stability
     """
     # Filter INCOME transactions only
-    income_txns = [t for t in transactions if t.get('category') == 'INCOME']
+    income_txns = [t for t in transactions if t.get('personal_finance_category_primary') == 'INCOME']
 
     # Edge case: insufficient income transactions
     if len(income_txns) < 2:
@@ -111,7 +111,7 @@ def analyze_income(transactions: List[Dict], window_days: int) -> Dict:
     total_income = sum(amounts)
 
     # Total expenses (all positive transaction amounts, exclude INCOME)
-    expense_txns = [t for t in transactions if t.get('category') != 'INCOME' and t['amount'] > 0]
+    expense_txns = [t for t in transactions if t.get('personal_finance_category_primary') != 'INCOME' and t['amount'] > 0]
     total_expenses = sum(t['amount'] for t in expense_txns)
 
     # Calculate net cash flow

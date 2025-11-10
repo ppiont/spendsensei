@@ -13,7 +13,7 @@ class EducationItemResponse(BaseModel):
     body: str = Field(..., description="Full educational content")
     cta: str = Field(..., description="Call-to-action text")
     source: str = Field(..., description="Content source (template, llm, human)")
-    relevance_score: float = Field(..., description="Relevance score (0.0-1.0)", ge=0.0, le=1.0)
+    relevance_score: int = Field(..., description="Relevance score (1-5 scale)", ge=1, le=5)
 
 
 class PartnerOfferResponse(BaseModel):
@@ -28,7 +28,7 @@ class PartnerOfferResponse(BaseModel):
     cta: str = Field(..., description="Call-to-action text")
     cta_url: str = Field(..., description="URL for the offer")
     disclaimer: str = Field(..., description="Legal disclaimer")
-    relevance_score: float = Field(..., description="Relevance score (0.0-1.0)", ge=0.0, le=1.0)
+    relevance_score: int = Field(..., description="Relevance score (1-5 scale)", ge=1, le=5)
     eligibility_met: bool = Field(..., description="Whether user meets eligibility criteria")
 
 
@@ -66,7 +66,7 @@ class OfferRecommendationResponse(BaseModel):
                         "body": "Credit utilization is one of the most important factors...",
                         "cta": "Review Your Credit Cards",
                         "source": "template",
-                        "relevance_score": 0.85
+                        "relevance_score": 5
                     },
                     "rationale": {
                         "persona_type": "high_utilization",
@@ -128,7 +128,7 @@ class InsightsResponse(BaseModel):
                                 "body": "Credit utilization is one of the most important factors...",
                                 "cta": "Review Your Credit Cards",
                                 "source": "template",
-                                "relevance_score": 0.85
+                                "relevance_score": 5
                             },
                             "rationale": {
                                 "persona_type": "high_utilization",

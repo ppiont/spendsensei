@@ -61,11 +61,15 @@ PAYMENT_CHANNELS = ["online", "in_store", "other"]
 def generate_user() -> dict[str, Any]:
     """Generate a single synthetic user profile"""
     user_id = fake.uuid4()
+    # Ensure unique email by incorporating uuid
+    base_email = fake.email()
+    username, domain = base_email.split('@')
+    unique_email = f"{username}+{user_id[:8]}@{domain}"
 
     return {
         "id": user_id,
         "name": fake.name(),
-        "email": fake.email(),
+        "email": unique_email,
         "consent": False,
         "created_at": fake.date_time_between(start_date="-2y").isoformat(),
     }

@@ -105,7 +105,9 @@ async def compute_signals(db: AsyncSession, user_id: str, window_days: int) -> B
                 "date": txn.date,
                 "amount": txn.amount,
                 "merchant_name": txn.merchant_name,
-                "category": txn.personal_finance_category_primary
+                "merchant_entity_id": txn.merchant_entity_id,
+                "personal_finance_category_primary": txn.personal_finance_category_primary,
+                "personal_finance_category_detailed": txn.personal_finance_category_detailed
             }
             for txn in transactions
         ]

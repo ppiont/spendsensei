@@ -29,7 +29,7 @@ class EducationItem(BaseModel):
     body: str = Field(..., description="Full text content with detailed information")
     cta: str = Field(..., description="Call-to-action text for user engagement")
     source: str = Field(..., description="Source attribution for the content")
-    relevance_score: float = Field(..., description="Computed relevance score (0.0-1.0) for this user", ge=0.0, le=1.0)
+    relevance_score: int = Field(..., description="Computed relevance score (1-5 scale) for this user", ge=1, le=5)
 
 
 class EligibilityRules(BaseModel):
@@ -69,7 +69,7 @@ class PartnerOffer(BaseModel):
     cta: str = Field(..., description="Call-to-action text")
     cta_url: str = Field(..., description="URL for the offer (partner link)")
     disclaimer: str = Field(..., description="Required legal disclaimer")
-    relevance_score: float = Field(..., description="Computed relevance score (0.0-1.0) for this user", ge=0.0, le=1.0)
+    relevance_score: int = Field(..., description="Computed relevance score (1-5 scale) for this user", ge=1, le=5)
     eligibility_met: bool = Field(..., description="Whether user meets eligibility criteria")
 
 

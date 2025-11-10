@@ -305,31 +305,53 @@ class StandardRecommendationEngine(RecommendationEngine):
         return count
 
     def _create_signals_summary(self, signals: BehaviorSignals) -> Dict[str, Any]:
-        """Create human-readable summary of detected signals."""
+        """
+        Create comprehensive signals summary with all behavioral data.
+
+        Returns full signal details for operator transparency and auditability,
+        as required by Project Description section 6 (Operator View).
+        """
         summary = {}
 
+        # Credit signals - full detail including per-card breakdown
         if signals.credit:
             summary["credit"] = {
-                "utilization": signals.credit.get("overall_utilization", 0.0),
-                "has_interest": signals.credit.get("monthly_interest", 0) > 0
+                "overall_utilization": signals.credit.get("overall_utilization", 0.0),
+                "total_balance": signals.credit.get("total_balance", 0),
+                "total_limit": signals.credit.get("total_limit", 0),
+                "monthly_interest": signals.credit.get("monthly_interest", 0),
+                "flags": signals.credit.get("flags", []),
+                "per_card": signals.credit.get("per_card", [])
             }
 
+        # Income signals - full detail including stability metrics
         if signals.income:
             summary["income"] = {
                 "frequency": signals.income.get("frequency", "unknown"),
-                "stability": signals.income.get("stability", "unknown")
+                "stability": signals.income.get("stability", "unknown"),
+                "median_gap_days": signals.income.get("median_gap_days", 0),
+                "gap_variability": signals.income.get("gap_variability", 0.0),
+                "buffer_months": signals.income.get("buffer_months", 0.0),
+                "paycheck_count": signals.income.get("paycheck_count", 0)
             }
 
+        # Subscription signals - full detail including merchant breakdown
         if signals.subscriptions:
             summary["subscriptions"] = {
-                "count": signals.subscriptions.get("recurring_merchant_count", 0),
-                "monthly_spend": signals.subscriptions.get("monthly_recurring_spend", 0) / 100
+                "count": signals.subscriptions.get("count", 0),  # Changed from recurring_merchant_count
+                "monthly_recurring_spend": signals.subscriptions.get("monthly_recurring_spend", 0),
+                "percentage_of_spending": signals.subscriptions.get("percentage_of_spending", 0.0),
+                "merchants": signals.subscriptions.get("recurring_merchants", [])
             }
 
+        # Savings signals - full detail including growth metrics
         if signals.savings:
             summary["savings"] = {
-                "emergency_fund_months": signals.savings.get("emergency_fund_months", 0.0),
-                "monthly_inflow": signals.savings.get("monthly_inflow", 0) / 100
+                "total_balance": signals.savings.get("total_balance", 0),
+                "net_inflow": signals.savings.get("net_inflow", 0),
+                "monthly_inflow": signals.savings.get("monthly_inflow", 0),
+                "growth_rate": signals.savings.get("growth_rate", 0.0),
+                "emergency_fund_months": signals.savings.get("emergency_fund_months", 0.0)
             }
 
         return summary

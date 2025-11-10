@@ -2,7 +2,7 @@
 
 import asyncio
 from spendsense.database import init_db
-from spendsense.services.synthetic_data import main_async
+from spendsense.ingest.synthetic_generator import main_async
 
 async def main():
     """Create tables, generate synthetic data, and load into database"""

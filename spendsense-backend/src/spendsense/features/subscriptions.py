@@ -41,7 +41,7 @@ def detect_subscriptions(transactions: List[Dict[str, Any]], window_days: int) -
     debit_transactions = [
         txn
         for txn in transactions
-        if txn.get("amount", 0) > 0 and txn.get("category") != "INCOME"
+        if txn.get("amount", 0) > 0 and txn.get("personal_finance_category_primary") != "INCOME"
     ]
 
     # Edge case: No debit transactions
@@ -65,18 +65,20 @@ def detect_subscriptions(transactions: List[Dict[str, Any]], window_days: int) -
             "percentage_of_spending": 0.0,
         }
 
-    # Group transactions by merchant_name
+    # Group transactions by merchant_entity_id (normalized) or merchant_name (fallback)
+    # merchant_entity_id is preferred because it groups the same merchant across name variations
     merchant_transactions = defaultdict(list)
     for txn in debit_transactions:
-        merchant_name = txn.get("merchant_name")
-        if merchant_name:  # Skip transactions without merchant_name
-            merchant_transactions[merchant_name].append(txn)
+        # Prefer merchant_entity_id for normalized grouping (e.g., "netflix_inc")
+        merchant_key = txn.get("merchant_entity_id") or txn.get("merchant_name")
+        if merchant_key:  # Skip transactions without either field
+            merchant_transactions[merchant_key].append(txn)
 
     # Identify recurring merchants (≥3 occurrences)
     recurring_merchants = []
     total_recurring_spend = 0
 
-    for merchant_name, merchant_txns in merchant_transactions.items():
+    for merchant_key, merchant_txns in merchant_transactions.items():
         if len(merchant_txns) < 3:
             continue
 
@@ -104,11 +106,11 @@ def detect_subscriptions(transactions: List[Dict[str, Any]], window_days: int) -
         # Calculate average gap
         avg_gap = sum(gaps) / len(gaps) if gaps else 0
 
-        # Classify cadence based on average gap
+        # Classify cadence based on average gap (lenient ranges to catch real subscriptions)
         frequency = None
-        if 28 <= avg_gap <= 35:
+        if 20 <= avg_gap <= 45:  # ~3-6 weeks (monthly-ish subscriptions)
             frequency = "monthly"
-        elif 6 <= avg_gap <= 8:
+        elif 5 <= avg_gap <= 10:  # ~1-2 weeks (weekly-ish subscriptions)
             frequency = "weekly"
         # else: irregular pattern, not classified as subscription
 
@@ -125,8 +127,16 @@ def detect_subscriptions(transactions: List[Dict[str, Any]], window_days: int) -
 
             total_recurring_spend += monthly_spend
 
+            # Use merchant_entity_id if available, otherwise merchant_name
+            display_name = merchant_key  # This is either entity_id or name
+            # Try to get a human-readable name from the first transaction
+            if sorted_txns[0].get("merchant_entity_id"):
+                # If we grouped by entity_id, get the actual merchant name for display
+                display_name = sorted_txns[0].get("merchant_name", merchant_key)
+
             recurring_merchants.append({
-                "name": merchant_name,
+                "name": display_name,
+                "entity_id": sorted_txns[0].get("merchant_entity_id"),
                 "frequency": frequency,
                 "avg_amount": avg_amount,
                 "count": len(sorted_txns),
