@@ -217,12 +217,10 @@
 			</div>
 		{:else if error}
 			<div class="error-state">
-				<Alert variant="destructive">
-					<AlertDescription>
-						<strong>Error:</strong> {error}
+				<div class="error-card">
+						<p><strong>Error:</strong> {error}</p>
 						<button onclick={() => loadUserData()} class="retry-button">Retry</button>
-					</AlertDescription>
-				</Alert>
+				</div>
 			</div>
 		{:else}
 			<!-- SECTION 1: FINANCIAL SNAPSHOT -->
@@ -518,6 +516,18 @@
 
 	.error-state {
 		padding: 2rem;
+	}
+
+	.error-card {
+		background-color: #fee2e2;
+		border: 1px solid #ef4444;
+		border-radius: 0.5rem;
+		padding: 1rem;
+		color: #991b1b;
+	}
+
+	.error-card p {
+		margin: 0 0 1rem 0;
 	}
 
 	.retry-button {

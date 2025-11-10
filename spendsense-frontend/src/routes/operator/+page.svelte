@@ -18,11 +18,13 @@
 	let error = $state<string | null>(null);
 	let selectedWindow = $state(30);
 
-	// Get derived data (using short_term window by default)
+	// Get derived data based on selected window
+	const currentWindowData = $derived(selectedWindow === 30 ? inspectData?.short_term : inspectData?.long_term);
+	const currentRecommendations = $derived(selectedWindow === 30 ? inspectData?.short_term_recommendations : inspectData?.long_term_recommendations);
+
 	const hasConsent = $derived(inspectData?.consent_status || false);
-	const hasPersona = $derived(inspectData?.short_term?.persona_type !== null && inspectData?.short_term?.persona_type !== undefined);
-	const recommendations = $derived(inspectData?.short_term_recommendations || []);
-	const offers = $derived(inspectData?.long_term_recommendations || []);
+	const hasPersona = $derived(currentWindowData?.persona_type !== null && currentWindowData?.persona_type !== undefined);
+	const recommendations = $derived(currentRecommendations || []);
 
 	// Format JSON for display
 	function formatJSON(obj: any): string {
@@ -56,7 +58,7 @@
 
 	// Reload when user or window changes
 	$effect(() => {
-		if (currentUserId) {
+		if (currentUserId && selectedWindow) {
 			inspectUser();
 		}
 	});
@@ -147,7 +149,7 @@
 							<p class="text-xs font-medium text-muted-foreground">Persona</p>
 							{#if hasPersona}
 								<p class="text-sm font-semibold text-primary px-2 py-1 bg-primary/10 rounded inline-block">
-									{inspectData.short_term.persona_type}
+									{currentWindowData.persona_type}
 								</p>
 							{:else}
 								<p class="text-sm text-muted-foreground">Not assigned</p>
@@ -168,30 +170,30 @@
 					</div>
 				</section>
 
-				<!-- Behavioral Signals (Short-Term) -->
+				<!-- Behavioral Signals -->
 				<section class="bg-card rounded-lg border border-border shadow-sm p-6">
 					<h2 class="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-						<span>🎯</span> Behavioral Signals (30-day)
+						<span>🎯</span> Behavioral Signals ({selectedWindow}-day)
 					</h2>
 					<div class="bg-muted rounded-lg p-4 overflow-x-auto">
-						<pre class="text-xs font-mono text-foreground">{formatJSON(inspectData.short_term.signals_summary)}</pre>
+						<pre class="text-xs font-mono text-foreground">{formatJSON(currentWindowData.signals_summary)}</pre>
 					</div>
 				</section>
 
-				<!-- Persona Assignment (Short-Term) -->
+				<!-- Persona Assignment -->
 				<section class="bg-card rounded-lg border border-border shadow-sm p-6">
 					<h2 class="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-						<span>🎭</span> Persona Assignment (30-day)
+						<span>🎭</span> Persona Assignment ({selectedWindow}-day)
 					</h2>
 					{#if hasConsent && hasPersona}
 						<div class="space-y-3">
 							<div class="flex gap-4 py-2 border-b border-border">
 								<span class="text-sm font-medium text-muted-foreground min-w-[140px]">Assigned Persona:</span>
-								<span class="text-sm text-foreground font-semibold">{inspectData.short_term.persona_type}</span>
+								<span class="text-sm text-foreground font-semibold">{currentWindowData.persona_type}</span>
 							</div>
 							<div class="flex gap-4 py-2">
 								<span class="text-sm font-medium text-muted-foreground min-w-[140px]">Confidence Score:</span>
-								<span class="text-sm text-foreground">{((inspectData.short_term.confidence || 0) * 100).toFixed(2)}%</span>
+								<span class="text-sm text-foreground">{((currentWindowData.confidence || 0) * 100).toFixed(2)}%</span>
 							</div>
 						</div>
 					{:else if !hasConsent}
@@ -214,14 +216,19 @@
 				{#if recommendations.length > 0}
 					<section class="bg-card rounded-lg border border-border shadow-sm p-6">
 						<h2 class="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-							<span>💡</span> Education Recommendations ({recommendations.length})
+							<span>💡</span> Recommendations ({recommendations.length})
 						</h2>
 						<div class="space-y-4">
 							{#each recommendations as rec, index}
 								<div class="bg-accent/50 rounded-lg p-4">
-									<h3 class="text-lg font-semibold text-foreground mb-3">
-										#{index + 1}: {rec.title}
-									</h3>
+									<div class="flex items-start justify-between mb-3">
+										<h3 class="text-lg font-semibold text-foreground">
+											#{index + 1}: {rec.title}
+										</h3>
+										<span class="text-xs font-medium px-2 py-1 bg-primary/20 text-primary rounded">
+											{rec.type}
+										</span>
+									</div>
 									<div class="space-y-2">
 										<div class="flex gap-4 text-sm">
 											<span class="font-medium text-muted-foreground min-w-[120px]">ID:</span>
@@ -231,42 +238,12 @@
 											<span class="font-medium text-muted-foreground min-w-[120px]">Summary:</span>
 											<span class="text-foreground">{rec.summary}</span>
 										</div>
-										<div class="flex gap-4 text-sm">
-											<span class="font-medium text-muted-foreground min-w-[120px]">Relevance:</span>
-											<span class="text-foreground">{(rec.relevance_score * 100).toFixed(1)}%</span>
-										</div>
-									</div>
-								</div>
-							{/each}
-						</div>
-					</section>
-				{/if}
-
-				<!-- Partner Offers -->
-				{#if offers.length > 0}
-					<section class="bg-card rounded-lg border border-border shadow-sm p-6">
-						<h2 class="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-							<span>🎁</span> Partner Offers ({offers.length})
-						</h2>
-						<div class="space-y-4">
-							{#each offers as offer, index}
-								<div class="bg-accent/50 rounded-lg p-4">
-									<h3 class="text-lg font-semibold text-foreground mb-3">
-										#{index + 1}: {offer.title}
-									</h3>
-									<div class="space-y-2">
-										<div class="flex gap-4 text-sm">
-											<span class="font-medium text-muted-foreground min-w-[120px]">Provider:</span>
-											<span class="text-foreground">{offer.provider}</span>
-										</div>
-										<div class="flex gap-4 text-sm">
-											<span class="font-medium text-muted-foreground min-w-[120px]">Eligible:</span>
-											<span class={`text-foreground font-semibold ${
-												offer.eligibility_met ? 'text-green-600' : 'text-red-600'
-											}`}>
-												{offer.eligibility_met ? 'Yes' : 'No'}
-											</span>
-										</div>
+										{#if rec.provider}
+											<div class="flex gap-4 text-sm">
+												<span class="font-medium text-muted-foreground min-w-[120px]">Provider:</span>
+												<span class="text-foreground">{rec.provider}</span>
+											</div>
+										{/if}
 									</div>
 								</div>
 							{/each}
