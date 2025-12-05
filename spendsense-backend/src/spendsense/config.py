@@ -1,7 +1,21 @@
 """Application configuration using Pydantic Settings"""
 
+import os
 from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def get_default_database_url() -> str:
+    """
+    Get default database URL based on environment.
+
+    For Railway, uses /app/data directory (volume mount).
+    For local development, uses relative data/ directory.
+    """
+    # Check for Railway environment
+    if os.environ.get("RAILWAY_ENVIRONMENT"):
+        return "sqlite+aiosqlite:////app/data/spendsense.db"
+    return "sqlite+aiosqlite:///data/spendsense.db"
 
 
 class Settings(BaseSettings):
@@ -12,7 +26,8 @@ class Settings(BaseSettings):
     """
 
     # Database
-    database_url: str = "sqlite+aiosqlite:///data/spendsense.db"
+    # Override with DATABASE_URL environment variable
+    database_url: str = get_default_database_url()
 
     # Logging
     log_level: str = "INFO"

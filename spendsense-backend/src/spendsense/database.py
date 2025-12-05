@@ -39,12 +39,27 @@ async def get_db():
 
 async def init_db():
     """Initialize database: create tables, enable WAL mode, and load demo data if empty"""
+    import os
+
     # Create data directory if it doesn't exist
-    data_dir = Path("data")
-    data_dir.mkdir(exist_ok=True)
+    # Use /app/data for Railway, relative data/ for local
+    if os.environ.get("RAILWAY_ENVIRONMENT"):
+        data_dir = Path("/app/data")
+    else:
+        data_dir = Path("data")
+    data_dir.mkdir(exist_ok=True, parents=True)
+    logger.info(f"Using data directory: {data_dir.absolute()}")
 
     async with engine.begin() as conn:
         # Import all models to ensure they're registered with Base.metadata
+        # This must happen BEFORE create_all is called
+        from spendsense.models.user import User  # noqa: F401
+        from spendsense.models.account import Account  # noqa: F401
+        from spendsense.models.transaction import Transaction  # noqa: F401
+        from spendsense.models.persona import Persona  # noqa: F401
+        from spendsense.models.content import Content  # noqa: F401
+        from spendsense.models.feedback import Feedback  # noqa: F401
+        from spendsense.models.operator_override import OperatorOverride  # noqa: F401
 
         # Create all tables
         await conn.run_sync(Base.metadata.create_all)
@@ -53,10 +68,9 @@ async def init_db():
         await conn.execute(text("PRAGMA journal_mode=WAL"))
 
     # Check if database is empty and load demo data
+    # Import User model at this scope for query
+    from spendsense.models.user import User
     async with AsyncSessionLocal() as session:
-        # Import User model to check if database has data
-        from spendsense.models.user import User
-
         result = await session.execute(select(User))
         users = result.scalars().all()
 

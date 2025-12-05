@@ -76,21 +76,40 @@ def generate_user() -> dict[str, Any]:
 
 
 def generate_accounts(user_id: str) -> list[dict[str, Any]]:
-    """Generate 1-3 accounts for a user with Plaid-compliant fields"""
-    num_accounts = random.randint(1, 3)
+    """Generate 3-5 accounts for a user with Plaid-compliant fields.
+
+    Ensures each user has at minimum:
+    - 1 checking account (for income transactions)
+    - 1 credit card (for credit utilization signals)
+    - 1 savings account (for savings signals)
+
+    Plus 0-2 additional random accounts for variety.
+    """
     accounts = []
 
-    # Define possible account types
-    account_types = [
-        ("depository", "checking"),
-        ("depository", "savings"),
-        ("credit", "credit_card"),
-        ("loan", "mortgage"),
-        ("loan", "student_loan"),
+    # Core account types that every user needs for signal detection
+    core_account_types = [
+        ("depository", "checking"),   # Required for income signals
+        ("credit", "credit_card"),    # Required for credit signals
+        ("depository", "savings"),    # Required for savings signals
     ]
 
-    for _ in range(num_accounts):
-        account_type, subtype = random.choice(account_types)
+    # Additional account types for variety
+    extra_account_types = [
+        ("loan", "mortgage"),
+        ("loan", "student_loan"),
+        ("depository", "money_market"),
+    ]
+
+    # Start with core accounts
+    selected_types = list(core_account_types)
+
+    # Add 0-2 extra account types
+    num_extra = random.randint(0, 2)
+    if num_extra > 0:
+        selected_types.extend(random.sample(extra_account_types, min(num_extra, len(extra_account_types))))
+
+    for account_type, subtype in selected_types:
         account_id = fake.uuid4()
 
         # Generate Plaid-compliant balance fields
@@ -174,15 +193,53 @@ def generate_accounts(user_id: str) -> list[dict[str, Any]]:
 
 
 def generate_transactions(account: dict[str, Any]) -> list[dict[str, Any]]:
-    """Generate 20-100 transactions for an account with Plaid-compliant fields"""
-    num_transactions = random.randint(20, 100)
+    """Generate 40-100 transactions for an account with Plaid-compliant fields.
+
+    Ensures realistic patterns for signal detection:
+    - Multiple recurring subscriptions (3+ transactions from same merchant)
+    - Regular income deposits if checking account
+    - Mixed spending patterns
+    """
+    num_transactions = random.randint(40, 100)
     transactions = []
 
     # Extract category data and weights
     category_data = [(primary, detailed, weight) for primary, detailed, weight in CATEGORY_WEIGHTS]
     weights = [weight for _, _, weight in category_data]
 
-    for _ in range(num_transactions):
+    # Select 2-4 recurring merchants for this account (subscriptions)
+    num_recurring = random.randint(2, 4)
+    account_recurring_merchants = random.sample(MERCHANT_ENTITIES, num_recurring)
+
+    # Generate subscription transactions first (ensures 3+ per merchant)
+    for merchant_id in account_recurring_merchants:
+        # Generate 3-6 recurring transactions for each subscription
+        num_subscription_txns = random.randint(3, 6)
+        subscription_amount = random.randint(10, 100) * 100  # $10-$100
+
+        for i in range(num_subscription_txns):
+            # Space transactions about 30 days apart for monthly pattern
+            days_ago = 180 - (i * 30) - random.randint(-3, 3)
+            if days_ago < 0:
+                days_ago = random.randint(0, 30)
+
+            transaction = {
+                "id": fake.uuid4(),
+                "account_id": account["id"],
+                "date": fake.date_time_between(start_date=f"-{days_ago}d", end_date=f"-{max(0, days_ago-5)}d").isoformat(),
+                "amount": subscription_amount + random.randint(-100, 100),  # Small variance
+                "merchant_name": merchant_id.replace("_", " ").title(),
+                "merchant_entity_id": merchant_id,
+                "personal_finance_category_primary": "GENERAL_MERCHANDISE",
+                "personal_finance_category_detailed": "ONLINE_MARKETPLACES",
+                "payment_channel": "online",
+                "pending": False,
+            }
+            transactions.append(transaction)
+
+    # Generate remaining transactions randomly
+    remaining = num_transactions - len(transactions)
+    for _ in range(remaining):
         transaction_id = fake.uuid4()
         date = fake.date_time_between(start_date="-180d")
 
@@ -199,8 +256,8 @@ def generate_transactions(account: dict[str, Any]) -> list[dict[str, Any]]:
             # Expenses are positive (debit from account)
             amount = random.randint(5, 250) * 100
             merchant_name = fake.company()
-            # 30% of merchants are recurring (have entity IDs)
-            merchant_entity_id = random.choice(MERCHANT_ENTITIES) if random.random() < 0.3 else None
+            # Additional 20% chance of recurring merchant (besides subscriptions above)
+            merchant_entity_id = random.choice(MERCHANT_ENTITIES) if random.random() < 0.2 else None
 
         # 5% of transactions are pending
         pending = random.random() < 0.05
